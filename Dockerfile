@@ -6,7 +6,7 @@ COPY . .
 RUN make install-requirements && make VERIFY=true all
 
 ############# gardener-extension-networking-cilium
-FROM builder AS gardener-extension-networking-cilium
+FROM alpine:3.11.3 AS gardener-extension-networking-cilium
 
 COPY charts /charts
 COPY --from=builder /go/bin/gardener-extension-networking-cilium /gardener-extension-networking-cilium
