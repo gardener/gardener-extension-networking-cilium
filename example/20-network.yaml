@@ -1,0 +1,90 @@
+---
+apiVersion: extensions.gardener.cloud/v1alpha1
+kind: Network
+metadata:
+  name: cilium-network
+  namespace: shoot--foo--bar
+spec:
+  type: cilium
+  podCIDR: 10.244.0.0/16
+  serviceCIDR:  10.96.0.0/24
+  providerConfig:
+    apiVersion: cilium.networking.extensions.gardener.cloud/v1alpha1
+    kind: NetworkConfig
+    agent:
+      enabled: true
+      SleepAfterInit: false
+      KeepDeprecatedLabels: false
+    config:
+      enabled: true
+    operator:
+      enabled: true
+    preflight:
+      enabled: true
+      tofqdnsPreCache: ""
+    global:
+      debug:
+        enabled: true
+      ipv4:
+        enabled: true
+      ipv6:
+        enabled: false
+      tunnel: "vxlan"
+      nodeport:
+        enable-node-port: "false"
+      etcd:
+        enabled: false
+        managed: false
+        endpoints: ""
+        ssl: false
+        CAFile: ""
+        CertFile: ""
+        KeyFile: ""
+      prometheus:
+        enabled: false
+        port: 9090
+        serviceMonitor:
+          enabled: false
+      operatorPrometheus:
+        enabled: false
+        port: 6942
+      installIptablesRules: true
+      masquerade: true
+      autoDirectNodeRoutes: false
+      endpointRoutes:
+        enabled: false
+      cni:
+        chainingMode: "none"
+      cluster:
+        name: "default"
+      encryption:
+        enabled: false
+        keyFile: keys
+        mountPath: "/etc/ipsec"
+        secretName: "secret"
+        nodeEncryption: false
+      kubeProxyReplacement: "probe"
+      nodePort:
+        enabled: false
+        mode: "hybrid"
+      externalIPs:
+        enabled: false
+      flannel:
+        enabled: false
+        masterDevice: "none"
+        uninstallOnExit: false
+      ipvlan:
+        enabled: false
+      sockops:
+        enabled: false
+      eni: false
+      azure:
+        enabled: false
+      hostServices:
+        enabled: false
+        protocols: "tcp,udp"
+      cleanState: false
+      cleanBpfstate: false
+      hubble:
+        enabled: true
+
