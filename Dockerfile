@@ -3,7 +3,7 @@ FROM golang:1.13.4 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-extension-networking-cilium
 COPY . .
-RUN make install-requirements && make VERIFY=true all
+RUN make install
 
 ############# gardener-extension-networking-cilium
 FROM alpine:3.11.3 AS gardener-extension-networking-cilium
