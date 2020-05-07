@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gardener-extension-networking-cilium
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: gardener-extension-networking-cilium
+    helm.sh/chart: gardener-extension-networking-cilium
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  revisionHistoryLimit: 0
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gardener-extension-networking-cilium
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      {{- if .Values.imageVectorOverwrite }}
+      annotations:
+        checksum/configmap-network-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: gardener-extension-networking-cilium
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: gardener-extension-networking-cilium
+      containers:
+      - name: gardener-extension-networking-cilium
+        image: {{ include "image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /gardener-extension-networking-cilium
+        - --max-concurrent-reconciles={{ .Values.controller.concurrentSyncs }}
+        - --ignore-operation-annotation={{ .Values.controller.ignoreOperationAnnotation }}
+        - --config-file=/etc/{{ include "name" . }}/config/config.yaml
+        env:
+        - name: LEADER_ELECTION_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        {{- if .Values.imageVectorOverwrite }}
+        - name: IMAGEVECTOR_OVERWRITE
+          value: /charts_overwrite/images_overwrite.yaml
+        {{- end }}
+{{- if .Values.resources }}
+        resources:
+{{ toYaml .Values.resources | nindent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/{{ include "name" . }}/config
+        {{- if .Values.imageVectorOverwrite }}
+        - name: imagevector-overwrite
+          mountPath: /charts_overwrite/
+          readOnly: true
+        {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "name" . }}-configmap
+          defaultMode: 420
+      {{- if .Values.imageVectorOverwrite }}
+      - name: imagevector-overwrite
+        configMap:
+          name: {{ include "name" . }}-imagevector-overwrite
+          defaultMode: 420
+      {{- end }}

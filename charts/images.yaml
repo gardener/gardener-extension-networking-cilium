@@ -1,0 +1,29 @@
+images:
+  - name: cilium-agent
+    sourceRepository: github.com/cilium/cilium
+    repository: docker.io/cilium/cilium
+    tag: v1.7.1
+  - name: cilium-preflight
+    sourceRepository: github.com/cilium/cilium
+    repository: docker.io/cilium/cilium
+    tag: v1.7.1
+  - name: cilium-operator
+    sourceRepository: github.com/cilium/cilium
+    repository: docker.io/cilium/operator
+    tag: v1.7.1
+  - name: cilium-etcd-operator
+    sourceRepository: github.com/cilium/cilium
+    repository: docker.io/cilium/cilium-etcd-operator
+    tag: v2.0.7
+  - name: cilium-nodeinit
+    sourceRepository: github.com/cilium/cilium
+    repository: gcr.io/google-containers/startup-script
+    tag: v1
+  - name: hubble
+    sourceRepository: github.com/cilium/hubble
+    repository: quay.io/cilium/hubble
+    tag: v0.5.0
+  - name: hubble-ui
+    sourceRepository: github.com/cilium/hubble
+    repository: quay.io/cilium/hubble-ui
+    tag: latest
