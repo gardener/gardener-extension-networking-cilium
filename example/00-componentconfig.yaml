@@ -1,0 +1,10 @@
+---
+apiVersion: cilium.networking.extensions.config.gardener.cloud/v1alpha1
+kind: ControllerConfiguration
+clientConnection:
+  acceptContentTypes: application/json
+  contentType: application/json
+  qps: 100
+  burst: 130
+#healthCheckConfig:
+#  syncPeriod: 30s

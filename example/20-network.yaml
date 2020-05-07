@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shoot--foo--bar
+  labels:
+    shoot.gardener.cloud/provider: azure
+    networking.shoot.gardener.cloud/provider: cilium
+---
+apiVersion: extensions.gardener.cloud/v1alpha1
+kind: Cluster
+metadata:
+  name: shoot--foo--bar
+spec:
+  cloudProfile:
+    apiVersion: core.gardener.cloud/v1alpha1
+    kind: CloudProfile
+  seed:
+    apiVersion: core.gardener.cloud/v1alpha1
+    kind: Seed
+  shoot:
+    apiVersion: core.gardener.cloud/v1alpha1
+    kind: Shoot
+    metadata:
+      generation: 1
+      name: shoot--foo--bar
+    spec:
+      dns:
+        domain: foo.bar.example.com
+      kubernetes:
+        version: 1.15.1
+---
+apiVersion: extensions.gardener.cloud/v1alpha1
+kind: Network
+metadata:
+  name: cilium-network
+  namespace: shoot--foo--bar
+spec:
+  type: cilium
+  podCIDR: 10.244.0.0/16
+  serviceCIDR:  10.96.0.0/24
+  providerConfig:
+    apiVersion: cilium.networking.extensions.gardener.cloud/v1alpha1
+    kind: NetworkConfig
+#    hubble:
+#      enabled: true
+#      ui: true
+#      metrics:
+#        - "dns"
+#        - "drop"
+#        - "tcp"
+#        - "flow"
+#        - "port-distribution"
+#        - "icmp"
+#        - "http"
+#    store: kubernetes
+#    psp: true
