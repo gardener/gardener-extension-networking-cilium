@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cilium is the internal version of the API.
+
 // +k8s:deepcopy-gen=package
 // +groupName="cilium.networking.extensions.gardener.cloud"
 

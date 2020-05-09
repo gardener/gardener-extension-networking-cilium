@@ -27,7 +27,9 @@ import (
 )
 
 var (
-	Codec  runtime.Codec
+	// Codec defines the decoding serializer.
+	Codec runtime.Codec
+	// Scheme defines the scheme to be used.
 	Scheme *runtime.Scheme
 )
 

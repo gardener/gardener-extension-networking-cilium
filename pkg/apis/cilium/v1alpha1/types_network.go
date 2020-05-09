@@ -18,64 +18,67 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// IdentityAllocationMode selects how identities are shared between cilium
+// nodes by setting how they are stored. The options are "crd" or "kvstore".
 type IdentityAllocationMode string
 
 const (
-	CRD     IdentityAllocationMode = "crd"
+	// CRD defines the crd IdentityAllocationMode type.
+	CRD IdentityAllocationMode = "crd"
+	// KVStore defines the kvstore IdentityAllocationMode type.
 	KVStore IdentityAllocationMode = "kvstore"
 )
 
+// TunnelMode defines what tunnel mode to use for Cilium.
 type TunnelMode string
 
 const (
-	VXLan    TunnelMode = "vxlan"
-	Geneve   TunnelMode = "geneve"
+	// VXLan defines the vxlan tunnel mode
+	VXLan TunnelMode = "vxlan"
+	// Geneve defines the geneve tunnel mode.
+	Geneve TunnelMode = "geneve"
+	// Disabled defines the disabled tunnel mode.
 	Disabled TunnelMode = "disabled"
 )
 
+// KubeProxyReplacementMode defines which mode should kube-proxy run in.
+// More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
 type KubeProxyReplacementMode string
 
 const (
-	Strict  KubeProxyReplacementMode = "strict"
-	Probe   KubeProxyReplacementMode = "probe"
+	// Strict defines the strict kube-proxy replacement mode
+	Strict KubeProxyReplacementMode = "strict"
+	// Probe defines the probe kube-proxy replacement mode
+	Probe KubeProxyReplacementMode = "probe"
+	// Partial defines the partial kube-proxy replacement mode
 	Partial KubeProxyReplacementMode = "partial"
 )
 
+// NodePortMode defines how NodePort services are enabled.
 type NodePortMode string
 
 const (
+	// Hybrid defines the hybrid nodeport mode.
 	Hybird NodePortMode = "hybrid"
 )
 
+// Store defines the kubernetes storage backend
 type Store string
 
 const (
+	// Kubernetes defines the kubernetes CRD store type
 	Kubernetes Store = "kubernetes"
-	ETCD       Store = "etcd"
+	// ETCD defines the ETCD store type
+	ETCD Store = "etcd"
 )
-
-// Prometheus configuration for cilium
-type Prometheus struct {
-	Enabled bool  `json:"prometheusEnabled"`
-	Port    int32 `json:"port"`
-}
-
-// OperatorPrometheus configuration for cilium
-type OperatorPrometheus struct {
-	Enabled bool  `json:"operatorprometheusEnabled"`
-	Port    int32 `json:"port"`
-}
-
-// ExternalIPs configuration for cilium
-type ExternalIP struct {
-	// ExternalIPenabled is used to define whether ExternalIP address is required or not.
-	Enabled bool `json:"externalipEnabled"`
-}
 
 // Hubble enablement for cilium
 type Hubble struct {
-	Enabled bool     `json:"enabled"`
-	UI      bool     `json:"ui"`
+	// Enabled indicates whether hubble is enabled or not.
+	Enabled bool `json:"enabled"`
+	// UI indicates whether hubble UI is enabled or not.
+	UI bool `json:"ui"`
+	// Metrics defines the flow metrics for cilum.
 	Metrics []string `json:"metrics"`
 }
 
@@ -110,12 +113,6 @@ type NetworkConfig struct {
 	// Debug configuration to be enabled or not
 	// +optional
 	Debug *bool `json:"debug,omitempty"`
-	// Prometheus configuration
-	// +optional
-	Prometheus *Prometheus `json:"prometheus,omitempty"`
-	// OperatorPrometheus configuration
-	// +optional
-	OperatorPrometheus *OperatorPrometheus `json:"operatorprometheus,omitempty"`
 	// PSPEnabled configuration
 	// +optional
 	PSPEnabled *bool `json:"psp,omitempty"`

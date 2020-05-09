@@ -17,19 +17,26 @@ package cilium
 import "path/filepath"
 
 const (
+	// Name defines the extension name.
 	Name = "networking-cilium"
 
-	// ImageNames
-	CiliumAgentImageName        = "cilium-agent"
-	CiliumOperatorImageName     = "cilium-operator"
+	// CiliumAgentImageName defines the agent name.
+	CiliumAgentImageName = "cilium-agent"
+	// CiliumOperatorImageName defines cilium operator's image name.
+	CiliumOperatorImageName = "cilium-operator"
+	// CiliumETCDOperatorImageName defines cilium etcd operator image name.
 	CiliumETCDOperatorImageName = "cilium-etcd-operator"
-	CiliumNodeInitImageName     = "cilium-nodeinit"
-	CiliumPreflightImageName    = "cilium-preflight"
+	// CiliumNodeInitImageName defines cilium's node init image name.
+	CiliumNodeInitImageName = "cilium-nodeinit"
+	// CiliumPreflightImageName defines the cilium preflight image name.
+	CiliumPreflightImageName = "cilium-preflight"
 
-	HubbleImageName   = "hubble"
+	// HubbleImageName defines the Hubble image name.
+	HubbleImageName = "hubble"
+	// HubbleUIImageName defines the UI image name.
 	HubbleUIImageName = "hubble-ui"
 
-	// ReleaseName is the name of the Cilium Release
+	// ReleaseName is the name of the Cilium Release.
 	ReleaseName = "cilium"
 )
 
