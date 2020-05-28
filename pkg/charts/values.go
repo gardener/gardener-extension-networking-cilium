@@ -22,6 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// CiliumConfigKey defines the cilium configmap key.
 const CiliumConfigKey = "config.yaml"
 
 // RenderCiliumChart renders the cilium chart with the given values.

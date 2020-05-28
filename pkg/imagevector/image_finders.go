@@ -31,7 +31,7 @@ func CiliumPreflightImage() string {
 	return findImage(cilium.CiliumPreflightImageName)
 }
 
-// CiliumEtcdOperator returns the Cilium-etcd-Operator image.
+// CiliumEtcdOperatorImage returns the Cilium-etcd-Operator image.
 func CiliumEtcdOperatorImage() string {
 	return findImage(cilium.CiliumETCDOperatorImageName)
 }

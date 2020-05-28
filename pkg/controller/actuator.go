@@ -37,6 +37,7 @@ type actuator struct {
 	decoder runtime.Decoder
 }
 
+// LogID is the id that will be used in log statements.
 const LogID = "network-cilium-actuator"
 
 // NewActuator creates a new Actuator that updates the status of the handled Network resources.

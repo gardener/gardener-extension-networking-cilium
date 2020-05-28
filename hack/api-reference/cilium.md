@@ -57,34 +57,6 @@ bool
 </tr>
 <tr>
 <td>
-<code>prometheus</code></br>
-<em>
-<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Prometheus">
-Prometheus
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Prometheus configuration</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>operatorprometheus</code></br>
-<em>
-<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.OperatorPrometheus">
-OperatorPrometheus
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>OperatorPrometheus configuration</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>psp</code></br>
 <em>
 bool
@@ -153,32 +125,6 @@ Store
 </tr>
 </tbody>
 </table>
-<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.ExternalIP">ExternalIP
-</h3>
-<p>
-<p>ExternalIPs configuration for cilium</p>
-</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>externalipEnabled</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>ExternalIPenabled is used to define whether ExternalIP address is required or not.</p>
-</td>
-</tr>
-</tbody>
-</table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Hubble">Hubble
 </h3>
 <p>
@@ -204,6 +150,7 @@ bool
 </em>
 </td>
 <td>
+<p>Enabled indicates whether hubble is enabled or not.</p>
 </td>
 </tr>
 <tr>
@@ -214,6 +161,7 @@ bool
 </em>
 </td>
 <td>
+<p>UI indicates whether hubble UI is enabled or not.</p>
 </td>
 </tr>
 <tr>
@@ -224,6 +172,7 @@ bool
 </em>
 </td>
 <td>
+<p>Metrics defines the flow metrics for cilum.</p>
 </td>
 </tr>
 </tbody>
@@ -231,6 +180,8 @@ bool
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.IdentityAllocationMode">IdentityAllocationMode
 (<code>string</code> alias)</p></h3>
 <p>
+<p>IdentityAllocationMode selects how identities are shared between cilium
+nodes by setting how they are stored. The options are &ldquo;crd&rdquo; or &ldquo;kvstore&rdquo;.</p>
 </p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.KubeProxy">KubeProxy
 </h3>
@@ -290,6 +241,8 @@ int32
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.KubeProxyReplacementMode">KubeProxyReplacementMode
 (<code>string</code> alias)</p></h3>
 <p>
+<p>KubeProxyReplacementMode defines which mode should kube-proxy run in.
+More infromation here: <a href="https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/">https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/</a></p>
 </p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.NodePortMode">NodePortMode
 (<code>string</code> alias)</p></h3>
@@ -298,6 +251,7 @@ int32
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Nodeport">Nodeport</a>)
 </p>
 <p>
+<p>NodePortMode defines how NodePort services are enabled.</p>
 </p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Nodeport">Nodeport
 </h3>
@@ -338,84 +292,6 @@ NodePortMode
 </tr>
 </tbody>
 </table>
-<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.OperatorPrometheus">OperatorPrometheus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
-</p>
-<p>
-<p>OperatorPrometheus configuration for cilium</p>
-</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>operatorprometheusEnabled</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<code>port</code></br>
-<em>
-int32
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Prometheus">Prometheus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
-</p>
-<p>
-<p>Prometheus configuration for cilium</p>
-</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>prometheusEnabled</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<code>port</code></br>
-<em>
-int32
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Store">Store
 (<code>string</code> alias)</p></h3>
 <p>
@@ -423,6 +299,7 @@ int32
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
 </p>
 <p>
+<p>Store defines the kubernetes storage backend</p>
 </p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.TunnelMode">TunnelMode
 (<code>string</code> alias)</p></h3>
@@ -431,5 +308,6 @@ int32
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
 </p>
 <p>
+<p>TunnelMode defines what tunnel mode to use for Cilium.</p>
 </p>
 <hr/>

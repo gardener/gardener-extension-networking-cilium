@@ -14,4 +14,5 @@
 
 package cilium
 
+// Type defines the extension type.
 const Type = "cilium"

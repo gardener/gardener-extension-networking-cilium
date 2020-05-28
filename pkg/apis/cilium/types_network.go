@@ -18,53 +18,58 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// IdentityAllocationMode selects how identities are shared between cilium
+// nodes by setting how they are stored. The options are "crd" or "kvstore".
 type IdentityAllocationMode string
 
 const (
-	CRD     IdentityAllocationMode = "crd"
+	// CRD defines the crd IdentityAllocationMode type.
+	CRD IdentityAllocationMode = "crd"
+	// KVStore defines the kvstore IdentityAllocationMode type.
 	KVStore IdentityAllocationMode = "kvstore"
 )
 
+// TunnelMode defines what tunnel mode to use for Cilium.
 type TunnelMode string
 
 const (
-	VXLan    TunnelMode = "vxlan"
-	Geneve   TunnelMode = "geneve"
+	// VXLan defines the vxlan tunnel mode
+	VXLan TunnelMode = "vxlan"
+	// Geneve defines the geneve tunnel mode.
+	Geneve TunnelMode = "geneve"
+	// Disabled defines the disabled tunnel mode.
 	Disabled TunnelMode = "disabled"
 )
 
+// KubeProxyReplacementMode defines which mode should kube-proxy run in.
+// More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
 type KubeProxyReplacementMode string
 
 const (
-	Strict  KubeProxyReplacementMode = "strict"
-	Probe   KubeProxyReplacementMode = "probe"
+	// Strict defines the strict kube-proxy replacement mode
+	Strict KubeProxyReplacementMode = "strict"
+	// Probe defines the probe kube-proxy replacement mode
+	Probe KubeProxyReplacementMode = "probe"
+	// Partial defines the partial kube-proxy replacement mode
 	Partial KubeProxyReplacementMode = "partial"
 )
 
+// NodePortMode defines how NodePort services are enabled.
 type NodePortMode string
 
 const (
 	Hybird NodePortMode = "hybrid"
 )
 
+// Store defines the kubernetes storage backend
 type Store string
 
 const (
+	// Kubernetes defines the kubernetes CRD store type
 	Kubernetes Store = "kubernetes"
-	ETCD       Store = "etcd"
+	// ETCD defines the ETCD store type
+	ETCD Store = "etcd"
 )
-
-// Prometheus configuration for cilium
-type Prometheus struct {
-	Enabled bool
-	Port    int32
-}
-
-// OperatorPrometheus configuration for cilium
-type OperatorPrometheus struct {
-	Enabled bool
-	Port    int32
-}
 
 // InstallIPTableRules configuration for cilium
 type InstallIPTableRules struct {
@@ -114,12 +119,8 @@ type NetworkConfig struct {
 	metav1.TypeMeta
 	// Debug configuration to be enabled or not
 	Debug *bool
-	// Prometheus configuration
-	Prometheus *Prometheus
 	// PSPEnabled configuration
 	PSPEnabled *bool
-	// OperatorPrometheus configuration
-	OperatorPrometheus *OperatorPrometheus
 	// KubeProxy configuration to be enabled or not
 	KubeProxy *KubeProxy
 	// Hubble configuration to be enabled or not
