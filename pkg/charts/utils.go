@@ -22,14 +22,6 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
 )
 
-var defaultHubbleConfig = hubbleConfig{
-	UI: hubbleUI{
-		Enabled: false,
-	},
-	Metrics: hubbleMetrics{
-		Enabled: []string{"dns", "drop", "tcp", "flow", "port-distribution", "icmp", "http"},
-	},
-}
 var defaultCiliumConfig = requirementsConfig{
 	Agent: agent{
 		Enabled:        true,
@@ -85,17 +77,13 @@ var defaultGlobalConfig = globalConfig{
 		cilium.CiliumNodeInitImageName:     imagevector.CiliumNodeInitImage(),
 		cilium.CiliumPreflightImageName:    imagevector.CiliumPreflightImage(),
 
-		cilium.HubbleImageName:   imagevector.CiliumHubbleImage(),
-		cilium.HubbleUIImageName: imagevector.CiliumHubbleUIImage(),
+		cilium.HubbleRelayImageName: imagevector.CiliumHubbleRelayImage(),
+		cilium.HubbleUIImageName:    imagevector.CiliumHubbleUIImage(),
 	},
 }
 
 func newGlobalConfig() globalConfig {
 	return defaultGlobalConfig
-}
-
-func newHubbleConfig() hubbleConfig {
-	return defaultHubbleConfig
 }
 
 func newRequirementsConfig() requirementsConfig {
@@ -104,26 +92,24 @@ func newRequirementsConfig() requirementsConfig {
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
 func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, hubbleConfig, err := generateChartValues(config)
+	requirementsConfig, globalConfig, err := generateChartValues(config)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %v", err)
 	}
 	return &ciliumConfig{
 		Requirements: requirementsConfig,
 		Global:       globalConfig,
-		Hubble:       hubbleConfig,
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig) (requirementsConfig, globalConfig, hubbleConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
-		hubbleConfig       = newHubbleConfig()
 	)
 
 	if config == nil {
-		return requirementsConfig, globalConfig, hubbleConfig, nil
+		return requirementsConfig, globalConfig, nil
 	}
 
 	// Settings for Kube-Proxy disabled and using the HostService option
@@ -148,10 +134,6 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig) (requirementsConf
 	// If Hubble enabled
 	if config.Hubble != nil && config.Hubble.Enabled {
 		requirementsConfig.Hubble.Enabled = config.Hubble.Enabled
-		hubbleConfig.UI.Enabled = config.Hubble.UI
-		if len(config.Hubble.Metrics) > 0 {
-			hubbleConfig.Metrics.Enabled = config.Hubble.Metrics
-		}
 	}
 
 	// If ETCD enabled
@@ -162,5 +144,5 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig) (requirementsConf
 		}
 	}
 
-	return requirementsConfig, globalConfig, hubbleConfig, nil
+	return requirementsConfig, globalConfig, nil
 }

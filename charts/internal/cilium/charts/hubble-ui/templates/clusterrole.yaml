@@ -1,19 +1,6 @@
+---
 apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
-metadata:
-  name: hubble
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-{{- if .Values.ui.enabled }}
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: hubble-ui 
 rules:
@@ -54,4 +41,3 @@ rules:
       - get
       - list
       - watch
-{{- end }}

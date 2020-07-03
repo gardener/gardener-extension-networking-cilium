@@ -2,10 +2,6 @@ requirements:
   # Include the cilium-agent DaemonSet
   agent:
     enabled: true
-    # Do not run Cilium agent when running with clean mode. Useful to completely
-    # uninstall Cilium as it will stop Cilium from starting and create artifacts
-    # in the node.
-    sleepAfterInit: false
 
   # Include the cilium-config ConfigMap
   config:
@@ -31,22 +27,29 @@ global:
   # pullPolicy is the container image pull policy
   pullPolicy: IfNotPresent
 
+  hubble:
+    socketPath: /var/run/cilium/hubble.sock
+    enabled: true
+    listenAddress: ":4244"
+    metrics:
+      enabled: false
+      # Specifies the port the metric server listens on (e.g. 9091).
+      port: 9091
+
   # etcd is the etcd configuration
   etcd:
     # enabled enables use of etcd
     enabled: true
-
     # managed turns on managed etcd mode based on the cilium-etcd-operator
     managed: true
-
     # sets cluster domain for cilium-etcd-operator
     clusterDomain: cluster.local
-
+    # defines the size of the etcd cluster
+    clusterSize: 3
     # endpoints is the list of etcd endpoints (not needed when using
     # managed=true)
     endpoints:
       - https://CHANGE-ME:2379
-
     # ssl enables use of TLS/SSL for connectivity to etcd. (auto-enabled if
     # managed=true)
     ssl: false
@@ -71,6 +74,15 @@ global:
 
     # verbose allows additional levels of debug/trace messaging
     #verbose: flow
+  agent:
+    # TCP port for the agent health API. This is not the port for cilium-health.
+    healthPort: 9876
+    # Do not run Cilium agent when running with clean mode. Useful to completely
+    # uninstall Cilium as it will stop Cilium from starting and create artifacts
+    # in the node.
+    sleepAfterInit: false
+    # Keep the deprecated probes when deploying Cilium DaemonSet
+    keepDeprecatedProbes: false
 
   # prometheus enables
   prometheus:
@@ -100,6 +112,10 @@ global:
   # masquerade enables masquerading of traffic leaving the ndoe for
   # destinations outside of the cluster.
   masquerade: true
+
+  # ipMasqAgent enables and controls BPF ip-masq-agent
+  ipMasqAgent:
+    enabled: false
 
   # autoDirectNodeRoutes enables installation of PodCIDR routes between worker
   # nodes if worker nodes share a common L2 network segment.
@@ -200,7 +216,7 @@ global:
     ctAnyMax: 262144
 
     # natMax is the maximum number of entries for the NAT table
-    natMax: 841429
+    natMax: 524288
 
     # montiorAggregation is the level of aggregation for datapath trace events
     monitorAggregation: medium
@@ -354,6 +370,32 @@ global:
   # psp creates and binds PodSecurityPolicies for the components that require it
   psp:
     enabled: false
+
+  proxy:
+    # Regular expression matching compatible Istio sidecar istio-proxy
+    # container image names
+    sidecarImageRegex: "cilium/istio_proxy"
+
+  ipam:
+    operator:
+      clusterPoolIPv4PodCIDR: "10.0.0.0/8"
+      clusterPoolIPv4MaskSize: 24
+      clusterPoolIPv6PodCIDR: "fd00::/104"
+      clusterPoolIPv6MaskSize: 120
+
+  endpointHealthChecking:
+    enabled: true
+
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                  - cilium
+          topologyKey: "kubernetes.io/hostname"
 
   # enables non-drop mode for installed policies. In audit mode
   # packets affected by policies will not be dropped. Policy related

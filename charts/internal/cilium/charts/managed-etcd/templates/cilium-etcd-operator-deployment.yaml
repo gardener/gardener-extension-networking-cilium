@@ -24,10 +24,6 @@ spec:
         io.cilium/app: etcd-operator
         name: cilium-etcd-operator
     spec:
-{{- if .Values.global.affinity }}
-      affinity:
-{{ toYaml .Values.global.affinity | indent 8 }}
-{{- end }}
       containers:
       - args:
         #- --etcd-node-selector=disktype=ssd,cputype=high
@@ -37,7 +33,7 @@ spec:
         - name: CILIUM_ETCD_OPERATOR_CLUSTER_DOMAIN
           value: "{{ .Values.global.etcd.clusterDomain }}"
         - name: CILIUM_ETCD_OPERATOR_ETCD_CLUSTER_SIZE
-          value: "3"
+          value: "{{ .Values.global.etcd.clusterSize }}"
         - name: CILIUM_ETCD_OPERATOR_NAMESPACE
           valueFrom:
             fieldRef:

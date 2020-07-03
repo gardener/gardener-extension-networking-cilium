@@ -1,4 +1,4 @@
-{{- if and .Values.ui.enabled .Values.ingress.enabled -}}
+{{- if .Values.ingress.enabled -}}
 {{- $ingressPath := .Values.ingress.path -}}
 apiVersion: {{ include "ingressversion" . }}
 kind: Ingress

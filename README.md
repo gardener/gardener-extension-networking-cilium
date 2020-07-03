@@ -20,17 +20,7 @@ spec:
     kind: NetworkConfig
 #    hubble:
 #      enabled: true
-#      ui: true
-#      metrics:
-#        - "dns"
-#        - "drop"
-#        - "tcp"
-#        - "flow"
-#        - "port-distribution"
-#        - "icmp"
-#        - "http"
 #    store: kubernetes
-#    psp: true
 ```
 
 Please find [a concrete example](example/20-network.yaml) in the `example` folder. All the `cilium` specific configuration

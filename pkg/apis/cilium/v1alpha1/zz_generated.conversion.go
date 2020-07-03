@@ -80,8 +80,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 
 func autoConvert_v1alpha1_Hubble_To_cilium_Hubble(in *Hubble, out *cilium.Hubble, s conversion.Scope) error {
 	out.Enabled = in.Enabled
-	out.UI = in.UI
-	out.Metrics = *(*[]string)(unsafe.Pointer(&in.Metrics))
 	return nil
 }
 
@@ -92,8 +90,6 @@ func Convert_v1alpha1_Hubble_To_cilium_Hubble(in *Hubble, out *cilium.Hubble, s 
 
 func autoConvert_cilium_Hubble_To_v1alpha1_Hubble(in *cilium.Hubble, out *Hubble, s conversion.Scope) error {
 	out.Enabled = in.Enabled
-	out.UI = in.UI
-	out.Metrics = *(*[]string)(unsafe.Pointer(&in.Metrics))
 	return nil
 }
 
