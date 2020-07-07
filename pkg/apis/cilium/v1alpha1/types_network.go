@@ -76,10 +76,6 @@ const (
 type Hubble struct {
 	// Enabled indicates whether hubble is enabled or not.
 	Enabled bool `json:"enabled"`
-	// UI indicates whether hubble UI is enabled or not.
-	UI bool `json:"ui"`
-	// Metrics defines the flow metrics for cilum.
-	Metrics []string `json:"metrics"`
 }
 
 // Nodeport enablement for cilium

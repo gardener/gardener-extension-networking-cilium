@@ -31,8 +31,8 @@ const (
 	// CiliumPreflightImageName defines the cilium preflight image name.
 	CiliumPreflightImageName = "cilium-preflight"
 
-	// HubbleImageName defines the Hubble image name.
-	HubbleImageName = "hubble"
+	// HubbleRelayImageName defines the Hubble image name.
+	HubbleRelayImageName = "hubble-relay"
 	// HubbleUIImageName defines the UI image name.
 	HubbleUIImageName = "hubble-ui"
 

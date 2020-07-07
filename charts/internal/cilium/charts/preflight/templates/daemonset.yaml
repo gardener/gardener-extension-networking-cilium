@@ -3,8 +3,6 @@ kind: DaemonSet
 metadata:
   name: cilium-pre-flight-check
   namespace: {{ .Release.Namespace }}
-  labels:
-    gardener.cloud/role: system-component
 spec:
   selector:
     matchLabels:
@@ -72,7 +70,7 @@ spec:
 {{- if ne .Values.tofqdnsPreCache "" }}
           image: {{ index .Values.global.images "cilium-preflight" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
-          name: cilium-pre-flight-check
+          name: cilium-pre-flight-fqdn-precache
           command: ["/bin/sh"]
           args:
           - -c
@@ -91,6 +89,7 @@ spec:
               - /tmp/read-tofqdns-precachey
             initialDelaySeconds: 5
             periodSeconds: 5
+          env:
           volumeMounts:
           - mountPath: /var/run/cilium
             name: cilium-run

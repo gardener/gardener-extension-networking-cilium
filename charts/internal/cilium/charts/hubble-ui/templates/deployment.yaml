@@ -1,14 +1,11 @@
-{{- if .Values.ui.enabled }}
 ---
+apiVersion: {{ include "deploymentversion" .}}
 kind: Deployment
-apiVersion: {{ include "deploymentversion" . }}
 metadata:
   namespace: {{ .Release.Namespace }}
   name: hubble-ui
-  labels:
-    gardener.cloud/role: system-component
 spec:
-  replicas: {{ .Values.ui.replicas }}
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       k8s-app: hubble-ui
@@ -17,10 +14,12 @@ spec:
       labels:
         k8s-app: hubble-ui
     spec:
-      {{- if .Values.ui.priorityClassName }}
-      priorityClassName: {{ .Values.ui.priorityClassName }}
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        runAsUser: 1001
       {{- end }}
       serviceAccountName: hubble-ui
+      serviceAccount: hubble-ui
       containers:
         - name: hubble-ui
           image: {{ index .Values.global.images "hubble-ui" }}
@@ -33,12 +32,16 @@ spec:
             - name: HUBBLE
               value: "true"
             - name: HUBBLE_SERVICE
-              value: "hubble-grpc.{{ .Release.Namespace }}.svc.{{ .Values.ui.clusterDomain }}"
+              value: "hubble-relay"
             - name: HUBBLE_PORT
-              value: "50051"
+              value: "80"
           ports:
             - containerPort: 12000
               name: http
           resources:
-            {{- toYaml .Values.ui.resources | trim | nindent 12 }}
-{{- end }}
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi

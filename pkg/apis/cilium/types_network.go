@@ -86,10 +86,6 @@ type ExternalIP struct {
 type Hubble struct {
 	// Enabled defines whether hubble will be enabled for the cluster.
 	Enabled bool
-	// UI defines whether Hubble UI is enabled or not.
-	UI bool
-	// Metrics defined what metrics will be reported by hubble
-	Metrics []string
 }
 
 // Nodeport enablement for cilium

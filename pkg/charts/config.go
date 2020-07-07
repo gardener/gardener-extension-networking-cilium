@@ -5,7 +5,6 @@ import ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/
 type ciliumConfig struct {
 	Requirements requirementsConfig `json:"requirements"`
 	Global       globalConfig       `json:"global"`
-	Hubble       hubbleConfig       `json:"hubble"`
 }
 
 type requirementsConfig struct {
@@ -31,12 +30,6 @@ type globalConfig struct {
 	K8sServiceHost         string                                  `json:"k8sServiceHost"`
 	K8sServicePort         int32                                   `json:"k8sServicePort"`
 	NodePort               nodePort                                `json:"nodePort"`
-}
-
-// hubblleConfig defines necessary config parameters to get hubble up and running.
-type hubbleConfig struct {
-	UI      hubbleUI      `json:"ui"`
-	Metrics hubbleMetrics `json:"metrics"`
 }
 
 // etcd related configuration for cilium
@@ -73,14 +66,6 @@ type debug struct {
 
 // hubble enablement for cilium
 type hubble struct {
-	Enabled bool `json:"enabled"`
-}
-
-type hubbleMetrics struct {
-	Enabled []string `json:"enabled"`
-}
-
-type hubbleUI struct {
 	Enabled bool `json:"enabled"`
 }
 

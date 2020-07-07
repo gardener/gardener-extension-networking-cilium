@@ -153,28 +153,6 @@ bool
 <p>Enabled indicates whether hubble is enabled or not.</p>
 </td>
 </tr>
-<tr>
-<td>
-<code>ui</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-<p>UI indicates whether hubble UI is enabled or not.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>metrics</code></br>
-<em>
-[]string
-</em>
-</td>
-<td>
-<p>Metrics defines the flow metrics for cilum.</p>
-</td>
-</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.IdentityAllocationMode">IdentityAllocationMode
