@@ -42,18 +42,25 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	schedulingv1beta1 "k8s.io/api/scheduling/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var json = jsoniter.ConfigFastest
+var (
+	json = jsoniter.ConfigFastest
+
+	// TimeNow returns the current time. Exposed for testing.
+	TimeNow = time.Now
+)
 
 // GetSecretKeysWithPrefix returns a list of keys of the given map <m> which are prefixed with <kind>.
 func GetSecretKeysWithPrefix(kind string, m map[string]*corev1.Secret) []string {
@@ -143,17 +150,38 @@ func ReplaceCloudProviderConfigKey(cloudProviderConfig, separator, key, value st
 	return keyValueRegexp.ReplaceAllString(cloudProviderConfig, fmt.Sprintf(`${1}%q`, strings.Replace(value, `$`, `$$`, -1)))
 }
 
-// ProjectForNamespace returns the project object responsible for a given <namespace>. It tries to identify the project object by looking for the namespace
-// name in the project statuses.
+// ProjectForNamespace returns the project object responsible for a given <namespace>.
+// It tries to identify the project object by looking for the namespace name in the project spec.
 func ProjectForNamespace(projectLister gardencorelisters.ProjectLister, namespaceName string) (*gardencorev1beta1.Project, error) {
 	projectList, err := projectLister.List(labels.Everything())
 	if err != nil {
 		return nil, err
 	}
 
-	for _, project := range projectList {
+	var projects []gardencorev1beta1.Project
+	for _, p := range projectList {
+		projects = append(projects, *p)
+	}
+
+	return projectForNamespace(projects, namespaceName)
+}
+
+// ProjectForNamespaceWithClient returns the project object responsible for a given <namespace>.
+// It tries to identify the project object by looking for the namespace name in the project spec.
+func ProjectForNamespaceWithClient(ctx context.Context, c client.Client, namespaceName string) (*gardencorev1beta1.Project, error) {
+	projectList := &gardencorev1beta1.ProjectList{}
+	err := c.List(ctx, projectList)
+	if err != nil {
+		return nil, err
+	}
+
+	return projectForNamespace(projectList.Items, namespaceName)
+}
+
+func projectForNamespace(projects []gardencorev1beta1.Project, namespaceName string) (*gardencorev1beta1.Project, error) {
+	for _, project := range projects {
 		if project.Spec.Namespace != nil && *project.Spec.Namespace == namespaceName {
-			return project, nil
+			return &project, nil
 		}
 	}
 
@@ -280,39 +308,91 @@ func DeleteHvpa(k8sClient kubernetes.Interface, namespace string) error {
 		LabelSelector: fmt.Sprintf("%s=%s", v1beta1constants.GardenRole, GardenRoleHvpa),
 	}
 
-	// Delete all Crds with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.APIExtension().ApiextensionsV1beta1().CustomResourceDefinitions().DeleteCollection(
-		&metav1.DeleteOptions{}, listOptions); err != nil && !apierrors.IsNotFound(err) {
+	// Delete all CRDs with label "gardener.cloud/role=hvpa"
+	// Workaround: Due to https://github.com/gardener/gardener/issues/2257, we first list the HVPA CRDs and then remove
+	// them one by one.
+	crdList, err := k8sClient.APIExtension().ApiextensionsV1beta1().CustomResourceDefinitions().List(listOptions)
+	if err != nil {
 		return err
+	}
+	for _, crd := range crdList.Items {
+		if err := k8sClient.APIExtension().ApiextensionsV1beta1().CustomResourceDefinitions().Delete(crd.Name, &metav1.DeleteOptions{}); client.IgnoreNotFound(err) != nil {
+			return err
+		}
 	}
 
 	// Delete all Deployments with label "gardener.cloud/role=hvpa"
 	deletePropagation := metav1.DeletePropagationForeground
-	if err := k8sClient.Kubernetes().AppsV1().Deployments(namespace).DeleteCollection(
-		&metav1.DeleteOptions{
-			PropagationPolicy: &deletePropagation,
-		}, listOptions); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sClient.Kubernetes().AppsV1().Deployments(namespace).DeleteCollection(&metav1.DeleteOptions{PropagationPolicy: &deletePropagation}, listOptions); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 
 	// Delete all ClusterRoles with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().RbacV1().ClusterRoles().DeleteCollection(
-		&metav1.DeleteOptions{}, listOptions); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sClient.Kubernetes().RbacV1().ClusterRoles().DeleteCollection(&metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 
 	// Delete all ClusterRoleBindings with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().RbacV1().ClusterRoleBindings().DeleteCollection(
-		&metav1.DeleteOptions{}, listOptions); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sClient.Kubernetes().RbacV1().ClusterRoleBindings().DeleteCollection(&metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 
 	// Delete all ServiceAccounts with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().CoreV1().ServiceAccounts(namespace).DeleteCollection(
-		&metav1.DeleteOptions{}, listOptions); err != nil && !apierrors.IsNotFound(err) {
+	if err := k8sClient.Kubernetes().CoreV1().ServiceAccounts(namespace).DeleteCollection(&metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 
+	return nil
+}
+
+// DeleteVpa delete all resources required for the VPA in the given namespace.
+func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot bool) error {
+	resources := []runtime.Object{
+		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
+		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
+		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
+		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
+		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "vpa-webhook", Namespace: namespace}},
+		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
+		&autoscalingv1beta2.VerticalPodAutoscaler{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter-vpa", Namespace: namespace}},
+	}
+
+	if isShoot {
+		resources = append(resources,
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-tls-certs", Namespace: namespace}},
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
+		)
+	} else {
+		resources = append(resources,
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-actor"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-admission-controller"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-checkpoint-actor"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-exporter-role"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:metrics-reader"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-target-reader"}},
+			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "system:evictioner"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-actor"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-admission-controller"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-checkpoint-actor"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-exporter-role-binding"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:metrics-reader"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-target-reader-binding"}},
+			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "system:vpa-evictionter-binding"}},
+			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
+			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
+			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
+			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
+		)
+	}
+
+	for _, resource := range resources {
+		if err := c.Delete(ctx, resource); client.IgnoreNotFound(err) != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -328,6 +408,8 @@ func DeleteLoggingStack(ctx context.Context, k8sClient client.Client, namespace 
 		&batchv1beta1.CronJobList{},
 		&rbacv1.ClusterRoleList{},
 		&rbacv1.ClusterRoleBindingList{},
+		&rbacv1.RoleList{},
+		&rbacv1.RoleBindingList{},
 		&appsv1.DaemonSetList{},
 		&appsv1.DeploymentList{},
 		&autoscalingv2beta1.HorizontalPodAutoscalerList{},
@@ -341,7 +423,7 @@ func DeleteLoggingStack(ctx context.Context, k8sClient client.Client, namespace 
 	for _, list := range lists {
 		if err := k8sClient.List(ctx, list,
 			client.InNamespace(namespace),
-			client.MatchingLabels(map[string]string{v1beta1constants.DeprecatedGardenRole: v1beta1constants.GardenRoleLogging})); err != nil {
+			client.MatchingLabels{v1beta1constants.DeprecatedGardenRole: v1beta1constants.GardenRoleLogging}); err != nil {
 			return err
 		}
 
@@ -363,6 +445,30 @@ func DeleteLoggingStack(ctx context.Context, k8sClient client.Client, namespace 
 	}
 
 	return nil
+}
+
+// DeleteReserveExcessCapacity deletes the deployment and priority class for excess capacity
+func DeleteReserveExcessCapacity(ctx context.Context, k8sClient client.Client) error {
+	if k8sClient == nil {
+		return errors.New("must provide non-nil kubernetes client to common.DeleteReserveExcessCapacity")
+	}
+
+	deploy := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "reserve-excess-capacity",
+			Namespace: v1beta1constants.GardenNamespace,
+		},
+	}
+	if err := k8sClient.Delete(ctx, deploy); client.IgnoreNotFound(err) != nil {
+		return err
+	}
+
+	priorityClass := &schedulingv1beta1.PriorityClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "gardener-reserve-excess-capacity",
+		},
+	}
+	return client.IgnoreNotFound(k8sClient.Delete(ctx, priorityClass))
 }
 
 // DeleteAlertmanager deletes all resources of the Alertmanager in a given namespace.
@@ -505,9 +611,9 @@ func GetDomainInfoFromAnnotations(annotations map[string]string) (provider strin
 }
 
 // CurrentReplicaCount returns the current replicaCount for the given deployment.
-func CurrentReplicaCount(client client.Client, namespace, deploymentName string) (int32, error) {
+func CurrentReplicaCount(ctx context.Context, client client.Client, namespace, deploymentName string) (int32, error) {
 	deployment := &appsv1.Deployment{}
-	if err := client.Get(context.TODO(), kutil.Key(namespace, deploymentName), deployment); err != nil && !apierrors.IsNotFound(err) {
+	if err := client.Get(ctx, kutil.Key(namespace, deploymentName), deployment); err != nil && !apierrors.IsNotFound(err) {
 		return 0, err
 	}
 	if deployment.Spec.Replicas == nil {
@@ -608,9 +714,9 @@ func EffectiveShootMaintenanceTimeWindow(shoot *gardencorev1beta1.Shoot) *utils.
 	return EffectiveMaintenanceTimeWindow(timeWindow)
 }
 
-// GardenEtcdEncryptionSecretKey is the key to the 'backup' of the etcd encryption secret in the Garden cluster.
-func GardenEtcdEncryptionSecretKey(shootNamespace, shootName string) client.ObjectKey {
-	return kutil.Key(shootNamespace, fmt.Sprintf("%s.%s", shootName, EtcdEncryptionSecretName))
+// GardenEtcdEncryptionSecretName returns the name to the 'backup' of the etcd encryption secret in the Garden cluster.
+func GardenEtcdEncryptionSecretName(shootName string) string {
+	return fmt.Sprintf("%s.%s", shootName, EtcdEncryptionSecretName)
 }
 
 // ReadServiceAccountSigningKeySecret reads the signing key secret to extract the signing key.
@@ -714,7 +820,7 @@ func annotationRequiredError() error {
 
 // ConfirmDeletion adds Gardener's deletion confirmation annotation to the given object and sends an UPDATE request.
 func ConfirmDeletion(ctx context.Context, c client.Client, obj runtime.Object) error {
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		key, err := client.ObjectKeyFromObject(obj)
 		if err != nil {
 			return err
@@ -734,6 +840,7 @@ func ConfirmDeletion(ctx context.Context, c client.Client, obj runtime.Object) e
 			return err
 		}
 		kutil.SetMetaDataAnnotation(acc, ConfirmationDeletion, "true")
+		kutil.SetMetaDataAnnotation(acc, v1beta1constants.GardenerTimestamp, TimeNow().UTC().String())
 
 		if reflect.DeepEqual(existing, obj) {
 			return nil
@@ -741,4 +848,9 @@ func ConfirmDeletion(ctx context.Context, c client.Client, obj runtime.Object) e
 
 		return c.Update(ctx, obj)
 	})
+}
+
+// ExtensionID returns an identifier for the given extension kind/type.
+func ExtensionID(extensionKind, extensionType string) string {
+	return fmt.Sprintf("%s/%s", extensionKind, extensionType)
 }

@@ -124,10 +124,30 @@ bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh 
   --extra-peer-dirs=github.com/gardener/gardener/pkg/gardenlet/apis/config,github.com/gardener/gardener/pkg/gardenlet/apis/config/v1alpha1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/conversion,k8s.io/apimachinery/pkg/runtime,k8s.io/component-base/config,k8s.io/component-base/config/v1alpha1 \
   -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
 
-rm -Rf ./${PROJECT_ROOT}/openapi/openapi_generated.go
-go install ./${PROJECT_ROOT}/vendor/k8s.io/kube-openapi/cmd/openapi-gen
+# Componentconfig for admission plugins
+
+bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+  deepcopy,defaulter \
+  github.com/gardener/gardener/pkg/client/componentconfig \
+  github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis \
+  github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis \
+  "shoottolerationrestriction:v1alpha1" \
+  -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+
+bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+  conversion \
+  github.com/gardener/gardener/pkg/client/componentconfig \
+  github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis \
+  github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis \
+  "shoottolerationrestriction:v1alpha1" \
+  --extra-peer-dirs=github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis/shoottolerationrestriction,github.com/gardener/gardener/plugin/pkg/shoot/tolerationrestriction/apis/shoottolerationrestriction/v1alpha1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/conversion,k8s.io/apimachinery/pkg/runtime,k8s.io/component-base/config,k8s.io/component-base/config/v1alpha1 \
+  -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+
+# OpenAPI definitions
 
 echo "Generating openapi definitions"
+rm -Rf ./${PROJECT_ROOT}/openapi/openapi_generated.go
+go install ./${PROJECT_ROOT}/vendor/k8s.io/kube-openapi/cmd/openapi-gen
 ${GOPATH}/bin/openapi-gen "$@" \
   --v 1 \
   --logtostderr \
@@ -136,6 +156,7 @@ ${GOPATH}/bin/openapi-gen "$@" \
   --input-dirs=github.com/gardener/gardener/pkg/apis/settings/v1alpha1 \
   --input-dirs=k8s.io/api/core/v1 \
   --input-dirs=k8s.io/api/rbac/v1 \
+  --input-dirs=k8s.io/api/autoscaling/v1 \
   --input-dirs=k8s.io/apimachinery/pkg/apis/meta/v1 \
   --input-dirs=k8s.io/apimachinery/pkg/api/resource \
   --input-dirs=k8s.io/apimachinery/pkg/types \
@@ -147,4 +168,4 @@ ${GOPATH}/bin/openapi-gen "$@" \
   -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
 
 echo
-echo "NOTE: If you changed the API then consider updating the example manifests.".
+echo "NOTE: If you changed the API then consider updating the example manifests."

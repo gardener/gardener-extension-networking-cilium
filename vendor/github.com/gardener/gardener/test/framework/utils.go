@@ -16,14 +16,18 @@ package framework
 
 import (
 	"fmt"
-	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
-	"github.com/onsi/ginkgo"
 	"io/ioutil"
-	apimachineryRuntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"os"
 	"reflect"
+	"regexp"
+
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	"github.com/gardener/gardener/pkg/client/kubernetes"
+	"github.com/hashicorp/go-multierror"
+	"github.com/onsi/ginkgo"
+	"github.com/pkg/errors"
+	apimachineryRuntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"sigs.k8s.io/yaml"
 )
 
@@ -124,7 +128,7 @@ func ReadObject(file string, into apimachineryRuntime.Object) error {
 }
 
 // ParseFileAsProviderConfig parses a file as a ProviderConfig
-func ParseFileAsProviderConfig(filepath string) (*gardencorev1beta1.ProviderConfig, error) {
+func ParseFileAsProviderConfig(filepath string) (*apimachineryRuntime.RawExtension, error) {
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil, err
@@ -135,7 +139,7 @@ func ParseFileAsProviderConfig(filepath string) (*gardencorev1beta1.ProviderConf
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode ProviderConfig: %v", err)
 	}
-	return &gardencorev1beta1.ProviderConfig{RawExtension: apimachineryRuntime.RawExtension{Raw: jsonData}}, nil
+	return &apimachineryRuntime.RawExtension{Raw: jsonData}, nil
 }
 
 // ParseFileAsWorkers parses a file as a Worker configuration
@@ -150,4 +154,50 @@ func ParseFileAsWorkers(filepath string) ([]gardencorev1beta1.Worker, error) {
 		return nil, fmt.Errorf("unable to decode workers: %v", err)
 	}
 	return workers, nil
+}
+
+// TextValidation is a map of regular expression to description
+// that is used to validate texts based on white- or blacklisted regexps.
+type TextValidation map[string]string
+
+// ValidateAsWhitelist validates that all whitelisted regular expressions
+// are in the given text.
+func (v *TextValidation) ValidateAsWhitelist(text []byte) error {
+	return v.validate(text, func(matches [][]byte) error {
+		if len(matches) == 0 {
+			return errors.New("whitelisted RegExp not found")
+		}
+		return nil
+	})
+}
+
+// ValidateAsBlacklist validates that no blacklisted regular expressions
+// are in the given text.
+func (v *TextValidation) ValidateAsBlacklist(text []byte) error {
+	return v.validate(text, func(matches [][]byte) error {
+		if len(matches) != 0 {
+			return errors.New("blacklisted RegExp found")
+		}
+		return nil
+	})
+}
+
+// validate compiles all given regular expressions strings and finds all matches in the given text.
+func (v *TextValidation) validate(text []byte, validationFunc func([][]byte) error) error {
+	var allErrs error
+
+	for reString, description := range *v {
+		re, err := regexp.Compile(reString)
+		if err != nil {
+			allErrs = multierror.Append(allErrs, err)
+			continue
+		}
+
+		matches := re.FindAll(text, -1)
+		if err := validationFunc(matches); err != nil {
+			allErrs = multierror.Append(allErrs, errors.Wrapf(err, "RegExp %s validation failed: %s", reString, description))
+		}
+	}
+
+	return allErrs
 }

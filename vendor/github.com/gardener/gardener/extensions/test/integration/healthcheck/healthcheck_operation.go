@@ -40,8 +40,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ControlPlaneHealthCheckWithManagedResource is a convenience function to tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given ControlPlane CRD.
 func ControlPlaneHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
-	return testHealthCheckWithManagedResource(
+	return TestHealthCheckWithManagedResource(
 		ctx,
 		timeout,
 		f,
@@ -51,8 +52,9 @@ func ControlPlaneHealthCheckWithManagedResource(ctx context.Context, timeout tim
 		healthConditionType)
 }
 
+// WorkerHealthCheckWithManagedResource is a convenience function to tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given Worker CRD.
 func WorkerHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
-	return testHealthCheckWithManagedResource(
+	return TestHealthCheckWithManagedResource(
 		ctx,
 		timeout,
 		f,
@@ -62,8 +64,9 @@ func WorkerHealthCheckWithManagedResource(ctx context.Context, timeout time.Dura
 		healthConditionType)
 }
 
+// NetworkHealthCheckWithManagedResource is a convenience function to tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given Network CRD.
 func NetworkHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
-	return testHealthCheckWithManagedResource(
+	return TestHealthCheckWithManagedResource(
 		ctx,
 		timeout,
 		f,
@@ -73,8 +76,9 @@ func NetworkHealthCheckWithManagedResource(ctx context.Context, timeout time.Dur
 		healthConditionType)
 }
 
+// ExtensionHealthCheckWithManagedResource is a convenience function to tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given Extension CRD.
 func ExtensionHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, extensionName string, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
-	return testHealthCheckWithManagedResource(
+	return TestHealthCheckWithManagedResource(
 		ctx,
 		timeout,
 		f,
@@ -84,7 +88,23 @@ func ExtensionHealthCheckWithManagedResource(ctx context.Context, timeout time.D
 		healthConditionType)
 }
 
-func testHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, extensionKind schema.GroupVersionKind, extensionName string, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
+// ContainerRuntimeHealthCheckWithManagedResource is a convenience function to tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given ContainerRuntime CRD.
+func ContainerRuntimeHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, extensionName string, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
+	return TestHealthCheckWithManagedResource(
+		ctx,
+		timeout,
+		f,
+		extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.ContainerRuntimeResource),
+		extensionName,
+		managedResourceName,
+		healthConditionType)
+}
+
+// TestHealthCheckWithManagedResource tests that an unhealthy condition in a given ManagedResource leads to an unhealthy health check condition in the given CRD.
+// To be able to manipulate the ManagedResource with an unhealthy condition, the function needs to scale down the Gardener Resource Manager.
+// After the unhealthy condition is observed in the Extension CRD, the function scales up the Gardener Resource Manager again and waits for the ManagedResource to be healthy.
+// This function is used by integration tests of Gardener extensions to check their health checks on ManagedResources.
+func TestHealthCheckWithManagedResource(ctx context.Context, timeout time.Duration, f *framework.ShootFramework, extensionKind schema.GroupVersionKind, extensionName string, managedResourceName string, healthConditionType gardencorev1beta1.ConditionType) error {
 	var (
 		err                                              error
 		resourceManagerDeploymentReplicasBeforeScaledown *int32
@@ -105,7 +125,7 @@ func testHealthCheckWithManagedResource(ctx context.Context, timeout time.Durati
 		err = operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionKind, types.NamespacedName{
 			Namespace: f.ShootSeedNamespace(),
 			Name:      extensionName,
-		}, healthConditionType, gardencorev1beta1.ConditionTrue, healthcheck.HealthCheckSuccessful)
+		}, healthConditionType, gardencorev1beta1.ConditionTrue, healthcheck.ReasonSuccessful)
 		framework.ExpectNoError(err)
 	}()
 	managedResource := resourcev1alpha1.ManagedResource{}
@@ -130,7 +150,7 @@ func testHealthCheckWithManagedResource(ctx context.Context, timeout time.Durati
 	return operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionKind, types.NamespacedName{
 		Namespace: f.ShootSeedNamespace(),
 		Name:      extensionName,
-	}, healthConditionType, gardencorev1beta1.ConditionFalse, healthcheck.HealthCheckUnsuccessful)
+	}, healthConditionType, gardencorev1beta1.ConditionFalse, healthcheck.ReasonUnsuccessful)
 }
 
 func ControlPlaneHealthCheckDeleteSeedDeployment(ctx context.Context, f *framework.ShootFramework, controlPlaneName, deploymentName string, healthConditionType gardencorev1beta1.ConditionType) error {
@@ -159,7 +179,7 @@ func deleteSeedDeploymentCheck(ctx context.Context, f *framework.ShootFramework,
 		err = operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionKind, types.NamespacedName{
 			Namespace: f.ShootSeedNamespace(),
 			Name:      controlPlaneName,
-		}, healthConditionType, gardencorev1beta1.ConditionTrue, healthcheck.HealthCheckSuccessful)
+		}, healthConditionType, gardencorev1beta1.ConditionTrue, healthcheck.ReasonSuccessful)
 		framework.ExpectNoError(err)
 	}()
 	return operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionKind, types.NamespacedName{
@@ -188,7 +208,7 @@ func MachineDeletionHealthCheck(ctx context.Context, f *framework.ShootFramework
 	if err := operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.WorkerResource), types.NamespacedName{
 		Namespace: f.ShootSeedNamespace(),
 		Name:      f.Shoot.GetName(),
-	}, gardencorev1beta1.ShootEveryNodeReady, gardencorev1beta1.ConditionFalse, healthcheck.HealthCheckUnsuccessful); err != nil {
+	}, gardencorev1beta1.ShootEveryNodeReady, gardencorev1beta1.ConditionFalse, healthcheck.ReasonUnsuccessful); err != nil {
 		return err
 	}
 
@@ -196,5 +216,5 @@ func MachineDeletionHealthCheck(ctx context.Context, f *framework.ShootFramework
 	return operation.WaitForExtensionCondition(ctx, f.Logger, f.SeedClient.Client(), extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.WorkerResource), types.NamespacedName{
 		Namespace: f.ShootSeedNamespace(),
 		Name:      f.Shoot.GetName(),
-	}, gardencorev1beta1.ShootEveryNodeReady, gardencorev1beta1.ConditionTrue, healthcheck.HealthCheckSuccessful)
+	}, gardencorev1beta1.ShootEveryNodeReady, gardencorev1beta1.ConditionTrue, healthcheck.ReasonSuccessful)
 }

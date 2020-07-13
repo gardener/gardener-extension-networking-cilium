@@ -17,6 +17,7 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // +genclient
@@ -64,7 +65,7 @@ type CloudProfileSpec struct {
 	MachineTypes []MachineType `json:"machineTypes" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,4,rep,name=machineTypes"`
 	// ProviderConfig contains provider-specific configuration for the profile.
 	// +optional
-	ProviderConfig *ProviderConfig `json:"providerConfig,omitempty" protobuf:"bytes,5,opt,name=providerConfig"`
+	ProviderConfig *runtime.RawExtension `json:"providerConfig,omitempty" protobuf:"bytes,5,opt,name=providerConfig"`
 	// Regions contains constraints regarding allowed values for regions and zones.
 	// +patchMergeKey=name
 	// +patchStrategy=merge
@@ -109,6 +110,9 @@ type ExpirableVersion struct {
 	// ExpirationDate defines the time at which this version expires.
 	// +optional
 	ExpirationDate *metav1.Time `json:"expirationDate,omitempty" protobuf:"bytes,2,opt,name=expirationDate"`
+	// Classification defines the state of a version (preview, supported, deprecated)
+	// +optional
+	Classification *VersionClassification `json:"classification,omitempty" protobuf:"bytes,3,opt,name=classification,casttype=VersionClassification"`
 }
 
 // MachineType contains certain properties of a machine type.
@@ -148,6 +152,11 @@ type Region struct {
 	// +patchStrategy=merge
 	// +optional
 	Zones []AvailabilityZone `json:"zones,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=zones"`
+	// Labels is an optional set of key-value pairs that contain certain administrator-controlled labels for this region.
+	// It can be used by Gardener administrators/operators to provide additional information about a region, e.g. wrt
+	// quality, reliability, access restrictions, etc.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty" protobuf:"bytes,3,rep,name=labels"`
 }
 
 // AvailabilityZone is an availability zone.
@@ -178,4 +187,20 @@ const (
 	VolumeClassStandard string = "standard"
 	// VolumeClassPremium is a constant for the premium volume class.
 	VolumeClassPremium string = "premium"
+)
+
+// VersionClassification is the logical state of a version according to https://github.com/gardener/gardener/blob/master/docs/operations/versioning.md
+type VersionClassification string
+
+const (
+	// ClassificationPreview indicates that a version has recently been added and not promoted to "Supported" yet.
+	// ClassificationPreview versions will not be considered for automatic Kubernetes and Machine Image patch version updates.
+	ClassificationPreview VersionClassification = "preview"
+	// ClassificationSupported indicates that a patch version is the recommended version for a shoot.
+	// Using VersionMaintenance (see: https://github.com/gardener/gardener/docs/operation/versioning.md) there is one supported version per maintained minor version.
+	// Supported versions are eligible for the automated Kubernetes and Machine image patch version update for shoot clusters in Gardener.
+	ClassificationSupported VersionClassification = "supported"
+	// ClassificationDeprecated indicates that a patch version should not be used anymore, should be updated to a new version
+	// and will eventually expire.
+	ClassificationDeprecated VersionClassification = "deprecated"
 )

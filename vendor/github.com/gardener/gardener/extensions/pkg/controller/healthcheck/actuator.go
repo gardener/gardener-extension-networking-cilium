@@ -16,8 +16,11 @@ package healthcheck
 
 import (
 	"context"
+	"time"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,8 +44,13 @@ import (
 	More sophisticated checks should be implemented in the extension itself by using the HealthCheck interface.
 */
 
-// GetExtensionObjectFunc returns the extension object that should be registered with the health check controller
-type GetExtensionObjectFunc = func() runtime.Object
+// GetExtensionObjectFunc returns the extension object that should be registered with the health check controller.
+// For example: func() extensionsv1alpha1.Object {return &extensionsv1alpha1.Worker{}}
+type GetExtensionObjectFunc = func() extensionsv1alpha1.Object
+
+// GetExtensionObjectFunc returns the extension object that should be registered with the health check controller. Has to be a List.
+// For example: func() runtime.Object {return &extensionsv1alpha1.WorkerList{}}
+type GetExtensionObjectListFunc = func() runtime.Object
 
 // PreCheckFunc checks whether the health check shall be performed based on the given object and cluster.
 type PreCheckFunc = func(runtime.Object, *extensionscontroller.Cluster) bool
@@ -60,29 +68,36 @@ type ConditionTypeToHealthCheck struct {
 type HealthCheckActuator interface {
 	// ExecuteHealthCheckFunctions is regularly called by the health check controller
 	// Executes all registered Health Checks and aggregates the result
-	// Returns Result for each healthConditionType registered with the individual health checks.
+	// Returns Result for each healthConditionTypes registered with the individual health checks.
 	// returns an error if it could not execute the health checks
 	// returning an error results in a condition with with type "Unknown" with reason "ConditionCheckError"
 	ExecuteHealthCheckFunctions(context.Context, types.NamespacedName) (*[]Result, error)
 }
 
 // Result represents an aggregated health status for the health checks performed on the dependent API Objects of an extension resource.
-// An Result refers to a single healthConditionType (e.g SystemComponentsHealthy) of an extension Resource.
+// An Result refers to a single healthConditionTypes (e.g SystemComponentsHealthy) of an extension Resource.
 type Result struct {
 	// HealthConditionType is being used as the .type field of the Condition that the HealthCheck controller writes to the extension Resource.
 	// To contribute to the Shoot's health, the Gardener checks each extension for a Health Condition Type of SystemComponentsHealthy, EveryNodeReady, ControlPlaneHealthy.
 	HealthConditionType string
-	// IsHealthy indicates if all the health checks for an extension resource have been successful
-	IsHealthy bool
+	// Status contains the status for the health checks that have been performed for an extension resource
+	Status gardencorev1beta1.ConditionStatus
 	// Detail contains details for health checks being unsuccessful
 	Detail *string
 	// SuccessfulChecks is the amount of successful health checks
 	SuccessfulChecks int
+	// ProgressingChecks is the amount of health checks that were progressing
+	ProgressingChecks int
 	// UnsuccessfulChecks is the amount of health checks that were not successful
 	UnsuccessfulChecks int
 	// FailedChecks is the amount of health checks that could not be performed (e.g client could not reach Api Server)
 	// Results in a condition with with type "Unknown" with reason "ConditionCheckError" for this healthConditionType
 	FailedChecks int
+	// Codes is an optional list of error codes that were produced by the the health checks.
+	Codes []gardencorev1beta1.ErrorCode
+	// ProgressingThreshold is the threshold duration after which a health check that reported the `Progressing` status
+	// shall be transitioned to `False`
+	ProgressingThreshold *time.Duration
 }
 
 // GetDetails returns the details of the health check result
@@ -112,10 +127,15 @@ type HealthCheck interface {
 
 // SingleCheckResult is the result for a health check
 type SingleCheckResult struct {
-	// IsHealthy indicates if all the health checks for an extension resource have been successful
-	IsHealthy bool
+	// Status contains the status for the health check that has been performed for an extension resource
+	Status gardencorev1beta1.ConditionStatus
 	// Detail contains details for the health check being unsuccessful
 	Detail string
 	// Reason contains the reason for the health check being unsuccessful
 	Reason string
+	// Codes optionally contains a list of error codes related to the health check
+	Codes []gardencorev1beta1.ErrorCode
+	// ProgressingThreshold is the threshold duration after which a health check that reported the `Progressing` status
+	// shall be transitioned to `False`
+	ProgressingThreshold *time.Duration
 }

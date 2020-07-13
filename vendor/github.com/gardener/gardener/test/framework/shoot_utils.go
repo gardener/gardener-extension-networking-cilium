@@ -18,20 +18,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
+	"time"
+
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils"
 	"github.com/gardener/gardener/pkg/utils/retry"
-	"github.com/gardener/gardener/test/integration/framework"
-	"io"
+
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
-	"strings"
-	"time"
 )
 
 // ShootSeedNamespace gets the shoot namespace in the seed
@@ -46,7 +48,7 @@ func (f *ShootFramework) ShootKubeconfigSecretName() string {
 
 // GetLoggingPassword returns the passwort to access the elasticseerach logging instance
 func (f *ShootFramework) GetLoggingPassword(ctx context.Context) (string, error) {
-	return framework.GetObjectFromSecret(ctx, f.SeedClient, f.ShootSeedNamespace(), loggingIngressCredentials, "password")
+	return GetObjectFromSecret(ctx, f.SeedClient, f.ShootSeedNamespace(), loggingIngressCredentials, "password")
 }
 
 // GetElasticsearchLogs gets logs for <podName> from the elasticsearch instance in <elasticsearchNamespace>
@@ -97,19 +99,26 @@ func (f *ShootFramework) DumpState(ctx context.Context) {
 			f.Logger.Fatalf("Cannot decode shoot %s: %s", f.Shoot.GetName(), err)
 		}
 
-		if f.ShootClient != nil {
+		isRunning, err := f.IsAPIServerRunning(ctx)
+		if f.ShootClient != nil && isRunning && err == nil {
 			ctxIdentifier := fmt.Sprintf("[SHOOT %s]", f.Shoot.Name)
 			f.Logger.Info(ctxIdentifier)
-			if err := f.dumpDefaultResourcesInAllNamespaces(ctx, ctxIdentifier, f.ShootClient); err != nil {
+			if err := f.DumpDefaultResourcesInAllNamespaces(ctx, ctxIdentifier, f.ShootClient); err != nil {
 				f.Logger.Errorf("unable to dump resources from all namespaces in shoot %s: %s", f.Shoot.Name, err.Error())
 			}
 			if err := f.dumpNodes(ctx, ctxIdentifier, f.ShootClient); err != nil {
 				f.Logger.Errorf("unable to dump information of nodes from shoot %s: %s", f.Shoot.Name, err.Error())
 			}
+		} else {
+			errMsg := ""
+			if err != nil {
+				errMsg = ": " + err.Error()
+			}
+			f.Logger.Errorf("unable to dump resources from shoot %s: API server is currently not running%s", f.Shoot.Name, errMsg)
 		}
 	}
 
-	//dump controlplane in the shoot namespace
+	// dump controlplane in the shoot namespace
 	if f.Seed != nil && f.SeedClient != nil {
 		if err := f.dumpControlplaneInSeed(ctx, f.Seed, f.ShootSeedNamespace()); err != nil {
 			f.Logger.Errorf("unable to dump controlplane of %s in seed %s: %v", f.Shoot.Name, f.Seed.Name, err)
@@ -128,7 +137,7 @@ func (f *ShootFramework) DumpState(ctx context.Context) {
 		// dump seed status if seed is available
 		if f.Shoot.Spec.SeedName != nil {
 			seed := &gardencorev1beta1.Seed{}
-			if err := f.GardenClient.Client().Get(ctx, client.ObjectKey{Name: *f.Shoot.Spec.SeedName}, seed); err != nil {
+			if err := f.GardenClient.DirectClient().Get(ctx, client.ObjectKey{Name: *f.Shoot.Spec.SeedName}, seed); err != nil {
 				f.Logger.Errorf("unable to get seed %s: %s", *f.Shoot.Spec.SeedName, err.Error())
 				return
 			}
@@ -146,104 +155,178 @@ func (f *ShootFramework) DumpState(ctx context.Context) {
 }
 
 // CreateShootTestArtifacts creates a shoot object from the given path and sets common attributes (test-individual settings like workers have to be handled by each test).
-func CreateShootTestArtifacts(shootTestYamlPath string, prefix *string, projectNamespace, shootRegion, cloudProfile, secretbinding, providerType, k8sVersion, externalDomain *string, clearDNS bool, clearExtensions bool) (string, *gardencorev1beta1.Shoot, error) {
+func CreateShootTestArtifacts(cfg *ShootCreationConfig, projectNamespace string, clearDNS bool, clearExtensions bool) (string, *gardencorev1beta1.Shoot, error) {
 	shoot := &gardencorev1beta1.Shoot{}
-	if shootTestYamlPath != "" {
-		if err := ReadObject(shootTestYamlPath, shoot); err != nil {
+	if cfg.shootYamlPath != "" {
+		if err := ReadObject(cfg.shootYamlPath, shoot); err != nil {
 			return "", nil, err
 		}
 	}
 
-	if shootRegion != nil && len(*shootRegion) > 0 {
-		shoot.Spec.Region = *shootRegion
+	if err := setShootMetadata(shoot, cfg, projectNamespace); err != nil {
+		return "", nil, err
 	}
 
-	if externalDomain != nil && len(*externalDomain) > 0 {
-		shoot.Spec.DNS = &gardencorev1beta1.DNS{Domain: externalDomain}
-		clearDNS = false
+	setShootGeneralSettings(shoot, cfg, clearExtensions)
+
+	setShootNetworkingSettings(shoot, cfg, clearDNS)
+
+	return shoot.Name, shoot, nil
+}
+
+func parseAnnotationCfg(cfg string) (map[string]string, error) {
+	if !StringSet(cfg) {
+		return nil, nil
+	}
+	result := make(map[string]string)
+	annotations := strings.Split(cfg, ",")
+	for _, annotation := range annotations {
+		annotation = strings.TrimSpace(annotation)
+		if !StringSet(annotation) {
+			continue
+		}
+		keyValue := strings.Split(annotation, "=")
+		if len(keyValue) != 2 {
+			return nil, fmt.Errorf("annotation %s could not be parsed into key and value", annotation)
+		}
+		result[keyValue[0]] = keyValue[1]
 	}
 
-	if projectNamespace != nil && len(*projectNamespace) > 0 {
-		shoot.Namespace = *projectNamespace
-	}
+	return result, nil
+}
 
-	if prefix != nil && len(*prefix) != 0 {
-		integrationTestName, err := generateRandomShootName(*prefix, 8)
+// setShootMetadata sets the Shoot's metadata from the given config and project namespace
+func setShootMetadata(shoot *gardencorev1beta1.Shoot, cfg *ShootCreationConfig, projectNamespace string) error {
+	if StringSet(cfg.testShootName) {
+		shoot.Name = cfg.testShootName
+	} else {
+		integrationTestName, err := generateRandomShootName(cfg.testShootPrefix, 8)
 		if err != nil {
-			return "", nil, err
+			return err
 		}
 		shoot.Name = integrationTestName
 	}
 
-	if cloudProfile != nil && len(*cloudProfile) > 0 {
-		shoot.Spec.CloudProfileName = *cloudProfile
+	if StringSet(projectNamespace) {
+		shoot.Namespace = projectNamespace
 	}
 
-	if secretbinding != nil && len(*secretbinding) > 0 {
-		shoot.Spec.SecretBindingName = *secretbinding
+	if err := setConfiguredShootAnnotations(shoot, cfg); err != nil {
+		return err
 	}
 
-	if providerType != nil && len(*providerType) > 0 {
-		shoot.Spec.Provider.Type = *providerType
+	metav1.SetMetaDataAnnotation(&shoot.ObjectMeta, v1beta1constants.AnnotationShootIgnoreAlerts, "true")
+
+	return nil
+}
+
+// setConfiguredShootAnnotations sets annotations from the given config on the given shoot
+func setConfiguredShootAnnotations(shoot *gardencorev1beta1.Shoot, cfg *ShootCreationConfig) error {
+	annotations, err := parseAnnotationCfg(cfg.shootAnnotations)
+	if err != nil {
+		return err
+	}
+	for k, v := range annotations {
+		metav1.SetMetaDataAnnotation(&shoot.ObjectMeta, k, v)
+	}
+	return nil
+}
+
+// setShootGeneralSettings sets the Shoot's general settings from the given config
+func setShootGeneralSettings(shoot *gardencorev1beta1.Shoot, cfg *ShootCreationConfig, clearExtensions bool) {
+	if StringSet(cfg.shootRegion) {
+		shoot.Spec.Region = cfg.shootRegion
 	}
 
-	if k8sVersion != nil && len(*k8sVersion) > 0 {
-		shoot.Spec.Kubernetes.Version = *k8sVersion
+	if StringSet(cfg.cloudProfile) {
+		shoot.Spec.CloudProfileName = cfg.cloudProfile
 	}
 
-	if clearDNS {
-		shoot.Spec.DNS = &gardencorev1beta1.DNS{}
+	if StringSet(cfg.secretBinding) {
+		shoot.Spec.SecretBindingName = cfg.secretBinding
+	}
+
+	if StringSet(cfg.shootProviderType) {
+		shoot.Spec.Provider.Type = cfg.shootProviderType
+	}
+
+	if StringSet(cfg.shootK8sVersion) {
+		shoot.Spec.Kubernetes.Version = cfg.shootK8sVersion
+	}
+
+	if StringSet(cfg.seedName) {
+		shoot.Spec.SeedName = &cfg.seedName
+	}
+
+	if cfg.startHibernated {
+		if shoot.Spec.Hibernation == nil {
+			shoot.Spec.Hibernation = &gardencorev1beta1.Hibernation{}
+		}
+		shoot.Spec.Hibernation.Enabled = &cfg.startHibernated
+	}
+
+	// allow privileged containers defaults to true
+	if cfg.allowPrivilegedContainers != nil {
+		shoot.Spec.Kubernetes.AllowPrivilegedContainers = cfg.allowPrivilegedContainers
 	}
 
 	if clearExtensions {
 		shoot.Spec.Extensions = nil
 	}
+}
 
-	if shoot.Annotations == nil {
-		shoot.Annotations = map[string]string{}
+// setShootNetworkingSettings sets the Shoot's networking settings from the given config
+func setShootNetworkingSettings(shoot *gardencorev1beta1.Shoot, cfg *ShootCreationConfig, clearDNS bool) {
+	if StringSet(cfg.externalDomain) {
+		shoot.Spec.DNS = &gardencorev1beta1.DNS{Domain: &cfg.externalDomain}
+		clearDNS = false
 	}
-	shoot.Annotations[v1beta1constants.AnnotationShootIgnoreAlerts] = "true"
+	if StringSet(cfg.networkingPods) {
+		shoot.Spec.Networking.Pods = &cfg.networkingPods
+	}
 
-	return shoot.Name, shoot, nil
+	if StringSet(cfg.networkingServices) {
+		shoot.Spec.Networking.Services = &cfg.networkingServices
+	}
+
+	if StringSet(cfg.networkingNodes) {
+		shoot.Spec.Networking.Nodes = &cfg.networkingNodes
+	}
+
+	if clearDNS {
+		shoot.Spec.DNS = &gardencorev1beta1.DNS{}
+	}
 }
 
 // SetProviderConfigsFromFilepath parses the infrastructure, controlPlane and networking provider-configs and sets them on the shoot
-func SetProviderConfigsFromFilepath(shoot *gardencorev1beta1.Shoot, infrastructureConfigPath, controlPlaneConfigPath, networkingConfigPath, workersConfigPath *string) error {
+func SetProviderConfigsFromFilepath(shoot *gardencorev1beta1.Shoot, infrastructureConfigPath, controlPlaneConfigPath, networkingConfigPath string) error {
 	// clear provider configs first
 	shoot.Spec.Provider.InfrastructureConfig = nil
 	shoot.Spec.Provider.ControlPlaneConfig = nil
 	shoot.Spec.Networking.ProviderConfig = nil
 
-	if infrastructureConfigPath != nil && len(*infrastructureConfigPath) != 0 {
-		infrastructureProviderConfig, err := ParseFileAsProviderConfig(*infrastructureConfigPath)
+	if StringSet(infrastructureConfigPath) {
+		infrastructureProviderConfig, err := ParseFileAsProviderConfig(infrastructureConfigPath)
 		if err != nil {
 			return err
 		}
 		shoot.Spec.Provider.InfrastructureConfig = infrastructureProviderConfig
 	}
 
-	if len(*controlPlaneConfigPath) != 0 {
-		controlPlaneProviderConfig, err := ParseFileAsProviderConfig(*controlPlaneConfigPath)
+	if StringSet(controlPlaneConfigPath) {
+		controlPlaneProviderConfig, err := ParseFileAsProviderConfig(controlPlaneConfigPath)
 		if err != nil {
 			return err
 		}
 		shoot.Spec.Provider.ControlPlaneConfig = controlPlaneProviderConfig
 	}
 
-	if len(*networkingConfigPath) != 0 {
-		networkingProviderConfig, err := ParseFileAsProviderConfig(*networkingConfigPath)
+	if StringSet(networkingConfigPath) {
+		networkingProviderConfig, err := ParseFileAsProviderConfig(networkingConfigPath)
 		if err != nil {
 			return err
 		}
 		shoot.Spec.Networking.ProviderConfig = networkingProviderConfig
-	}
-
-	if len(*workersConfigPath) != 0 {
-		workers, err := ParseFileAsWorkers(*workersConfigPath)
-		if err != nil {
-			return err
-		}
-		shoot.Spec.Provider.Workers = workers
 	}
 
 	return nil
