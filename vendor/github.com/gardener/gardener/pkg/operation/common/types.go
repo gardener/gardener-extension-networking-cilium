@@ -23,6 +23,12 @@ import (
 )
 
 const (
+	// VPNTunnel dictates that VPN is used as a tunnel between seed and shoot networks.
+	VPNTunnel string = "vpn-shoot"
+
+	// KonnectivityTunnel dictates that a konnectivity proxy is used as a tunnel between seed and shoot networks.
+	KonnectivityTunnel string = "konnectivity-agent"
+
 	// BackupBucketName is a constant for the name of bucket of object storage.
 	BackupBucketName = "bucketName"
 
@@ -95,12 +101,12 @@ const (
 	// EtcdEncryptionSecretName is the name of the shoot-specific secret which contains
 	// that shoot's EncryptionConfiguration. The EncryptionConfiguration contains a key
 	// which the shoot's apiserver uses for encrypting selected etcd content.
-	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/kube-apiserver.yaml
+	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/deployment.yaml
 	EtcdEncryptionSecretName = "etcd-encryption-secret"
 
 	// EtcdEncryptionSecretFileName is the name of the file within the EncryptionConfiguration
 	// which is made available as volume mount to the shoot's apiserver.
-	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/kube-apiserver.yaml
+	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/deployment.yaml
 	EtcdEncryptionSecretFileName = "encryption-configuration.yaml"
 
 	// EtcdEncryptionChecksumAnnotationName is the name of the annotation with which to annotate
@@ -130,6 +136,9 @@ const (
 	// it must be confirmed with the `confirmation.gardener.cloud/deletion=true` annotation before a `DELETE` call
 	// is accepted.
 	GardenerDeletionProtected = "gardener.cloud/deletion-protected"
+
+	// ETCDEncryptionConfigDataName is the name of ShootState data entry holding the current key and encryption state used to encrypt shoot resources
+	ETCDEncryptionConfigDataName = "etcdEncryptionConfiguration"
 
 	// GardenRoleDefaultDomain is the value of the GardenRole key indicating type 'default-domain'.
 	GardenRoleDefaultDomain = "default-domain"
@@ -201,6 +210,9 @@ const (
 	// KubeControllerManagerServerName is the name of the kube-controller-manager server.
 	KubeControllerManagerServerName = "kube-controller-manager-server"
 
+	// KonnectivityServerCertName is the name of the api-proxy konnectivity-server
+	KonnectivityServerCertName = "konnectivity-server"
+
 	// KubeSchedulerServerName is the name of the kube-scheduler server.
 	KubeSchedulerServerName = "kube-scheduler-server"
 
@@ -271,6 +283,11 @@ const (
 	// Deprecated: Use `NamespaceProject` instead.
 	NamespaceProjectDeprecated = "namespace.garden.sapcloud.io/project"
 
+	// NamespaceKeepAfterProjectDeletion is a constant for an annotation on a `Namespace` resource that states that it
+	// should not be deleted if the corresponding `Project` gets deleted. Please note that all project related labels
+	// from the namespace will be removed when the project is being deleted.
+	NamespaceKeepAfterProjectDeletion = "namespace.gardener.cloud/keep-after-project-deletion"
+
 	// ShootAlphaScalingAPIServerClass is a constant for an annotation on the shoot stating the initial API server class.
 	// It influences the size of the initial resource requests/limits.
 	// Possible values are [small, medium, large, xlarge, 2xlarge].
@@ -314,6 +331,9 @@ const (
 	// ShootOperationMaintain is a constant for an annotation on a Shoot indicating that the Shoot maintenance shall be executed as soon as
 	// possible.
 	ShootOperationMaintain = "maintain"
+
+	// FailedShootNeedsRetryOperation is a constant for an annotation on a Shoot in a failed state indicating that a retry operation should be triggered during the next maintenance time window.
+	FailedShootNeedsRetryOperation = "maintenance.shoot.gardener.cloud/needs-retry-operation"
 
 	// ShootOperationRotateKubeconfigCredentials is a constant for an annotation on a Shoot indicating that the credentials contained in the
 	// kubeconfig that is handed out to the user shall be rotated.
@@ -365,6 +385,18 @@ const (
 	// Deprecated: Use `ShootIgnore` instead.
 	ShootIgnoreDeprecated = "shoot.garden.sapcloud.io/ignore"
 
+	// ManagedResourceShootCoreName is the name of the shoot core managed resource.
+	ManagedResourceShootCoreName = "shoot-core"
+
+	// ManagedResourceCoreNamespaceName is the name of the core namespace managed resource.
+	ManagedResourceCoreNamespaceName = "shoot-core-namespaces"
+
+	// ManagedResourceAddonsName is the name of the addons managed resource.
+	ManagedResourceAddonsName = "addons"
+
+	// ManagedResourceKymaName is the name of the Kyma managed resource.
+	ManagedResourceKymaName = "addons-kyma"
+
 	// GardenerResourceManagerImageName is the name of the GardenerResourceManager image.
 	GardenerResourceManagerImageName = "gardener-resource-manager"
 
@@ -400,6 +432,18 @@ const (
 
 	// VPNSeedImageName is the name of the VPNSeed image.
 	VPNSeedImageName = "vpn-seed"
+
+	// KonnectivityServerImageName is the name of the konnectivity server image.
+	KonnectivityServerImageName = "konnectivity-server"
+
+	// KonnectivityServerUserName is the user name of the konnectivity server used for the token
+	KonnectivityServerUserName = "system:konnectivity-server"
+
+	// KonnectivityServerKubeconfig is the name of the konnectivity-server kubeconfig
+	KonnectivityServerKubeconfig = "konnectivity-server-kubeconfig"
+
+	// KonnectivityAgentImageName is the name of the konnectivity agent image.
+	KonnectivityAgentImageName = "konnectivity-agent"
 
 	// NodeExporterImageName is the name of the NodeExporter image.
 	NodeExporterImageName = "node-exporter"
@@ -439,12 +483,6 @@ const (
 
 	// KubeStateMetricsImageName is the name of the KubeStateMetrics image.
 	KubeStateMetricsImageName = "kube-state-metrics"
-
-	// ETCDImageName is the name of the ETCD image.
-	ETCDImageName = "etcd"
-
-	// ETCDBackupRestoreImageName is the name of the ETCD backup-restore image.
-	ETCDBackupRestoreImageName = "etcd-backup-restore"
 
 	// EtcdDruidImageName is the name of Etcd Druid image
 	EtcdDruidImageName = "etcd-druid"
@@ -490,21 +528,47 @@ const (
 
 	// VpaAdmissionControllerImageName is the name of the vpa-admission-controller image
 	VpaAdmissionControllerImageName = "vpa-admission-controller"
-
 	// VpaRecommenderImageName is the name of the vpa-recommender image
 	VpaRecommenderImageName = "vpa-recommender"
-
 	// VpaUpdaterImageName is the name of the vpa-updater image
 	VpaUpdaterImageName = "vpa-updater"
-
 	// VpaExporterImageName is the name of the vpa-exporter image
 	VpaExporterImageName = "vpa-exporter"
+	// VpaAdmissionControllerName is the name of the vpa-admission-controller name.
+	VpaAdmissionControllerName = "gardener.cloud:vpa:admission-controller"
+	// VpaRecommenderName is the name of the vpa-recommender name.
+	VpaRecommenderName = "gardener.cloud:vpa:recommender"
+	// VpaUpdaterName is the name of the vpa-updater name.
+	VpaUpdaterName = "gardener.cloud:vpa:updater"
+	// VpaExporterName is the name of the vpa-exporter name.
+	VpaExporterName = "gardener.cloud:vpa:exporter"
 
 	// HvpaControllerImageName is the name of the hvpa-controller image
 	HvpaControllerImageName = "hvpa-controller"
 
 	// DependencyWatchdogImageName is the name of the dependency-watchdog image
 	DependencyWatchdogImageName = "dependency-watchdog"
+
+	// IstioProxyImageName is the image of Istio proxy image
+	IstioProxyImageName = "istio-proxy"
+
+	// IstioIstiodImageName is the image of Istio istiod image
+	IstioIstiodImageName = "istio-istiod"
+
+	// IstioNamespace is the istio-system namespace
+	IstioNamespace = "istio-system"
+
+	// IstioIngressGatewayNamespace is the istio-ingress namespace
+	IstioIngressGatewayNamespace = "istio-ingress"
+
+	// IstioIngressGatewayServiceName is the name of the Service used for SNI to the Shoot API Servers.
+	IstioIngressGatewayServiceName = "istio-ingressgateway"
+
+	// APIServerProxyImageName is the image of apiserver-proxy
+	APIServerProxyImageName = "apiserver-proxy"
+
+	// APIServerPorxySidecarImageName is the image of apiserver-proxy sidecar
+	APIServerPorxySidecarImageName = "apiserver-proxy-sidecar"
 
 	// ServiceAccountSigningKeySecretDataKey is the data key of a signing key Kubernetes secret.
 	ServiceAccountSigningKeySecretDataKey = "signing-key"
@@ -547,35 +611,12 @@ var (
 		v1beta1constants.ETCDEvents,
 	)
 
-	// RequiredSystemComponentDeployments is a set of the required system components.
-	RequiredSystemComponentDeployments = sets.NewString(
-		CoreDNSDeploymentName,
-		VPNShootDeploymentName,
-		MetricsServerDeploymentName,
-	)
-
-	// RequiredSystemComponentDaemonSets is a set of the required shoot control plane daemon sets.
-	RequiredSystemComponentDaemonSets = sets.NewString(
-		KubeProxyDaemonSetName,
-		NodeProblemDetectorDaemonSetName,
-	)
-
 	// RequiredMonitoringSeedDeployments is a set of the required seed monitoring deployments.
 	RequiredMonitoringSeedDeployments = sets.NewString(
 		v1beta1constants.DeploymentNameGrafanaOperators,
 		v1beta1constants.DeploymentNameGrafanaUsers,
 		v1beta1constants.DeploymentNameKubeStateMetricsSeed,
 		v1beta1constants.DeploymentNameKubeStateMetricsShoot,
-	)
-
-	// RequiredMonitoringShootDeployments is a set of the required shoot monitoring deployments.
-	RequiredMonitoringShootDeployments = sets.NewString(
-		BlackboxExporterDeploymentName,
-	)
-
-	// RequiredMonitoringShootDaemonSets is a set of the required shoot monitoring daemon sets.
-	RequiredMonitoringShootDaemonSets = sets.NewString(
-		NodeExporterDaemonSetName,
 	)
 
 	// RequiredLoggingStatefulSets is a set of the required logging stateful sets.
@@ -586,5 +627,13 @@ var (
 	// RequiredLoggingDeployments is a set of the required logging deployments.
 	RequiredLoggingDeployments = sets.NewString(
 		v1beta1constants.DeploymentNameKibana,
+	)
+
+	// ManagedResourcesShoot is a set of managed resource names which contain resources deployed to the shoot.
+	ManagedResourcesShoot = sets.NewString(
+		ManagedResourceCoreNamespaceName,
+		ManagedResourceShootCoreName,
+		ManagedResourceAddonsName,
+		ManagedResourceKymaName,
 	)
 )

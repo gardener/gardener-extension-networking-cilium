@@ -17,20 +17,17 @@ package util
 import (
 	"context"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/chartrenderer"
-	gardener "github.com/gardener/gardener/pkg/client/kubernetes"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/secrets"
+
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/engine"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,7 +36,7 @@ type ShootClients interface {
 	Client() client.Client
 	Clientset() kubernetes.Interface
 	GardenerClientset() gardenerkubernetes.Interface
-	ChartApplier() gardener.ChartApplier
+	ChartApplier() gardenerkubernetes.ChartApplier
 	Version() *version.Info
 }
 
@@ -47,18 +44,18 @@ type shootClients struct {
 	c                 client.Client
 	clientset         kubernetes.Interface
 	gardenerClientset gardenerkubernetes.Interface
-	chartApplier      gardener.ChartApplier
+	chartApplier      gardenerkubernetes.ChartApplier
 	version           *version.Info
 }
 
 func (s *shootClients) Client() client.Client                           { return s.c }
 func (s *shootClients) Clientset() kubernetes.Interface                 { return s.clientset }
 func (s *shootClients) GardenerClientset() gardenerkubernetes.Interface { return s.gardenerClientset }
-func (s *shootClients) ChartApplier() gardener.ChartApplier             { return s.chartApplier }
+func (s *shootClients) ChartApplier() gardenerkubernetes.ChartApplier   { return s.chartApplier }
 func (s *shootClients) Version() *version.Info                          { return s.version }
 
 // NewShootClients creates a new shoot client interface based on the given clients.
-func NewShootClients(c client.Client, clientset kubernetes.Interface, gardenerClientset gardenerkubernetes.Interface, chartApplier gardener.ChartApplier, version *version.Info) ShootClients {
+func NewShootClients(c client.Client, clientset kubernetes.Interface, gardenerClientset gardenerkubernetes.Interface, chartApplier gardenerkubernetes.ChartApplier, version *version.Info) ShootClients {
 	return &shootClients{
 		c:                 c,
 		clientset:         clientset,
@@ -112,10 +109,7 @@ func NewClientsForShoot(ctx context.Context, c client.Client, namespace string, 
 	if err != nil {
 		return nil, err
 	}
-	shootChartApplier, err := gardener.NewChartApplierForConfig(shootRESTConfig)
-	if err != nil {
-		return nil, err
-	}
+	shootChartApplier := shootGardenerClientset.ChartApplier()
 
 	return &shootClients{
 		c:                 shootClient,
@@ -132,5 +126,5 @@ func NewChartRendererForShoot(version string) (chartrenderer.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	return chartrenderer.New(engine.New(), &chartutil.Capabilities{KubeVersion: v}), nil
+	return chartrenderer.NewWithServerVersion(v), nil
 }

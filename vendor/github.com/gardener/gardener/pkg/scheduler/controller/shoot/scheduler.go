@@ -61,13 +61,13 @@ type SchedulerController struct {
 // event recording. It creates a new NewGardenerScheduler.
 func NewGardenerScheduler(k8sGardenClient kubernetes.Interface, gardenCoreInformerFactory gardencoreinformers.SharedInformerFactory, config *config.SchedulerConfiguration, recorder record.EventRecorder) *SchedulerController {
 	var (
-		coreV1Alpha1Informer = gardenCoreInformerFactory.Core().V1beta1()
+		coreV1beta1Informer = gardenCoreInformerFactory.Core().V1beta1()
 
-		shootInformer        = coreV1Alpha1Informer.Shoots()
+		shootInformer        = coreV1beta1Informer.Shoots()
 		shootLister          = shootInformer.Lister()
-		seedInformer         = coreV1Alpha1Informer.Seeds()
+		seedInformer         = coreV1beta1Informer.Seeds()
 		seedLister           = seedInformer.Lister()
-		cloudProfileInformer = coreV1Alpha1Informer.CloudProfiles()
+		cloudProfileInformer = coreV1beta1Informer.CloudProfiles()
 		cloudProfileLister   = cloudProfileInformer.Lister()
 		shootQueue           = workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(config.Schedulers.Shoot.RetrySyncPeriod.Duration, 12*time.Hour), "gardener-shoot-scheduler")
 	)
@@ -97,11 +97,15 @@ func NewGardenerScheduler(k8sGardenClient kubernetes.Interface, gardenCoreInform
 }
 
 // Run runs the SchedulerController until the given stop channel can be read from.
-func (c *SchedulerController) Run(ctx context.Context, k8sGardenCoreInformers gardencoreinformers.SharedInformerFactory) {
+func (c *SchedulerController) Run(ctx context.Context) {
 	var waitGroup sync.WaitGroup
 
-	k8sGardenCoreInformers.Start(ctx.Done())
+	c.k8sGardenClient.Start(ctx.Done())
+	if !c.k8sGardenClient.WaitForCacheSync(ctx.Done()) {
+		panic("Timed out waiting for the controller-runtime cache to sync")
+	}
 
+	c.k8sGardenCoreInformers.Start(ctx.Done())
 	if !cache.WaitForCacheSync(ctx.Done(), c.cloudProfileSynced, c.seedSynced, c.shootSynced) {
 		logger.Logger.Error("Timed out waiting for caches to sync")
 		return

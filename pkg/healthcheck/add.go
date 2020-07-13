@@ -44,7 +44,8 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 	return healthcheck.DefaultRegistration(
 		cilium.Type,
 		extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.NetworkResource),
-		func() runtime.Object { return &extensionsv1alpha1.Network{} },
+		func() runtime.Object { return &extensionsv1alpha1.NetworkList{} },
+		func() extensionsv1alpha1.Object { return &extensionsv1alpha1.Network{} },
 		mgr,
 		opts,
 		nil,

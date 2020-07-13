@@ -22,10 +22,14 @@ import (
 
 	controllererror "github.com/gardener/gardener/extensions/pkg/controller/error"
 	"github.com/gardener/gardener/extensions/pkg/util"
-
-	resourcemanagerv1alpha1 "github.com/gardener/gardener-resource-manager/pkg/apis/resources/v1alpha1"
+	"github.com/gardener/gardener/pkg/api/extensions"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
+
+	resourcemanagerv1alpha1 "github.com/gardener/gardener-resource-manager/pkg/apis/resources/v1alpha1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -270,25 +274,6 @@ func exponentialBackoff(ctx context.Context, backoff wait.Backoff, condition wai
 	return wait.ErrWaitTimeout
 }
 
-// WaitUntilResourceDeleted deletes the given resource and then waits until it has been deleted. It respects the
-// given interval and timeout.
-func WaitUntilResourceDeleted(ctx context.Context, c client.Client, obj runtime.Object, interval time.Duration) error {
-	key, err := client.ObjectKeyFromObject(obj)
-	if err != nil {
-		return err
-	}
-
-	return wait.PollImmediateUntil(interval, func() (done bool, err error) {
-		if err := c.Get(ctx, key, obj); err != nil {
-			if apierrors.IsNotFound(err) {
-				return true, nil
-			}
-			return false, err
-		}
-		return false, nil
-	}, ctx.Done())
-}
-
 // WatchBuilder holds various functions which add watch controls to the passed Controller.
 type WatchBuilder []func(controller.Controller) error
 
@@ -332,4 +317,38 @@ func GetVerticalPodAutoscalerObject() *unstructured.Unstructured {
 	obj.SetAPIVersion(autoscalingv1beta2.SchemeGroupVersion.String())
 	obj.SetKind("VerticalPodAutoscaler")
 	return obj
+}
+
+// RemoveAnnotation removes an annotation key passed as annotation
+func RemoveAnnotation(ctx context.Context, c client.Client, obj runtime.Object, annotation string) error {
+	accessor, err := meta.Accessor(obj)
+	if err != nil {
+		return err
+	}
+	withAnnotation := obj.DeepCopyObject()
+
+	annotations := accessor.GetAnnotations()
+	delete(annotations, annotation)
+	accessor.SetAnnotations(annotations)
+
+	return c.Patch(ctx, obj, client.MergeFrom(withAnnotation))
+}
+
+// IsMigrated checks if an extension object has been migrated
+func IsMigrated(obj runtime.Object) bool {
+	acc, err := extensions.Accessor(obj)
+	if err != nil {
+		return false
+	}
+
+	lastOp := acc.GetExtensionStatus().GetLastOperation()
+	return lastOp != nil &&
+		lastOp.Type == gardencorev1beta1.LastOperationTypeMigrate &&
+		lastOp.State == gardencorev1beta1.LastOperationStateSucceeded
+}
+
+// GetObjectByReference gets an object by the given reference, in the given namespace.
+// If the object kind doesn't match the given reference kind this will result in an error.
+func GetObjectByReference(ctx context.Context, c client.Client, ref *autoscalingv1.CrossVersionObjectReference, namespace string, obj runtime.Object) error {
+	return c.Get(ctx, client.ObjectKey{Namespace: namespace, Name: v1beta1constants.ReferencedResourcesPrefix + ref.Name}, obj)
 }

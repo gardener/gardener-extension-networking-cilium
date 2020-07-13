@@ -18,10 +18,10 @@ import (
 	"context"
 	"time"
 
-	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-
 	resourcemanager "github.com/gardener/gardener-resource-manager/pkg/manager"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
 )
 
 // Delete implements Network.Actuator.
@@ -41,5 +41,5 @@ func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Netwo
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	return extensionscontroller.WaitUntilManagedResourceDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigSecretName)
+	return managedresources.WaitUntilManagedResourceDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigSecretName)
 }
