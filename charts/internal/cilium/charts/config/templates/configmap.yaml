@@ -16,7 +16,6 @@
 {{- $defaultBpfMapDynamicSizeRatio = 0.0025 -}}
 {{- $defaultBpfMasquerade = "true" -}}
 {{- $defaultBpfClockProbe = "true" -}}
-{{- $defaultIPAM = "cluster-pool" -}}
 {{- $defaultSessionAffinity = "true" -}}
 {{- if .Values.global.ipv4.enabled }}
 {{- $defaultOperatorApiServeAddr = "127.0.0.1:9234" -}}
