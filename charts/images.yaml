@@ -17,8 +17,8 @@ images:
     tag: v2.0.7
   - name: cilium-nodeinit
     sourceRepository: github.com/cilium/cilium
-    repository: gcr.io/google-containers/startup-script
-    tag: v1
+    repository: docker.io/cilium/startup-script
+    tag: v3
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui

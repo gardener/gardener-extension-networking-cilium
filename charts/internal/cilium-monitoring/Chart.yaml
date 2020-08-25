@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for Cilium Monitoring
+name: cilium-monitoring
+version: 0.1.0

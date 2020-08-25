@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-monitoring-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    extensions.gardener.cloud/configuration: monitoring
+data:
+  scrape_config: |
+    - job_name: 'cilium-agent-metrics'
+      scheme: https
+      tls_config:
+        # This is needed because the kubelets' certificates are not are generated
+        # for a specific pod IP
+{{ include "prometheus.tls-config.kube-cert-auth-insecure" . | indent 8 }}
+      kubernetes_sd_configs:
+      - role: endpoints
+        api_server: https://kube-apiserver:443
+        tls_config:
+{{ include "prometheus.tls-config.kube-cert-auth" . | indent 10 }}
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_k8s_app,__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        regex: cilium;true
+        action: keep
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - target_label: __address__
+        replacement: kube-apiserver:443
+      - source_labels: [__meta_kubernetes_pod_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/namespaces/kube-system/pods/${1}:9090/proxy/metrics
+      metric_relabel_configs:
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.ciliumAgent | indent 6 }}
+
+    - job_name: 'hubble-metrics'
+      scheme: https
+      tls_config:
+        # This is needed because the kubelets' certificates are not are generated
+        # for a specific pod IP
+{{ include "prometheus.tls-config.kube-cert-auth-insecure" . | indent 8 }}
+      kubernetes_sd_configs:
+      - role: endpoints
+        api_server: https://kube-apiserver:443
+        tls_config:
+{{ include "prometheus.tls-config.kube-cert-auth" . | indent 10 }}
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_k8s_app,__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        regex: cilium;true
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+        replacement: kube-apiserver:443
+      - target_label: __address__
+        replacement: kube-apiserver:443
+      - source_labels: [__meta_kubernetes_pod_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/namespaces/kube-system/pods/${1}:9091/proxy/metrics
+      metric_relabel_configs:
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.hubble | indent 6 }}
+
+    - job_name: 'cilium-operator-metrics'
+      scheme: https
+      tls_config:
+{{ include "prometheus.tls-config.kube-cert-auth-insecure" . | indent 8 }}
+      kubernetes_sd_configs:
+      - role: pod
+        api_server: https://kube-apiserver:443
+        tls_config:
+{{ include "prometheus.tls-config.kube-cert-auth" . | indent 10 }}
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_label_io_cilium_app,__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          regex: operator;true
+          action: keep
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: pod
+        - target_label: __address__
+          replacement: kube-apiserver:443
+        - source_labels: [__meta_kubernetes_pod_name,__meta_kubernetes_pod_annotation_prometheus_io_port]
+          regex: (.+);(.+)
+          target_label: __metrics_path__
+          replacement: /api/v1/namespaces/kube-system/pods/${1}:${2}/proxy/metrics
+      metric_relabel_configs:
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.ciliumOperator | indent 6 }}
+
+  dashboard_operators: |
+    cilium-agent-metrics-dashboard.json: |-
+    {{- .Files.Get "cilium-agent-metrics-dashboard.json" | nindent 6 }}
+
+    cilium-operator-metrics--dashboard.json: |-
+    {{- .Files.Get "cilium-operator-metrics-dashboard.json" | nindent 6 }}
+
+    hubble-dashboard-metrics-dashboard.json: |-
+    {{- .Files.Get "hubble-metrics-dashboard.json" | nindent 6 }}
+  alerting_rules: |
+    cilium-agent-metrics-rules.yaml: |
+      groups:
+      - name: recording-rules.rules
+        rules:
+        - record: cilium:api_latency
+          expr: histogram_quantile(0.99,sum by(verb, method, path, le) (rate(cilium_agent_api_process_time_seconds_bucket[10m])))
+          labels:
+            quantile: "0.99"

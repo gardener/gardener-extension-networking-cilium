@@ -30,14 +30,14 @@ spec:
           image: {{ index .Values.global.images "hubble-relay" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
           command:
-            - "hubble-relay"
+          - "hubble-relay"
           args:
-            - "serve"
-            - "--peer-service=unix://{{ .Values.global.hubble.socketPath }}"
-            - "--listen-address={{ .Values.listenHost }}:{{ .Values.listenPort }}"
+          - "serve"
+          - "--peer-service=unix://{{ .Values.global.hubble.socketPath }}"
+          - "--listen-address={{ .Values.listenHost }}:{{ .Values.listenPort }}"
           ports:
-            - name: grpc
-              containerPort: {{ .Values.listenPort }}
+          - name: grpc
+            containerPort: {{ .Values.listenPort }}
           readinessProbe:
             tcpSocket:
               port: grpc

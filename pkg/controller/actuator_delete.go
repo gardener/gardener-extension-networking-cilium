@@ -26,6 +26,12 @@ import (
 
 // Delete implements Network.Actuator.
 func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
+	// First delete the monitoring configuration
+	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, true); err != nil {
+		return err
+	}
+
+	// Then delete the managed resource along with its secrets
 	if err := resourcemanager.
 		NewSecret(a.client).
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).

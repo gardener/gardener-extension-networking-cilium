@@ -7,13 +7,18 @@ spec:
   privileged: false
   allowPrivilegeEscalation: false
   requiredDropCapabilities:
-    - ALL
+  - ALL
   volumes:
-    - 'configMap'
-    - 'emptyDir'
-    - 'projected'
-    - 'secret'
-    - 'downwardAPI'
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  {{- if .Values.global.prometheus.enabled }}
+  hostPorts:
+  - min: 6942
+    max: 6942
+  {{- end }}
   hostNetwork: true
   hostIPC: false
   hostPID: false
@@ -24,13 +29,13 @@ spec:
   supplementalGroups:
     rule: 'MustRunAs'
     ranges:
-      - min: 1
-        max: 65535
+    - min: 1
+      max: 65535
   fsGroup:
     rule: 'MustRunAs'
     ranges:
-      - min: 1
-        max: 65535
+    - min: 1
+      max: 65535
   readOnlyRootFilesystem: false
 ---
 apiVersion: rbac.authorization.k8s.io/v1
