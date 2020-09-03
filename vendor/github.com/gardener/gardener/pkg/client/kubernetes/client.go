@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gardener/gardener/pkg/chartrenderer"
 	gardencoreclientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	versionutils "github.com/gardener/gardener/pkg/utils/version"
@@ -136,18 +135,9 @@ func RESTConfigFromClientConnectionConfiguration(cfg *componentbaseconfig.Client
 			return nil, err
 		}
 	} else {
-		clientConfig, err := clientcmd.NewClientConfigFromBytes(kubeconfig)
+		restConfig, err = RESTConfigFromKubeconfig(kubeconfig)
 		if err != nil {
-			return nil, err
-		}
-
-		if err := validateClientConfig(clientConfig); err != nil {
-			return nil, err
-		}
-
-		restConfig, err = clientConfig.ClientConfig()
-		if err != nil {
-			return nil, err
+			return restConfig, err
 		}
 	}
 
@@ -158,6 +148,24 @@ func RESTConfigFromClientConnectionConfiguration(cfg *componentbaseconfig.Client
 		restConfig.ContentType = cfg.ContentType
 	}
 
+	return restConfig, nil
+}
+
+// RESTConfigFromKubeconfig returns a rest.Config from the bytes of a kubeconfig
+func RESTConfigFromKubeconfig(kubeconfig []byte) (*rest.Config, error) {
+	clientConfig, err := clientcmd.NewClientConfigFromBytes(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validateClientConfig(clientConfig); err != nil {
+		return nil, err
+	}
+
+	restConfig, err := clientConfig.ClientConfig()
+	if err != nil {
+		return nil, err
+	}
 	return restConfig, nil
 }
 
@@ -203,6 +211,7 @@ var supportedKubernetesVersions = []string{
 	"1.16",
 	"1.17",
 	"1.18",
+	"1.19",
 }
 
 func checkIfSupportedKubernetesVersion(gitVersion string) error {
@@ -252,7 +261,7 @@ func newClientSet(conf *config) (Interface, error) {
 	}
 
 	var runtimeClient client.Client
-	if UseCachedRuntimeClients {
+	if UseCachedRuntimeClients && !conf.disableCachedClient {
 		runtimeClient, err = newRuntimeClientWithCache(conf.restConfig, conf.clientOptions, runtimeCache)
 		if err != nil {
 			return nil, err
@@ -281,31 +290,12 @@ func newClientSet(conf *config) (Interface, error) {
 		return nil, err
 	}
 
-	serverVersion, err := kubernetes.Discovery().ServerVersion()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := checkIfSupportedKubernetesVersion(serverVersion.GitVersion); err != nil {
-		return nil, err
-	}
-
-	applier := NewApplier(runtimeClient, conf.clientOptions.Mapper)
-	chartRenderer := chartrenderer.NewWithServerVersion(serverVersion)
-	chartApplier := NewChartApplier(chartRenderer, applier)
-
-	if err := checkIfSupportedKubernetesVersion(serverVersion.GitVersion); err != nil {
-		return nil, err
-	}
-
 	cs := &clientSet{
 		config:     conf.restConfig,
 		restMapper: conf.clientOptions.Mapper,
 		restClient: kubernetes.Discovery().RESTClient(),
 
-		applier:       applier,
-		chartRenderer: chartRenderer,
-		chartApplier:  chartApplier,
+		applier: NewApplier(runtimeClient, conf.clientOptions.Mapper),
 
 		client:       runtimeClient,
 		directClient: directClient,
@@ -315,8 +305,10 @@ func newClientSet(conf *config) (Interface, error) {
 		gardenCore:      gardenCore,
 		apiregistration: apiRegistration,
 		apiextension:    apiExtension,
+	}
 
-		version: serverVersion.GitVersion,
+	if _, err := cs.DiscoverVersion(); err != nil {
+		return nil, fmt.Errorf("error discovering kubernetes version: %w", err)
 	}
 
 	return cs, nil
