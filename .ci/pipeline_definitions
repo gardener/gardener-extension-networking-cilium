@@ -2,6 +2,9 @@ gardener-extension-networking-cilium:
   template: 'default'
   base_definition:
     repo: ~
+    steps:
+      verify:
+        image: 'golang:1.14.2'
     traits:
       version:
         preprocess: 'inject-commit-hash'
