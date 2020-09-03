@@ -100,11 +100,11 @@ format:
 
 .PHONY: test
 test:
-	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/test.sh --skipPackage=test/integration -r ./cmd/... ./pkg/... ./test/...
+	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/test.sh ./cmd/... ./pkg/...
 
 .PHONY: test-cov
 test-cov:
-	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/test-cover.sh -r ./cmd/... ./pkg/...
+	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/test-cover.sh ./cmd/... ./pkg/...
 
 .PHONY: test-clean
 test-clean:
