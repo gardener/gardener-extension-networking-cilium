@@ -73,8 +73,10 @@ type CloudProfileSpec struct {
 	// SeedSelector contains an optional list of labels on `Seed` resources that marks those seeds whose shoots may use this provider profile.
 	// An empty list means that all seeds of the same provider type are supported.
 	// This is useful for environments that are of the same type (like openstack) but may have different "instances"/landscapes.
+	// Optionally a list of possible providers can be added to enable cross-provider scheduling. By default, the provider
+	// type of the seed must match the shoot's provider.
 	// +optional
-	SeedSelector *metav1.LabelSelector `json:"seedSelector,omitempty" protobuf:"bytes,7,opt,name=seedSelector"`
+	SeedSelector *SeedSelector `json:"seedSelector,omitempty" protobuf:"bytes,7,opt,name=seedSelector"`
 	// Type is the name of the provider.
 	Type string `json:"type" protobuf:"bytes,8,opt,name=type"`
 	// VolumeTypes contains constraints regarding allowed values for volume types in the 'workers' block in the Shoot specification.
@@ -82,6 +84,16 @@ type CloudProfileSpec struct {
 	// +patchStrategy=merge
 	// +optional
 	VolumeTypes []VolumeType `json:"volumeTypes,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,9,rep,name=volumeTypes"`
+}
+
+// SeedSelector contains constraints for selecting seed to be usable for shoots using a profile
+type SeedSelector struct {
+	// LabelSelector is optional and can be used to select seeds by their label settings
+	// +optional
+	*metav1.LabelSelector `json:",inline,omitempty" protobuf:"bytes,1,opt,name=labelSelector"`
+	// Providers is optional and can be used by restricting seeds by their provider type. '*' can be used to enable seeds regardless of their provider type.
+	// +optional
+	ProviderTypes []string `json:"providerTypes,omitempty" protobuf:"bytes,2,rep,name=providerTypes"`
 }
 
 // KubernetesSettings contains constraints regarding allowed values of the 'kubernetes' block in the Shoot specification.
@@ -97,10 +109,18 @@ type KubernetesSettings struct {
 type MachineImage struct {
 	// Name is the name of the image.
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
-	// Versions contains versions and expiration dates of the machine image
+	// Versions contains versions, expiration dates and container runtimes of the machine image
 	// +patchMergeKey=version
 	// +patchStrategy=merge
-	Versions []ExpirableVersion `json:"versions" patchStrategy:"merge" patchMergeKey:"version" protobuf:"bytes,2,rep,name=versions"`
+	Versions []MachineImageVersion `json:"versions" patchStrategy:"merge" patchMergeKey:"version" protobuf:"bytes,2,rep,name=versions"`
+}
+
+// MachineImageVersion is an expirable version with list of supported container runtimes and interfaces
+type MachineImageVersion struct {
+	ExpirableVersion `json:",inline" protobuf:"bytes,1,opt,name=expirableVersion"`
+	// CRI list of supported container runtime and interfaces supported by this version
+	// +optional
+	CRI []CRI `json:"cri,omitempty" protobuf:"bytes,2,rep,name=cri"`
 }
 
 // ExpirableVersion contains a version and an expiration date.
