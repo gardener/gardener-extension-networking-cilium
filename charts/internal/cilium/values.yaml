@@ -32,8 +32,14 @@ global:
     enabled: true
     listenAddress: ":4244"
     metrics:
-      enabled: false
-      # Specifies the port the metric server listens on (e.g. 9091).
+      enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - http
       port: 9091
 
   # etcd is the etcd configuration
@@ -86,14 +92,14 @@ global:
 
   # prometheus enables
   prometheus:
-    enabled: false
+    enabled: true
     port: 9090
     serviceMonitor:
       enabled: false
 
   # operatorPrometheus enables
   operatorPrometheus:
-    enabled: false
+    enabled: true
     port: 6942
 
   # enableXTSocketFallback enables the fallback compatibility solution

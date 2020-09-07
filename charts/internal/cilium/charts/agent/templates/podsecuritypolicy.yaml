@@ -7,15 +7,22 @@ spec:
   privileged: true
   allowPrivilegeEscalation: true
   allowedCapabilities:
-    - NET_ADMIN
-    - SYS_MODULE
+  - NET_ADMIN
+  - SYS_MODULE
   volumes:
-    - 'configMap'
-    - 'emptyDir'
-    - 'projected'
-    - 'secret'
-    - 'downwardAPI'
-    - 'hostPath'
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  - 'hostPath'
+  {{- if .Values.global.prometheus.enabled }}
+  hostPorts:
+  - min: 9090
+    max: 9090
+  - min: 9091
+    max: 9091
+  {{- end }}
   hostNetwork: true
   hostIPC: false
   hostPID: false
@@ -31,8 +38,8 @@ spec:
   fsGroup:
     rule: 'MustRunAs'
     ranges:
-      - min: 1
-        max: 65535
+    - min: 1
+      max: 65535
   readOnlyRootFilesystem: false
 ---
 apiVersion: rbac.authorization.k8s.io/v1

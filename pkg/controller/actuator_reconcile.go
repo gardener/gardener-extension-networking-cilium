@@ -17,14 +17,18 @@ package controller
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
-	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-resource-manager/pkg/manager"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/operation/common"
-	"github.com/pkg/errors"
+	"github.com/gardener/gardener/pkg/utils/chart"
+
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -46,6 +50,25 @@ func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*man
 	return manager.NewSecret(cl).
 		WithKeyValues(map[string][]byte{charts.CiliumConfigKey: ciliumConfig}).
 		WithNamespacedName(namespace, CiliumConfigSecretName), withLocalObjectRefs(CiliumConfigSecretName)
+}
+
+func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
+	ciliumControlPlaneMonitoringChart := &chart.Chart{
+		Name: cilium.MonitoringName,
+		Path: cilium.CiliumMonitoringChartPath,
+		Objects: []*chart.Object{
+			{
+				Type: &corev1.ConfigMap{},
+				Name: cilium.MonitoringName,
+			},
+		},
+	}
+
+	if deleteChart {
+		return client.IgnoreNotFound(ciliumControlPlaneMonitoringChart.Delete(ctx, seedClient, network.Namespace))
+	}
+
+	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{})
 }
 
 // Reconcile implements Network.Actuator.
@@ -84,6 +107,10 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		WithSecretRefs(secretRefs).
 		WithInjectedLabels(map[string]string{common.ShootNoCleanup: "true"}).
 		Reconcile(ctx); err != nil {
+		return err
+	}
+
+	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, false); err != nil {
 		return err
 	}
 

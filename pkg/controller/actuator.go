@@ -15,10 +15,13 @@
 package controller
 
 import (
+	"github.com/go-logr/logr"
+	"github.com/pkg/errors"
+
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
+	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
@@ -35,6 +38,9 @@ type actuator struct {
 	client  client.Client
 	scheme  *runtime.Scheme
 	decoder runtime.Decoder
+
+	gardenerClientset gardenerkubernetes.Interface
+	chartApplier      gardenerkubernetes.ChartApplier
 }
 
 // LogID is the id that will be used in log statements.
@@ -61,5 +67,14 @@ func (a *actuator) InjectClient(client client.Client) error {
 
 func (a *actuator) InjectConfig(config *rest.Config) error {
 	a.restConfig = config
+
+	var err error
+	a.gardenerClientset, err = gardenerkubernetes.NewWithConfig(gardenerkubernetes.WithRESTConfig(config))
+	if err != nil {
+		return errors.Wrap(err, "could not create Gardener client")
+	}
+
+	a.chartApplier = a.gardenerClientset.ChartApplier()
+
 	return nil
 }

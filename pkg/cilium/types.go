@@ -36,6 +36,9 @@ const (
 	// HubbleUIImageName defines the UI image name.
 	HubbleUIImageName = "hubble-ui"
 
+	// MonitoringChartName
+	MonitoringName = "cilium-monitoring-config"
+
 	// ReleaseName is the name of the Cilium Release.
 	ReleaseName = "cilium"
 )
@@ -48,4 +51,7 @@ var (
 
 	// ChartPath path for internal Cilium Chart
 	ChartPath = filepath.Join(InternalChartsPath, "cilium")
+
+	// CiliumMonitoringChartPath  path for internal Cilium monitoring chart
+	CiliumMonitoringChartPath = filepath.Join(InternalChartsPath, "cilium-monitoring")
 )

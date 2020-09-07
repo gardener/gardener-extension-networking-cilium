@@ -57,14 +57,14 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: false,
 	},
 	Prometheus: prometheus{
-		Enabled: false,
+		Enabled: true,
 		Port:    9090,
 		ServiceMonitor: serviceMonitor{
 			Enabled: false,
 		},
 	},
 	OperatorPrometheus: operatorPrometheus{
-		Enabled: false,
+		Enabled: true,
 		Port:    6942,
 	},
 	Psp: psp{
