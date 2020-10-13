@@ -32,6 +32,7 @@ spec:
         command:
         - /gardener-extension-networking-cilium
         - --max-concurrent-reconciles={{ .Values.controller.concurrentSyncs }}
+        - --healthcheck-max-concurrent-reconciles={{ .Values.controller.healthcheck.concurrentSyncs }}
         - --ignore-operation-annotation={{ .Values.controller.ignoreOperationAnnotation }}
         - --config-file=/etc/{{ include "name" . }}/config/config.yaml
         env:
