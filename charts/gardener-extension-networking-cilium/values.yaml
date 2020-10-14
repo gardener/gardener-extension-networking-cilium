@@ -4,6 +4,13 @@ image:
   pullPolicy: IfNotPresent
 
 resources: {}
+vpa:
+  enabled: true
+# resourcePolicy:
+#   minAllowed:
+#     cpu: 100m
+#     memory: 128Mi
+
 # imageVectorOverwrite: |
 #   images:
 #   - name: pause-container
@@ -20,6 +27,8 @@ resources: {}
 
 controller:
   concurrentSyncs: 5
+  healthcheck:
+    concurrentSyncs: 5
   ignoreOperationAnnotation: false
 
 config:
