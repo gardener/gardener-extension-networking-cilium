@@ -12,22 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controller
+package utils
 
 import (
-	"context"
-
-	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	"github.com/gardener/gardener/pkg/utils/managedresources"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
-// Migrate implements Network.Actuator.
-func (a *actuator) Migrate(ctx context.Context, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
-	// Keep objects for shoot managed resources so that they are not deleted from the shoot during the migration
-	if err := managedresources.KeepManagedResourceObjects(ctx, a.client, network.Namespace, CiliumConfigSecretName, true); err != nil {
-		return err
-	}
-
-	return a.Delete(ctx, network, cluster)
+// MustNewRequirement creates a labels.Requirement with the given values and panics if there is an error.
+func MustNewRequirement(key string, op selection.Operator, vals ...string) labels.Requirement {
+	req, err := labels.NewRequirement(key, op, vals)
+	utilruntime.Must(err)
+	return *req
 }
