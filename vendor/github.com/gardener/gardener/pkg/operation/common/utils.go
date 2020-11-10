@@ -228,7 +228,7 @@ func MergeOwnerReferences(references []metav1.OwnerReference, newReferences ...m
 }
 
 // ReadLeaderElectionRecord returns the leader election record for a given lock type and a namespace/name combination.
-func ReadLeaderElectionRecord(ctx context.Context, k8sClient kubernetes.Interface, lock, namespace, name string) (*resourcelock.LeaderElectionRecord, error) {
+func ReadLeaderElectionRecord(ctx context.Context, client client.Client, lock, namespace, name string) (*resourcelock.LeaderElectionRecord, error) {
 	var (
 		leaderElectionRecord resourcelock.LeaderElectionRecord
 		annotations          map[string]string
@@ -236,14 +236,14 @@ func ReadLeaderElectionRecord(ctx context.Context, k8sClient kubernetes.Interfac
 
 	switch lock {
 	case resourcelock.EndpointsResourceLock:
-		endpoint, err := k8sClient.Kubernetes().CoreV1().Endpoints(namespace).Get(ctx, name, kubernetes.DefaultGetOptions())
-		if err != nil {
+		endpoint := &corev1.Endpoints{}
+		if err := client.Get(ctx, kutil.Key(namespace, name), endpoint); err != nil {
 			return nil, err
 		}
 		annotations = endpoint.Annotations
 	case resourcelock.ConfigMapsResourceLock:
-		configmap, err := k8sClient.Kubernetes().CoreV1().ConfigMaps(namespace).Get(ctx, name, kubernetes.DefaultGetOptions())
-		if err != nil {
+		configmap := &corev1.ConfigMap{}
+		if err := client.Get(ctx, kutil.Key(namespace, name), configmap); err != nil {
 			return nil, err
 		}
 		annotations = configmap.Annotations
@@ -331,13 +331,10 @@ func DeleteHvpa(ctx context.Context, k8sClient kubernetes.Interface, namespace s
 func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot bool) error {
 	resources := []runtime.Object{
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAAdmissionController, Namespace: namespace}},
-		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAExporter, Namespace: namespace}},
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPARecommender, Namespace: namespace}},
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAUpdater, Namespace: namespace}},
 		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "vpa-webhook", Namespace: namespace}},
-		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
 		&autoscalingv1beta2.VerticalPodAutoscaler{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAAdmissionController, Namespace: namespace}},
-		&autoscalingv1beta2.VerticalPodAutoscaler{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAExporter + "-vpa", Namespace: namespace}},
 		&autoscalingv1beta2.VerticalPodAutoscaler{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPARecommender, Namespace: namespace}},
 		&autoscalingv1beta2.VerticalPodAutoscaler{ObjectMeta: metav1.ObjectMeta{Name: v1beta1constants.DeploymentNameVPAUpdater, Namespace: namespace}},
 	}
@@ -345,7 +342,6 @@ func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot b
 	if isShoot {
 		resources = append(resources,
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
-			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: VPASecretName, Namespace: namespace}},
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
@@ -356,19 +352,16 @@ func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot b
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:actor"}},
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:admission-controller"}},
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:checkpoint-actor"}},
-			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:exporter"}},
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:metrics-reader"}},
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:target-reader"}},
 			&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:evictioner"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:actor"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:admission-controller"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:checkpoint-actor"}},
-			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:exporter"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:metrics-reader"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:target-reader"}},
 			&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "gardener.cloud:vpa:seed:evictioner"}},
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
-			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-exporter", Namespace: namespace}},
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
 			&admissionregistrationv1beta1.MutatingWebhookConfiguration{ObjectMeta: metav1.ObjectMeta{Name: "vpa-webhook-config-seed"}},
@@ -433,6 +426,23 @@ func DeleteLoggingStack(ctx context.Context, k8sClient client.Client, namespace 
 	}
 
 	return nil
+}
+
+// GetContainerResourcesInStatefulSet  returns the containers resources in StatefulSet
+func GetContainerResourcesInStatefulSet(ctx context.Context, k8sClient client.Client, key client.ObjectKey) ([]*corev1.ResourceRequirements, error) {
+	statefulSet := &appsv1.StatefulSet{}
+	resourcesPerContainer := make([]*corev1.ResourceRequirements, 0)
+	if err := k8sClient.Get(ctx, key, statefulSet); client.IgnoreNotFound(err) != nil {
+		return nil, err
+	} else if !apierrors.IsNotFound(err) {
+		for _, container := range statefulSet.Spec.Template.Spec.Containers {
+			resourcesPerContainer = append(resourcesPerContainer, container.Resources.DeepCopy())
+		}
+		return resourcesPerContainer, nil
+	}
+
+	// Use the default resources defined in values file
+	return nil, nil
 }
 
 // DeleteReserveExcessCapacity deletes the deployment and priority class for excess capacity
