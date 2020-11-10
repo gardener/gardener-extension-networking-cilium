@@ -13,7 +13,7 @@ If multiple identifiers make sense you can also state the commands multiple time
 
 For Gardener Enhancement Proposals (GEPs), please check the following [documentation](https://github.com/gardener/gardener/tree/master/docs/proposals/README.md) before submitting this pull request.
 -->
-/area networking
+/area TODO
 /kind TODO
 /priority normal
 

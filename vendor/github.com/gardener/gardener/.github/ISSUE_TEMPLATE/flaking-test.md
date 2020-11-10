@@ -1,9 +1,12 @@
 ---
-name: Bug Report
-about: Report a bug encountered while working with this Gardener extension
-labels: kind/bug
+name: Flaking Test
+about: Report flaky tests or jobs in Gardener CI
+title: "[Flaky Test] FLAKING TEST/SUITE"
+labels: kind/flake
 
 ---
+
+<!-- Please only use this template for submitting reports about flaky tests or jobs (pass or fail with no underlying change in code) in Gardener CI -->
 
 **How to categorize this issue?**
 <!--
@@ -18,22 +21,15 @@ If multiple identifiers make sense you can also state the commands multiple time
 "/kind" identifiers:     api-change|bug|cleanup|discussion|enhancement|epic|impediment|poc|post-mortem|question|regression|task|technical-debt|test
 "/priority" identifiers: normal|critical|blocker
 -->
-/area networking
-/kind bug
+/area testing
+/kind flake
 /priority normal
 
-**What happened**:
+**Which test(s)/suite(s) are flaking**:
 
-**What you expected to happen**:
+**CI link**:
 
-**How to reproduce it (as minimally and precisely as possible)**:
+**Reason for failure**:
 
-**Anything else we need to know?**:
+**Anything else we need to know**:
 
-**Environment**:
-
-- Gardener version (if relevant):
-- Extension version:
-- Kubernetes version (use `kubectl version`):
-- Cloud provider or hardware configuration:
-- Others:

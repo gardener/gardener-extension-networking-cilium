@@ -45,6 +45,8 @@ github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
 # github.com/gardener/gardener v1.12.6
 ## explicit
+github.com/gardener/gardener/.github
+github.com/gardener/gardener/.github/ISSUE_TEMPLATE
 github.com/gardener/gardener/extensions/pkg/controller
 github.com/gardener/gardener/extensions/pkg/controller/cmd
 github.com/gardener/gardener/extensions/pkg/controller/error
