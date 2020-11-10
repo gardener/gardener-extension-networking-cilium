@@ -321,12 +321,6 @@ global:
     # enabled enables installation of socket level functionality.
     enabled: false
 
-  # k8s is the Kubernetes specific configuration
-  k8s:
-    # requireIPv4PodCIDR enables waiting for Kubernetes to provide the PodCIDR
-    # range via the Kubernetes node resource
-    requireIPv4PodCIDR: false
-
   # ENI mode configures the options required to run with ENI
   eni: false
 
@@ -370,6 +364,8 @@ global:
 
   # remoteNodeIdentity enables use of the remote node identity
   remoteNodeIdentity: true
+
+  apiRateLimit: false
 
   synchronizeK8sNodes: true
 
