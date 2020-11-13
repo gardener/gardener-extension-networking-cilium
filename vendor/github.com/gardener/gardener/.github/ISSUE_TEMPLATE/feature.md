@@ -1,7 +1,7 @@
 ---
-name: Bug Report
-about: Report a bug encountered while working with this Gardener extension
-labels: kind/bug
+name: Enhancement Request
+about: Suggest an enhancement to the Gardener project
+labels: kind/enhancement
 
 ---
 
@@ -18,22 +18,10 @@ If multiple identifiers make sense you can also state the commands multiple time
 "/kind" identifiers:     api-change|bug|cleanup|discussion|enhancement|epic|impediment|poc|post-mortem|question|regression|task|technical-debt|test
 "/priority" identifiers: normal|critical|blocker
 -->
-/area networking
-/kind bug
+/area TODO
+/kind enhancement
 /priority normal
 
-**What happened**:
+**What would you like to be added**:
 
-**What you expected to happen**:
-
-**How to reproduce it (as minimally and precisely as possible)**:
-
-**Anything else we need to know?**:
-
-**Environment**:
-
-- Gardener version (if relevant):
-- Extension version:
-- Kubernetes version (use `kubectl version`):
-- Cloud provider or hardware configuration:
-- Others:
+**Why is this needed**:
