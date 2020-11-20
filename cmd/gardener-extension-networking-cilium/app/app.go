@@ -28,7 +28,9 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/util"
+	"github.com/gardener/gardener/pkg/client/kubernetes/utils"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -75,7 +77,13 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			}
 			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
 
-			mgr, err := manager.New(restOpts.Completed().Config, mgrOpts.Completed().Options())
+			completedMgrOpts := mgrOpts.Completed().Options()
+			completedMgrOpts.NewClient = utils.NewClientFuncWithDisabledCacheFor(
+				&corev1.Secret{},    // applied for ManagedResources
+				&corev1.ConfigMap{}, // applied for monitoring config
+			)
+
+			mgr, err := manager.New(restOpts.Completed().Config, completedMgrOpts)
 			if err != nil {
 				controllercmd.LogErrAndExit(err, "Could not instantiate manager")
 			}
