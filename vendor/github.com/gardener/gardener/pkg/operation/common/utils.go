@@ -34,7 +34,6 @@ import (
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	"github.com/gardener/gardener/pkg/version"
 
-	jsoniter "github.com/json-iterator/go"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
@@ -51,17 +50,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var (
-	json = jsoniter.ConfigFastest
-
-	// TimeNow returns the current time. Exposed for testing.
-	TimeNow = time.Now
-)
+// TimeNow returns the current time. Exposed for testing.
+var TimeNow = time.Now
 
 // GetSecretKeysWithPrefix returns a list of keys of the given map <m> which are prefixed with <kind>.
 func GetSecretKeysWithPrefix(kind string, m map[string]*corev1.Secret) []string {
@@ -225,42 +219,6 @@ func MergeOwnerReferences(references []metav1.OwnerReference, newReferences ...m
 	}
 
 	return references
-}
-
-// ReadLeaderElectionRecord returns the leader election record for a given lock type and a namespace/name combination.
-func ReadLeaderElectionRecord(ctx context.Context, client client.Client, lock, namespace, name string) (*resourcelock.LeaderElectionRecord, error) {
-	var (
-		leaderElectionRecord resourcelock.LeaderElectionRecord
-		annotations          map[string]string
-	)
-
-	switch lock {
-	case resourcelock.EndpointsResourceLock:
-		endpoint := &corev1.Endpoints{}
-		if err := client.Get(ctx, kutil.Key(namespace, name), endpoint); err != nil {
-			return nil, err
-		}
-		annotations = endpoint.Annotations
-	case resourcelock.ConfigMapsResourceLock:
-		configmap := &corev1.ConfigMap{}
-		if err := client.Get(ctx, kutil.Key(namespace, name), configmap); err != nil {
-			return nil, err
-		}
-		annotations = configmap.Annotations
-	default:
-		return nil, fmt.Errorf("unknown lock type: %s", lock)
-	}
-
-	leaderElection, ok := annotations[resourcelock.LeaderElectionRecordAnnotationKey]
-	if !ok {
-		return nil, fmt.Errorf("could not find key %s in annotations", resourcelock.LeaderElectionRecordAnnotationKey)
-	}
-
-	if err := json.Unmarshal([]byte(leaderElection), &leaderElectionRecord); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal leader election record: %+v", err)
-	}
-
-	return &leaderElectionRecord, nil
 }
 
 // GardenerDeletionGracePeriod is the default grace period for Gardener's force deletion methods.
@@ -644,6 +602,23 @@ func IsNowInEffectiveShootMaintenanceTimeWindow(shoot *gardencorev1beta1.Shoot) 
 	return EffectiveShootMaintenanceTimeWindow(shoot).Contains(time.Now())
 }
 
+// LastReconciliationDuringThisTimeWindow returns true if <now> is contained in the given effective maintenance time
+// window of the shoot and if the <lastReconciliation> did not happen longer than the longest possible duration of a
+// maintenance time window.
+func LastReconciliationDuringThisTimeWindow(shoot *gardencorev1beta1.Shoot) bool {
+	if shoot.Status.LastOperation == nil {
+		return false
+	}
+
+	var (
+		timeWindow         = EffectiveShootMaintenanceTimeWindow(shoot)
+		now                = time.Now()
+		lastReconciliation = shoot.Status.LastOperation.LastUpdateTime.Time
+	)
+
+	return timeWindow.Contains(lastReconciliation) && now.UTC().Sub(lastReconciliation.UTC()) <= gardencorev1beta1.MaintenanceTimeWindowDurationMaximum
+}
+
 // IsObservedAtLatestGenerationAndSucceeded checks whether the Shoot's generation has changed or if the LastOperation status
 // is Succeeded.
 func IsObservedAtLatestGenerationAndSucceeded(shoot *gardencorev1beta1.Shoot) bool {
@@ -816,4 +791,27 @@ func ConfirmDeletion(ctx context.Context, c client.Client, obj runtime.Object) e
 // ExtensionID returns an identifier for the given extension kind/type.
 func ExtensionID(extensionKind, extensionType string) string {
 	return fmt.Sprintf("%s/%s", extensionKind, extensionType)
+}
+
+// DeleteDeploymentsHavingDeprecatedRoleLabelKey deletes the Deployments with the passed object keys if
+// the corresponding Deployment .spec.selector contains the deprecated "garden.sapcloud.io/role" label key.
+func DeleteDeploymentsHavingDeprecatedRoleLabelKey(ctx context.Context, c client.Client, keys []client.ObjectKey) error {
+	for _, key := range keys {
+		deployment := &appsv1.Deployment{}
+		if err := c.Get(ctx, key, deployment); err != nil {
+			if apierrors.IsNotFound(err) {
+				continue
+			}
+
+			return err
+		}
+
+		if _, ok := deployment.Spec.Selector.MatchLabels[v1beta1constants.DeprecatedGardenRole]; ok {
+			if err := c.Delete(ctx, deployment); client.IgnoreNotFound(err) != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
