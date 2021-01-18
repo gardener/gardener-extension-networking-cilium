@@ -33,15 +33,17 @@ const (
 
 	// WorkerNamePrefix is the default prefix that will be used for Shoot workers
 	WorkerNamePrefix = "worker-"
+
+	// TestMachineryKubeconfigsPathEnvVarName is the name of the environment variable that holds the path to the
+	// testmachinery provided kubeconfigs.
+	TestMachineryKubeconfigsPathEnvVarName = "TM_KUBECONFIG_PATH"
 )
 
 // SearchResponse represents the response from a search query to loki
 type SearchResponse struct {
 	Data struct {
-		Stats struct {
-			Summary struct {
-				TotalLinesProcessed int `json:"totalLinesProcessed"`
-			} `json:"summary"`
-		} `json:"stats"`
+		Result []struct {
+			Value []interface{} `json:"value"`
+		} `json:"result"`
 	} `json:"data"`
 }

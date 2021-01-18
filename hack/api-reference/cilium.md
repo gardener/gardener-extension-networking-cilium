@@ -289,3 +289,6 @@ NodePortMode
 <p>TunnelMode defines what tunnel mode to use for Cilium.</p>
 </p>
 <hr/>
+<p><em>
+Generated with <a href="https://github.com/ahmetb/gen-crd-api-reference-docs">gen-crd-api-reference-docs</a>
+</em></p>
