@@ -28,9 +28,9 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/util"
-	"github.com/gardener/gardener/pkg/client/kubernetes/utils"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -78,10 +78,10 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
 
 			completedMgrOpts := mgrOpts.Completed().Options()
-			completedMgrOpts.NewClient = utils.NewClientFuncWithDisabledCacheFor(
+			completedMgrOpts.ClientDisableCacheFor = []client.Object{
 				&corev1.Secret{},    // applied for ManagedResources
 				&corev1.ConfigMap{}, // applied for monitoring config
-			)
+			}
 
 			mgr, err := manager.New(restOpts.Completed().Config, completedMgrOpts)
 			if err != nil {
@@ -109,7 +109,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 				controllercmd.LogErrAndExit(err, "Could not add health check controller to manager")
 			}
 
-			if err := mgr.Start(ctx.Done()); err != nil {
+			if err := mgr.Start(ctx); err != nil {
 				controllercmd.LogErrAndExit(err, "Error running manager")
 			}
 		},
