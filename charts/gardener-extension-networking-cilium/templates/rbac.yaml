@@ -28,55 +28,60 @@ rules:
   - patch
   - update
 - apiGroups:
-    - ""
+  - coordination.k8s.io
   resources:
-    - configmaps
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
   resourceNames:
-    - networking-cilium-leader-election
+  - networking-cilium-leader-election
   verbs:
-    - get
-    - watch
-    - update
-    - patch
+  - get
+  - watch
+  - update
 - apiGroups:
-    - resources.gardener.cloud
+  - resources.gardener.cloud
   resources:
-    - managedresources
+  - managedresources
   verbs:
-    - get
-    - list
-    - create
-    - delete
-    - watch
-    - patch
-    - update
+  - list
+  - create
+  - delete
+  - watch
+  - patch
+  - update
+  - get
 - apiGroups:
-    - ""
-    - apps
-    - batch
-    - rbac.authorization.k8s.io
-    - admissionregistration.k8s.io
-    - apiextensions.k8s.io
+  - ""
+  - apps
+  - batch
+  - rbac.authorization.k8s.io
+  - admissionregistration.k8s.io
+  - apiextensions.k8s.io
   resources:
-    - namespaces
-    - events
-    - secrets
-    - configmaps
-    - endpoints
-    - deployments
-    - services
-    - serviceaccounts
-    - clusterroles
-    - clusterrolebindings
-    - roles
-    - rolebindings
-    - jobs
-    - pods
-    - pods/log
-    - mutatingwebhookconfigurations
-    - customresourcedefinitions
+  - namespaces
+  - events
+  - secrets
+  - configmaps
+  - endpoints
+  - deployments
+  - services
+  - serviceaccounts
+  - clusterroles
+  - clusterrolebindings
+  - roles
+  - rolebindings
+  - jobs
+  - pods
+  - pods/log
+  - mutatingwebhookconfigurations
+  - customresourcedefinitions
   verbs:
-    - "*"
+  - "*"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
