@@ -30,6 +30,7 @@ type globalConfig struct {
 	K8sServiceHost         string                                  `json:"k8sServiceHost"`
 	K8sServicePort         int32                                   `json:"k8sServicePort"`
 	NodePort               nodePort                                `json:"nodePort"`
+	PodCIDR                string                                  `json:"podCIDR"`
 }
 
 // etcd related configuration for cilium

@@ -35,6 +35,14 @@ const (
 	HubbleRelayImageName = "hubble-relay"
 	// HubbleUIImageName defines the UI image name.
 	HubbleUIImageName = "hubble-ui"
+	// HubbleUIBackendImageName defines the UI Backend image name.
+	HubbleUIBackendImageName = "hubble-ui-backend"
+
+	// CertGenImageName defines certificate generation image name.
+	CertGenImageName = "certgen"
+
+	// EnvoyImageName defines the envoy image name.
+	EnvoyImageName = "envoy"
 
 	// MonitoringChartName
 	MonitoringName = "cilium-monitoring-config"

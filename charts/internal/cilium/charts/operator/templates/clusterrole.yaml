@@ -56,6 +56,9 @@ rules:
   - ciliumidentities
   - ciliumidentities/status
   - ciliumidentities/finalizers
+  - ciliumlocalredirectpolicies
+  - ciliumlocalredirectpolicies/status
+  - ciliumlocalredirectpolicies/finalizers
   verbs:
   - '*'
 - apiGroups:
@@ -63,9 +66,11 @@ rules:
   resources:
     - customresourcedefinitions
   verbs:
-    - get
-    - list
-    - watch
+  - create
+  - get
+  - list
+  - update
+  - watch
 # For cilium-operator running in HA mode.
 #
 # Cilium operator running in HA mode requires the use of ResourceLock for Leader Election

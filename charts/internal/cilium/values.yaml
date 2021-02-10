@@ -24,6 +24,7 @@ requirements:
 
 # global groups all configuration options that have effect on all sub-charts
 global:
+  podCIDR: ""
   # pullPolicy is the container image pull policy
   pullPolicy: IfNotPresent
 
@@ -41,6 +42,14 @@ global:
       - icmp
       - http
       port: 9091
+    tls:
+      enabled: true
+      auto:
+        enabled: true
+      certFile: /var/lib/cilium/tls/hubble/server.crt
+      keyFile: /var/lib/cilium/tls/hubble/server.key
+      clientCAFiles: /var/lib/cilium/tls/hubble/client-ca.crt
+
 
   # etcd is the etcd configuration
   etcd:
@@ -66,6 +75,8 @@ global:
   #  kvstore: Key-value store backend (better scalability)
   identityAllocationMode: crd
 
+  endpointGCInterval: 5m0s
+
   # ipv4 is the IPv4 addressing configuration
   ipv4:
     enabled: true
@@ -89,6 +100,10 @@ global:
     sleepAfterInit: false
     # Keep the deprecated probes when deploying Cilium DaemonSet
     keepDeprecatedProbes: false
+    # The agent can be put into the following three policy enforcement modes
+    # default, always and never.
+    # https://docs.cilium.io/en/latest/policy/intro/#policy-enforcement-modes
+    policyMode: default
 
   # prometheus enables
   prometheus:
@@ -126,6 +141,11 @@ global:
   # autoDirectNodeRoutes enables installation of PodCIDR routes between worker
   # nodes if worker nodes share a common L2 network segment.
   autoDirectNodeRoutes: false
+
+  bandwidthManager:
+    enabled: false
+  localRedirectPolicy:
+    enabled: false
 
   # endpointRoutes enables use of per endpoint routes instead of routing vis
   # the cilium_host interface
@@ -178,8 +198,8 @@ global:
     # name is the human readable name of the cluster when setting up
     # clustermesh
     name: default
-
-    # id is a 8 bits unique cluster identifier when setting up clustermesh
+    # Unique ID of the cluster. Must be unique across all conneted clusters and
+    # in the range of 1 and 255. Only relevant when building a mesh of clusters.
     #id: "1"
 
   # tunnel is the encapsulation configuration for communication between nodes
@@ -235,6 +255,14 @@ global:
     # first time
     monitorFlags: "all"
 
+  # bpf-policy-map-max specifies the maximum number of entries in endpoint
+  # policy map (per endpoint)
+    policyMapMax: "16384"
+
+  # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
+  # backend and affinity maps.
+    lbMapMax: "65536"
+
   # encryption is the encryption specific configuration
   encryption:
     # enabled enables encryption
@@ -259,6 +287,8 @@ global:
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
   kubeProxyReplacement: "probe"
+  # The IP address with port for kube-proxy replacement health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable
+  kubeProxyReplacementHealthzBindAddress: ""
 
   # hostServices is the configuration for ClusterIP service handling in host namespace
   hostServices:
@@ -377,6 +407,10 @@ global:
     # Regular expression matching compatible Istio sidecar istio-proxy
     # container image names
     sidecarImageRegex: "cilium/istio_proxy"
+  
+  # Enables L7 proxy for L7 policy enforcement and visibility
+  l7proxy:
+    enabled: true
 
   ipam:
     operator:
@@ -412,4 +446,9 @@ global:
     cilium-preflight: "image-repository:image-tag"
 
     hubble: "image-repository:image-tag"
-    hubble-ui:  "image-repository:image-tag"
+    hubble-relay: "image-repository:image-tag"
+    hubble-ui: "image-repository:image-tag"
+    hubble-ui-backend: "image-repository:image-tag"
+    certgen: "image-repository:image-tag"
+    envoy: "image-repository:image-tag"
+

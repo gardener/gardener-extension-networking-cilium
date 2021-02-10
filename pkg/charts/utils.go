@@ -17,6 +17,8 @@ package charts
 import (
 	"fmt"
 
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
@@ -77,9 +79,13 @@ var defaultGlobalConfig = globalConfig{
 		cilium.CiliumNodeInitImageName:     imagevector.CiliumNodeInitImage(),
 		cilium.CiliumPreflightImageName:    imagevector.CiliumPreflightImage(),
 
-		cilium.HubbleRelayImageName: imagevector.CiliumHubbleRelayImage(),
-		cilium.HubbleUIImageName:    imagevector.CiliumHubbleUIImage(),
+		cilium.HubbleRelayImageName:     imagevector.CiliumHubbleRelayImage(),
+		cilium.HubbleUIImageName:        imagevector.CiliumHubbleUIImage(),
+		cilium.HubbleUIBackendImageName: imagevector.CiliumHubbleUIBackendImage(),
+		cilium.CertGenImageName:         imagevector.CiliumCertGenImage(),
+		cilium.EnvoyImageName:           imagevector.CiliumEnvoyImage(),
 	},
+	PodCIDR: "",
 }
 
 func newGlobalConfig() globalConfig {
@@ -91,23 +97,27 @@ func newRequirementsConfig() requirementsConfig {
 }
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
-func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, err := generateChartValues(config)
+func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network) (*ciliumConfig, error) {
+	requirementsConfig, globalConfig, err := generateChartValues(config, network)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %v", err)
 	}
+
 	return &ciliumConfig{
 		Requirements: requirementsConfig,
 		Global:       globalConfig,
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig) (requirementsConfig, globalConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
 	)
 
+	if network.Spec.PodCIDR != "" {
+		globalConfig.PodCIDR = network.Spec.PodCIDR
+	}
 	if config == nil {
 		return requirementsConfig, globalConfig, nil
 	}

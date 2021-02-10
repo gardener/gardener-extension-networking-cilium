@@ -1,0 +1,26 @@
+---
+apiVersion: {{ include "rbacversion" . }}
+kind: ClusterRoleBinding
+metadata:
+  name: hubble-relay
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hubble-relay
+subjects:
+- kind: ServiceAccount
+  name: hubble-relay
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: {{ include "rbacversion" . }}
+kind: ClusterRoleBinding
+metadata:
+  name: hubble-generate-certs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hubble-generate-certs
+subjects:
+- kind: ServiceAccount
+  name: hubble-generate-certs
+  namespace: {{ .Release.Namespace }}

@@ -2,7 +2,7 @@
 apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
 metadata:
-  name: hubble-ui 
+  name: hubble-ui
 rules:
   - apiGroups:
       - networking.k8s.io

@@ -1,0 +1,58 @@
+---
+apiVersion: {{ include "rbacversion" . }}
+kind: ClusterRole
+metadata:
+  name: hubble-relay
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - componentstatuses
+      - endpoints
+      - namespaces
+      - nodes
+      - pods
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: {{ include "rbacversion" . }}
+kind: ClusterRole
+metadata:
+  name: hubble-generate-certs
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+      - configmaps
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - hubble-server-certs
+      - hubble-relay-client-certs
+      - hubble-relay-server-certs
+    verbs:
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - hubble-ca-cert
+    verbs:
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - hubble-ca-secret
+    verbs:
+      - get
