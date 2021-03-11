@@ -4,6 +4,8 @@ kind: Service
 metadata:
   namespace: {{ .Release.Namespace }}
   name: hubble-ui
+  labels:
+    k8s-app: hubble-ui
 spec:
   selector:
     k8s-app: hubble-ui

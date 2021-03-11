@@ -4,6 +4,8 @@ kind: Deployment
 metadata:
   namespace: {{ .Release.Namespace }}
   name: hubble-ui
+  labels:
+    k8s-app: hubble-ui
 spec:
   replicas: {{ .Values.replicas }}
   selector:
@@ -21,20 +23,40 @@ spec:
       serviceAccountName: hubble-ui
       serviceAccount: hubble-ui
       containers:
-        - name: hubble-ui
+        - name: frontend
           image: {{ index .Values.global.images "hubble-ui" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+        - name: backend
+          image: {{ index .Values.global.images "hubble-ui-backend" }}
+          imagePullPolicy: {{ .Values.global.pullPolicy }}
           env:
-            - name: NODE_ENV
-              value: "production"
-            - name: LOG_LEVEL
-              value: "info"
-            - name: HUBBLE
-              value: "true"
-            - name: HUBBLE_SERVICE
-              value: "hubble-relay"
-            - name: HUBBLE_PORT
-              value: "80"
+            - name: EVENTS_SERVER_PORT
+              value: "8090"
+            - name: FLOWS_API_ADDR
+              value: "hubble-relay:80"
+          ports:
+            - containerPort: 8090
+              name: grpc
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+        - name: proxy
+          image: {{ index .Values.global.images "envoy" }}
+          imagePullPolicy: {{ .Values.global.pullPolicy }}
           ports:
             - containerPort: 12000
               name: http
@@ -45,3 +67,19 @@ spec:
             requests:
               cpu: 100m
               memory: 64Mi
+          command: ["envoy"]
+          args:
+            [
+              "-c",
+              "/etc/envoy.yaml",
+              "-l",
+              "info"
+            ]
+          volumeMounts:
+            - name: hubble-ui-envoy-yaml
+              mountPath: /etc/envoy.yaml
+              subPath: envoy.yaml
+      volumes:
+        - name: hubble-ui-envoy-yaml
+          configMap:
+            name: hubble-ui-envoy

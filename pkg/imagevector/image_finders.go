@@ -45,3 +45,18 @@ func CiliumHubbleRelayImage() string {
 func CiliumHubbleUIImage() string {
 	return findImage(cilium.HubbleUIImageName)
 }
+
+// CiliumHubbleUIBackendImage returns the Cilium Hubble UI Backend image.
+func CiliumHubbleUIBackendImage() string {
+	return findImage(cilium.HubbleUIBackendImageName)
+}
+
+// CiliumCertGenImage returns the Cilium Cert Gen image.
+func CiliumCertGenImage() string {
+	return findImage(cilium.CertGenImageName)
+}
+
+// CiliumEnvoyImage returns the Envoy image.
+func CiliumEnvoyImage() string {
+	return findImage(cilium.EnvoyImageName)
+}
