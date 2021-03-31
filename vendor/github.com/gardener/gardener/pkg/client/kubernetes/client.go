@@ -19,11 +19,10 @@ import (
 	"errors"
 	"fmt"
 
-	gardencoreclientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
-	versionutils "github.com/gardener/gardener/pkg/utils/version"
-
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	kubernetesclientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -32,6 +31,16 @@ import (
 	apiserviceclientset "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+
+	gardencoreclientset "github.com/gardener/gardener/pkg/client/core/clientset/versioned"
+	gardenercorescheme "github.com/gardener/gardener/pkg/client/core/clientset/versioned/scheme"
+	kcache "github.com/gardener/gardener/pkg/client/kubernetes/cache"
+	gardenseedmanagementclientset "github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned"
+	seedmanagementscheme "github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned/scheme"
+	settingsscheme "github.com/gardener/gardener/pkg/client/settings/clientset/versioned/scheme"
+	"github.com/gardener/gardener/pkg/logger"
+	versionutils "github.com/gardener/gardener/pkg/utils/version"
 )
 
 var (
@@ -43,6 +52,17 @@ var (
 
 // KubeConfig is the key to the kubeconfig
 const KubeConfig = "kubeconfig"
+
+func init() {
+	// enable protobuf for Gardener API for controller-runtime clients
+	protobufSchemeBuilder := runtime.NewSchemeBuilder(
+		gardenercorescheme.AddToScheme,
+		seedmanagementscheme.AddToScheme,
+		settingsscheme.AddToScheme,
+	)
+
+	utilruntime.Must(apiutil.AddToProtobufScheme(protobufSchemeBuilder.AddToScheme))
+}
 
 // NewClientFromFile creates a new Client struct for a given kubeconfig. The kubeconfig will be
 // read from the filesystem at location <kubeconfigPath>. If given, <masterURL> overrides the
@@ -246,7 +266,7 @@ func newClientSet(conf *Config) (Interface, error) {
 		return nil, err
 	}
 
-	runtimeCache, err := NewRuntimeCache(conf.restConfig, cache.Options{
+	runtimeCache, err := conf.newRuntimeCache(conf.restConfig, cache.Options{
 		Scheme: conf.clientOptions.Scheme,
 		Mapper: conf.clientOptions.Mapper,
 		Resync: conf.cacheResync,
@@ -262,37 +282,54 @@ func newClientSet(conf *Config) (Interface, error) {
 
 	var runtimeClient client.Client
 	if UseCachedRuntimeClients && !conf.disableCache {
-		runtimeClient, err = newRuntimeClientWithCache(conf.restConfig, conf.clientOptions, runtimeCache, conf.uncachedObjects...)
+		delegatingClient, err := client.NewDelegatingClient(client.NewDelegatingClientInput{
+			CacheReader:     runtimeCache,
+			Client:          directClient,
+			UncachedObjects: conf.uncachedObjects,
+		})
 		if err != nil {
 			return nil, err
+		}
+
+		runtimeClient = &fallbackClient{
+			Client: delegatingClient,
+			reader: directClient,
 		}
 	} else {
 		runtimeClient = directClient
 	}
 
-	kubernetes, err := kubernetesclientset.NewForConfig(conf.restConfig)
+	// prepare rest config with contentType defaulted to protobuf for client-go style clients that either talk to
+	// kubernetes or aggregated APIs that support protobuf.
+	cfg := defaultContentTypeProtobuf(conf.restConfig)
+
+	kubernetes, err := kubernetesclientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	gardenCore, err := gardencoreclientset.NewForConfig(conf.restConfig)
+	gardenCore, err := gardencoreclientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	apiRegistration, err := apiserviceclientset.NewForConfig(conf.restConfig)
+	gardenSeedManagement, err := gardenseedmanagementclientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	apiExtension, err := apiextensionsclientset.NewForConfig(conf.restConfig)
+	apiRegistration, err := apiserviceclientset.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	apiExtension, err := apiextensionsclientset.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	cs := &clientSet{
 		config:     conf.restConfig,
-		restMapper: conf.clientOptions.Mapper,
 		restClient: kubernetes.Discovery().RESTClient(),
 
 		applier: NewApplier(runtimeClient, conf.clientOptions.Mapper),
@@ -301,10 +338,11 @@ func newClientSet(conf *Config) (Interface, error) {
 		directClient: directClient,
 		cache:        runtimeCache,
 
-		kubernetes:      kubernetes,
-		gardenCore:      gardenCore,
-		apiregistration: apiRegistration,
-		apiextension:    apiExtension,
+		kubernetes:           kubernetes,
+		gardenCore:           gardenCore,
+		gardenSeedManagement: gardenSeedManagement,
+		apiregistration:      apiRegistration,
+		apiextension:         apiExtension,
 	}
 
 	if _, err := cs.DiscoverVersion(); err != nil {
@@ -315,5 +353,55 @@ func newClientSet(conf *Config) (Interface, error) {
 }
 
 func setConfigDefaults(conf *Config) error {
-	return setClientOptionsDefaults(conf.restConfig, &conf.clientOptions)
+	// we can't default to protobuf ContentType here, otherwise controller-runtime clients will also try to talk to
+	// CRD resources (e.g. extension CRs in the Seed) using protobuf, but CRDs don't support protobuf
+	// see https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#advanced-features-and-flexibility
+	if err := setClientOptionsDefaults(conf.restConfig, &conf.clientOptions); err != nil {
+		return err
+	}
+	if conf.newRuntimeCache == nil {
+		conf.newRuntimeCache = NewRuntimeCache
+	}
+	return nil
+}
+
+func defaultContentTypeProtobuf(c *rest.Config) *rest.Config {
+	config := *c
+	if config.ContentType == "" {
+		config.ContentType = runtime.ContentTypeProtobuf
+	}
+	return &config
+}
+
+var _ client.Client = &fallbackClient{}
+
+// fallbackClient holds a `client.Reader` and `client.Reader` which is meant as a fallback
+// in case Get/List requests with the ordinary `client.Reader` fail (e.g. because of cache errors).
+type fallbackClient struct {
+	client.Client
+	reader client.Reader
+}
+
+var cacheError = &kcache.CacheError{}
+
+// Get retrieves an obj for a given object key from the Kubernetes Cluster.
+// In case of a cache error, the underlying API reader is used to execute the request again.
+func (d *fallbackClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+	err := d.Client.Get(ctx, key, obj)
+	if err != nil && errors.As(err, &cacheError) {
+		logger.Logger.Debug("Falling back to API reader because a cache error occurred: %w", err)
+		return d.reader.Get(ctx, key, obj)
+	}
+	return err
+}
+
+// List retrieves list of objects for a given namespace and list options.
+// In case of a cache error, the underlying API reader is used to execute the request again.
+func (d *fallbackClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+	err := d.Client.List(ctx, list, opts...)
+	if err != nil && errors.As(err, &cacheError) {
+		logger.Logger.Debug("Falling back to API reader because a cache error occurred: %w", err)
+		return d.reader.List(ctx, list, opts...)
+	}
+	return err
 }
