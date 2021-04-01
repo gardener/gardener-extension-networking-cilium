@@ -9,7 +9,7 @@ require (
 	github.com/gardener/gardener v1.19.1-0.20210401122359-e16e6ec0002e
 	github.com/gardener/gardener-resource-manager v0.18.0
 	github.com/go-logr/logr v0.3.0
-	github.com/gobuffalo/packr/v2 v2.5.1
+	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/golang/mock v1.5.0
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
