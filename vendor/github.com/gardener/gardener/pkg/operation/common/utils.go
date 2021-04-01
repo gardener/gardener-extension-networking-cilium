@@ -32,9 +32,8 @@ import (
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/pkg/version"
-	hvpav1alpha1 "github.com/gardener/hvpa-controller/api/v1alpha1"
 
+	hvpav1alpha1 "github.com/gardener/hvpa-controller/api/v1alpha1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -50,6 +49,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/component-base/version"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -132,12 +132,6 @@ func ExtractShootDetailsFromBackupEntryName(backupEntryName string) (shootTechni
 	return shootTechnicalID, shootUID
 }
 
-// IsFollowingNewNamingConvention determines whether the new naming convention followed for shoot resources.
-// TODO: Remove this and use only "--" as separator, once we have all shoots deployed as per new naming conventions.
-func IsFollowingNewNamingConvention(seedNamespace string) bool {
-	return len(strings.Split(seedNamespace, "--")) > 2
-}
-
 // ReplaceCloudProviderConfigKey replaces a key with the new value in the given cloud provider config.
 func ReplaceCloudProviderConfigKey(cloudProviderConfig, separator, key, value string) string {
 	keyValueRegexp := regexp.MustCompile(fmt.Sprintf(`(\Q%s\E%s)([^\n]*)`, key, separator))
@@ -162,7 +156,7 @@ func ProjectForNamespace(projectLister gardencorelisters.ProjectLister, namespac
 
 // ProjectForNamespaceWithClient returns the project object responsible for a given <namespace>.
 // It tries to identify the project object by looking for the namespace name in the project spec.
-func ProjectForNamespaceWithClient(ctx context.Context, c client.Client, namespaceName string) (*gardencorev1beta1.Project, error) {
+func ProjectForNamespaceWithClient(ctx context.Context, c client.Reader, namespaceName string) (*gardencorev1beta1.Project, error) {
 	projectList := &gardencorev1beta1.ProjectList{}
 	err := c.List(ctx, projectList)
 	if err != nil {
@@ -180,28 +174,6 @@ func projectForNamespace(projects []gardencorev1beta1.Project, namespaceName str
 	}
 
 	return nil, apierrors.NewNotFound(gardencorev1beta1.Resource("Project"), fmt.Sprintf("for namespace %s", namespaceName))
-}
-
-// ProjectNameForNamespace determines the project name for a given <namespace>. It tries to identify it first per the namespace's ownerReferences.
-// If it doesn't help then it will check whether the project name is a label on the namespace object. If it doesn't help then the name can be inferred
-// from the namespace name in case it is prefixed with the project prefix. If none of those approaches the namespace name itself is returned as project
-// name.
-func ProjectNameForNamespace(namespace *corev1.Namespace) string {
-	for _, ownerReference := range namespace.OwnerReferences {
-		if ownerReference.Kind == "Project" {
-			return ownerReference.Name
-		}
-	}
-
-	if name, ok := namespace.Labels[ProjectName]; ok {
-		return name
-	}
-
-	if nameSplit := strings.Split(namespace.Name, ProjectPrefix); len(nameSplit) > 1 {
-		return nameSplit[1]
-	}
-
-	return namespace.Name
 }
 
 // GardenerDeletionGracePeriod is the default grace period for Gardener's force deletion methods.
@@ -228,7 +200,7 @@ func DeleteHvpa(ctx context.Context, k8sClient kubernetes.Interface, namespace s
 	}
 
 	listOptions := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", v1beta1constants.GardenRole, GardenRoleHvpa),
+		LabelSelector: fmt.Sprintf("%s=%s", v1beta1constants.GardenRole, v1beta1constants.GardenRoleHvpa),
 	}
 
 	// Delete all CRDs with label "gardener.cloud/role=hvpa"
@@ -350,6 +322,8 @@ func DeleteSeedLoggingStack(ctx context.Context, k8sClient client.Client) error 
 		&appsv1.DaemonSet{ObjectMeta: metav1.ObjectMeta{Name: "fluent-bit", Namespace: v1beta1constants.GardenNamespace}},
 		&networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: "allow-fluentbit", Namespace: v1beta1constants.GardenNamespace}},
 		&schedulingv1.PriorityClass{ObjectMeta: metav1.ObjectMeta{Name: "fluent-bit"}},
+		&schedulingv1.PriorityClass{ObjectMeta: metav1.ObjectMeta{Name: "loki"}},
+		&schedulingv1.PriorityClass{ObjectMeta: metav1.ObjectMeta{Name: GardenLokiPriorityClassName}},
 		&rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "fluent-bit-read"}},
 		&rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: "fluent-bit-read"}},
 		&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "fluent-bit", Namespace: v1beta1constants.GardenNamespace}},
@@ -366,14 +340,14 @@ func DeleteSeedLoggingStack(ctx context.Context, k8sClient client.Client) error 
 }
 
 // GetContainerResourcesInStatefulSet  returns the containers resources in StatefulSet
-func GetContainerResourcesInStatefulSet(ctx context.Context, k8sClient client.Client, key client.ObjectKey) ([]*corev1.ResourceRequirements, error) {
+func GetContainerResourcesInStatefulSet(ctx context.Context, k8sClient client.Client, key client.ObjectKey) (map[string]*corev1.ResourceRequirements, error) {
 	statefulSet := &appsv1.StatefulSet{}
-	resourcesPerContainer := make([]*corev1.ResourceRequirements, 0)
+	resourcesPerContainer := make(map[string]*corev1.ResourceRequirements)
 	if err := k8sClient.Get(ctx, key, statefulSet); client.IgnoreNotFound(err) != nil {
 		return nil, err
 	} else if !apierrors.IsNotFound(err) {
 		for _, container := range statefulSet.Spec.Template.Spec.Containers {
-			resourcesPerContainer = append(resourcesPerContainer, container.Resources.DeepCopy())
+			resourcesPerContainer[container.Name] = container.Resources.DeepCopy()
 		}
 		return resourcesPerContainer, nil
 	}
@@ -697,7 +671,7 @@ func GetSecretFromSecretRef(ctx context.Context, c client.Client, secretRef *cor
 }
 
 // CheckIfDeletionIsConfirmed returns whether the deletion of an object is confirmed or not.
-func CheckIfDeletionIsConfirmed(obj metav1.Object) error {
+func CheckIfDeletionIsConfirmed(obj client.Object) error {
 	annotations := obj.GetAnnotations()
 	if annotations == nil {
 		return annotationRequiredError()
@@ -725,13 +699,8 @@ func ConfirmDeletion(ctx context.Context, c client.Client, obj client.Object) er
 		}
 
 		existing := obj.DeepCopyObject()
-
-		acc, err := meta.Accessor(obj)
-		if err != nil {
-			return err
-		}
-		kutil.SetMetaDataAnnotation(acc, ConfirmationDeletion, "true")
-		kutil.SetMetaDataAnnotation(acc, v1beta1constants.GardenerTimestamp, TimeNow().UTC().String())
+		kutil.SetMetaDataAnnotation(obj, ConfirmationDeletion, "true")
+		kutil.SetMetaDataAnnotation(obj, v1beta1constants.GardenerTimestamp, TimeNow().UTC().String())
 
 		if reflect.DeepEqual(existing, obj) {
 			return nil

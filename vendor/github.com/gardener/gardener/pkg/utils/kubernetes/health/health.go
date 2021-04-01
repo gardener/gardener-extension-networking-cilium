@@ -27,7 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,6 +35,7 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	seedmanagementv1alpha1 "github.com/gardener/gardener/pkg/apis/seedmanagement/v1alpha1"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils"
 	"github.com/gardener/gardener/pkg/utils/retry"
@@ -285,13 +285,39 @@ func checkSeed(seed *gardencorev1beta1.Seed, identity *gardencorev1beta1.Gardene
 	return nil
 }
 
+var (
+	managedSeedConditionTypes = []gardencorev1beta1.ConditionType{
+		seedmanagementv1alpha1.ManagedSeedShootReconciled,
+		seedmanagementv1alpha1.ManagedSeedSeedRegistered,
+	}
+)
+
+// CheckManagedSeed checks if the given ManagedSeed is up-to-date and if its Seed has been registered.
+func CheckManagedSeed(managedSeed *seedmanagementv1alpha1.ManagedSeed) error {
+	if managedSeed.Status.ObservedGeneration < managedSeed.Generation {
+		return fmt.Errorf("observed generation outdated (%d/%d)", managedSeed.Status.ObservedGeneration, managedSeed.Generation)
+	}
+
+	for _, conditionType := range managedSeedConditionTypes {
+		condition := gardencorev1beta1helper.GetCondition(managedSeed.Status.Conditions, conditionType)
+		if condition == nil {
+			return requiredConditionMissing(string(conditionType))
+		}
+		if err := checkConditionState(string(conditionType), string(gardencorev1beta1.ConditionTrue), string(condition.Status), condition.Reason, condition.Message); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // CheckExtensionObject checks if an extension Object is healthy or not.
 // An extension object is healthy if
 // * Its observed generation is up-to-date
 // * No gardener.cloud/operation is set
 // * No lastError is in the status
 // * A last operation is state succeeded is present
-func CheckExtensionObject(o runtime.Object) error {
+func CheckExtensionObject(o client.Object) error {
 	obj, ok := o.(extensionsv1alpha1.Object)
 	if !ok {
 		return fmt.Errorf("expected extensionsv1alpha1.Object but got %T", o)
@@ -304,7 +330,7 @@ func CheckExtensionObject(o runtime.Object) error {
 // ExtensionOperationHasBeenUpdatedSince returns a health check function that checks if an extension Object's last
 // operation has been updated since `lastUpdateTime`.
 func ExtensionOperationHasBeenUpdatedSince(lastUpdateTime metav1.Time) Func {
-	return func(o runtime.Object) error {
+	return func(o client.Object) error {
 		obj, ok := o.(extensionsv1alpha1.Object)
 		if !ok {
 			return fmt.Errorf("expected extensionsv1alpha1.Object but got %T", o)
@@ -319,7 +345,7 @@ func ExtensionOperationHasBeenUpdatedSince(lastUpdateTime metav1.Time) Func {
 }
 
 // CheckBackupBucket checks if an backup bucket Object is healthy or not.
-func CheckBackupBucket(bb runtime.Object) error {
+func CheckBackupBucket(bb client.Object) error {
 	obj, ok := bb.(*gardencorev1beta1.BackupBucket)
 	if !ok {
 		return fmt.Errorf("expected gardencorev1beta1.BackupBucket but got %T", bb)

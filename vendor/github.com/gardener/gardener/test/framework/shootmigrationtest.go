@@ -16,18 +16,29 @@ package framework
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"reflect"
 	"sort"
+	"strings"
 
 	resourcesv1alpha1 "github.com/gardener/gardener-resource-manager/pkg/apis/resources/v1alpha1"
-	"github.com/gardener/gardener/pkg/apis/core"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	"github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
+	"github.com/gardener/gardener/pkg/utils"
+
+	dnsv1alpha1 "github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1"
 
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/pointer"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -85,15 +96,17 @@ func (t *ShootMigrationTest) MigrateShoot(ctx context.Context) error {
 		}
 	}
 
-	if err := t.GardenerFramework.UpdateShoot(ctx, &t.Shoot, func(shoot *gardencorev1beta1.Shoot) error {
+	t.MigrationTime = metav1.Now()
+	return t.GardenerFramework.MigrateShoot(ctx, &t.Shoot, t.TargetSeed, func(shoot *gardencorev1beta1.Shoot) error {
 		t := gardencorev1beta1.Toleration{}
-		t.Key = core.SeedTaintProtected
+		t.Key = SeedTaintTestRun
+		t.Value = pointer.StringPtr(GetTestRunID())
 
 		if shoot.Spec.Tolerations == nil {
 			shoot.Spec.Tolerations = make([]gardencorev1beta1.Toleration, 0)
 		} else {
 			for _, t := range shoot.Spec.Tolerations {
-				if t.Key == core.SeedTaintProtected {
+				if t.Key == SeedTaintTestRun {
 					return nil
 				}
 			}
@@ -101,12 +114,7 @@ func (t *ShootMigrationTest) MigrateShoot(ctx context.Context) error {
 		shoot.Spec.Tolerations = append(shoot.Spec.Tolerations, t)
 
 		return nil
-	}); err != nil {
-		return err
-	}
-
-	t.MigrationTime = metav1.Now()
-	return t.GardenerFramework.MigrateShoot(ctx, &t.Shoot, t.TargetSeed)
+	})
 }
 
 // GetNodeNames uses the shootClient to fetch all Node names from the Shoot
@@ -190,9 +198,9 @@ func (t *ShootMigrationTest) CompareElementsAfterMigration() error {
 
 // Check the timestamp of all objects that the resource-manager creates in the Shoot cluster.
 // The timestamp should not be after the ShootMigrationTest.MigrationTime
-func (t *ShootMigrationTest) CheckObjectsTimestamp(ctx context.Context) error {
+func (t *ShootMigrationTest) CheckObjectsTimestamp(ctx context.Context, mrExcludeList []string) error {
 	mrList := &resourcesv1alpha1.ManagedResourceList{}
-	if err := t.TargetSeedClient.DirectClient().List(
+	if err := t.TargetSeedClient.Client().List(
 		ctx,
 		mrList,
 		client.InNamespace(t.SeedShootNamespace),
@@ -202,23 +210,77 @@ func (t *ShootMigrationTest) CheckObjectsTimestamp(ctx context.Context) error {
 
 	for _, mr := range mrList.Items {
 		if mr.Spec.Class == nil || *mr.Spec.Class != "seed" {
-			t.GardenerFramework.Logger.Infof("=== Managed Resource: %s/%s ===", mr.Namespace, mr.Name)
-			for _, r := range mr.Status.Resources {
-				obj := &unstructured.Unstructured{}
-				obj.SetAPIVersion(r.APIVersion)
-				obj.SetKind(r.Kind)
+			if !utils.ValueExists(mr.GetName(), mrExcludeList) {
+				t.GardenerFramework.Logger.Infof("=== Managed Resource: %s/%s ===", mr.Namespace, mr.Name)
+				for _, r := range mr.Status.Resources {
+					obj := &unstructured.Unstructured{}
+					obj.SetAPIVersion(r.APIVersion)
+					obj.SetKind(r.Kind)
 
-				if err := t.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: r.Namespace, Name: r.Name}, obj); err != nil {
-					return err
-				}
+					if err := t.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: r.Namespace, Name: r.Name}, obj); err != nil {
+						return err
+					}
 
-				createionTimestamp := obj.GetCreationTimestamp()
-				t.GardenerFramework.Logger.Infof("Object: %s %s/%s Created At: %s", obj.GetKind(), obj.GetNamespace(), obj.GetName(), createionTimestamp)
-				if t.MigrationTime.Before(&createionTimestamp) {
-					return errors.Errorf("object: %s %s/%s Created At: %s is created after the Shoot migration %s", obj.GetKind(), obj.GetNamespace(), obj.GetName(), createionTimestamp, t.MigrationTime)
+					createionTimestamp := obj.GetCreationTimestamp()
+					t.GardenerFramework.Logger.Infof("Object: %s %s/%s Created At: %s", obj.GetKind(), obj.GetNamespace(), obj.GetName(), createionTimestamp)
+					if t.MigrationTime.Before(&createionTimestamp) {
+						t.GardenerFramework.Logger.Errorf("object: %s %s/%s Created At: %s is created after the Shoot migration %s", obj.GetKind(), obj.GetNamespace(), obj.GetName(), createionTimestamp, t.MigrationTime)
+						return errors.Errorf("object: %s %s/%s Created At: %s is created after the Shoot migration %s", obj.GetKind(), obj.GetNamespace(), obj.GetName(), createionTimestamp, t.MigrationTime)
+					}
 				}
 			}
 		}
+	}
+	return nil
+}
+
+// CheckForOrphanedNonNamespacedResources checks if there are orphaned resources left on the target seed after the shoot migration.
+// The function checks for Cluster, DNSOwner, BackupEntry, ClusterRoleBinding, ClusterRole and PersistentVolume
+func (t *ShootMigrationTest) CheckForOrphanedNonNamespacedResources(ctx context.Context) error {
+	seedClientScheme := t.SourceSeedClient.Client().Scheme()
+
+	if err := extensionsv1alpha1.AddToScheme(seedClientScheme); err != nil {
+		return err
+	}
+
+	leakedObjects := []string{}
+
+	for _, obj := range []client.ObjectList{
+		&extensionsv1alpha1.ClusterList{},
+		&dnsv1alpha1.DNSOwnerList{},
+		&v1alpha1.BackupEntryList{},
+		&rbacv1.ClusterRoleBindingList{},
+		&rbacv1.ClusterRoleList{},
+	} {
+		if err := t.SourceSeedClient.Client().List(ctx, obj, client.InNamespace(corev1.NamespaceAll)); err != nil {
+			return err
+		}
+
+		if err := meta.EachListItem(obj, func(object runtime.Object) error {
+			if strings.Contains(object.(client.Object).GetName(), t.SeedShootNamespace) {
+				leakedObjects = append(leakedObjects, fmt.Sprintf("%s/%s", object.(client.Object).GetObjectKind(), object.(client.Object).GetName()))
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+
+	pvList := &corev1.PersistentVolumeList{}
+	if err := t.SourceSeedClient.Client().List(ctx, pvList, client.InNamespace(corev1.NamespaceAll)); err != nil {
+		return err
+	}
+	if err := meta.EachListItem(pvList, func(obj runtime.Object) error {
+		pv := obj.(*corev1.PersistentVolume)
+		if strings.Contains(pv.Spec.ClaimRef.Namespace, t.SeedShootNamespace) {
+			leakedObjects = append(leakedObjects, fmt.Sprintf("PersistentVolume/%s", pv.GetName()))
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	if len(leakedObjects) > 0 {
+		return errors.Errorf("the following object(s) still exists in the source seed %v", leakedObjects)
 	}
 	return nil
 }

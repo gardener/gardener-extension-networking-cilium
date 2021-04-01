@@ -15,15 +15,11 @@
 package controller
 
 import (
-	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
-
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"github.com/go-logr/logr"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -35,9 +31,7 @@ type actuator struct {
 	chartRendererFactory extensionscontroller.ChartRendererFactory
 	restConfig           *rest.Config
 
-	client  client.Client
-	scheme  *runtime.Scheme
-	decoder runtime.Decoder
+	client client.Client
 
 	gardenerClientset gardenerkubernetes.Interface
 	chartApplier      gardenerkubernetes.ChartApplier
@@ -52,12 +46,6 @@ func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory)
 		logger:               log.Log.WithName(LogID),
 		chartRendererFactory: chartRendererFactory,
 	}
-}
-
-func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
-	a.scheme = scheme
-	a.decoder = serializer.NewCodecFactory(a.scheme).UniversalDecoder()
-	return nil
 }
 
 func (a *actuator) InjectClient(client client.Client) error {
