@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
 	github.com/frankban/quicktest v1.11.3 // indirect
-	github.com/gardener/gardener v1.19.1-0.20210401122359-e16e6ec0002e
+	github.com/gardener/gardener v1.20.3
 	github.com/gardener/gardener-resource-manager v0.18.0
 	github.com/go-logr/logr v0.3.0
 	github.com/gobuffalo/packr/v2 v2.8.1
@@ -30,14 +30,14 @@ require (
 )
 
 replace (
-	k8s.io/api => k8s.io/api v0.19.6
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.6
-	k8s.io/apimachinery => k8s.io/apimachinery v0.19.6
-	k8s.io/apiserver => k8s.io/apiserver v0.19.6
-	k8s.io/client-go => k8s.io/client-go v0.19.6
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.19.6
-	k8s.io/code-generator => k8s.io/code-generator v0.19.6
-	k8s.io/component-base => k8s.io/component-base v0.19.6
+	k8s.io/api => k8s.io/api v0.20.2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.2
+	k8s.io/apimachinery => k8s.io/apimachinery v0.20.2
+	k8s.io/apiserver => k8s.io/apiserver v0.20.2
+	k8s.io/client-go => k8s.io/client-go v0.20.2
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.20.2
+	k8s.io/code-generator => k8s.io/code-generator v0.20.2
+	k8s.io/component-base => k8s.io/component-base v0.20.2
 	k8s.io/helm => k8s.io/helm v2.13.1+incompatible
-	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.19.6
+	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.20.2
 )
