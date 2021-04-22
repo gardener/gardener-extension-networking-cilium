@@ -47,5 +47,5 @@ func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Netwo
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	return managedresources.WaitUntilManagedResourceDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigSecretName)
+	return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigSecretName)
 }

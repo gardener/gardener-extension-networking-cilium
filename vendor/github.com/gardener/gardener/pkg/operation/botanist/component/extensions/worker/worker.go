@@ -24,9 +24,9 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/extensions"
 	"github.com/gardener/gardener/pkg/operation/botanist/component"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig"
-	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/gardener/gardener/pkg/utils"
 
 	"github.com/Masterminds/semver"
@@ -34,7 +34,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -160,14 +159,7 @@ func (w *worker) deploy(ctx context.Context, operation string) (extensionsv1alph
 		if labels == nil {
 			labels = map[string]string{}
 		}
-
-		// k8s node role labels
-		if versionConstraintK8sSmaller115.Check(w.values.KubernetesVersion) {
-			labels["kubernetes.io/role"] = "node"
-			labels["node-role.kubernetes.io/node"] = ""
-		} else {
-			labels["node.kubernetes.io/role"] = "node"
-		}
+		labels["node.kubernetes.io/role"] = "node"
 
 		if gardencorev1beta1helper.SystemComponentsAllowed(&workerPool) {
 			labels[v1beta1constants.LabelWorkerPoolSystemComponents] = "true"
@@ -250,7 +242,7 @@ func (w *worker) deploy(ctx context.Context, operation string) (extensionsv1alph
 
 // Restore uses the seed client and the ShootState to create the Worker resources and restore their state.
 func (w *worker) Restore(ctx context.Context, shootState *gardencorev1alpha1.ShootState) error {
-	return common.RestoreExtensionWithDeployFunction(
+	return extensions.RestoreExtensionWithDeployFunction(
 		ctx,
 		w.client,
 		shootState,
@@ -262,7 +254,7 @@ func (w *worker) Restore(ctx context.Context, shootState *gardencorev1alpha1.Sho
 
 // Migrate migrates the Worker resource.
 func (w *worker) Migrate(ctx context.Context) error {
-	return common.MigrateExtensionCR(
+	return extensions.MigrateExtensionCR(
 		ctx,
 		w.client,
 		func() extensionsv1alpha1.Object { return &extensionsv1alpha1.Worker{} },
@@ -273,7 +265,7 @@ func (w *worker) Migrate(ctx context.Context) error {
 
 // Destroy deletes the Worker resource.
 func (w *worker) Destroy(ctx context.Context) error {
-	return common.DeleteExtensionCR(
+	return extensions.DeleteExtensionCR(
 		ctx,
 		w.client,
 		func() extensionsv1alpha1.Object { return &extensionsv1alpha1.Worker{} },
@@ -284,7 +276,7 @@ func (w *worker) Destroy(ctx context.Context) error {
 
 // Wait waits until the Worker resource is ready.
 func (w *worker) Wait(ctx context.Context) error {
-	return common.WaitUntilExtensionCRReady(
+	return extensions.WaitUntilExtensionCRReady(
 		ctx,
 		w.client,
 		w.logger,
@@ -309,7 +301,7 @@ func (w *worker) Wait(ctx context.Context) error {
 
 // WaitMigrate waits until the Worker resources are migrated successfully.
 func (w *worker) WaitMigrate(ctx context.Context) error {
-	return common.WaitUntilExtensionCRMigrated(
+	return extensions.WaitUntilExtensionCRMigrated(
 		ctx,
 		w.client,
 		func() extensionsv1alpha1.Object { return &extensionsv1alpha1.Worker{} },
@@ -322,7 +314,7 @@ func (w *worker) WaitMigrate(ctx context.Context) error {
 
 // WaitCleanup waits until the Worker resource is deleted.
 func (w *worker) WaitCleanup(ctx context.Context) error {
-	return common.WaitUntilExtensionCRDeleted(
+	return extensions.WaitUntilExtensionCRDeleted(
 		ctx,
 		w.client,
 		w.logger,
@@ -353,13 +345,4 @@ func (w *worker) SetWorkerNameToOperatingSystemConfigsMap(maps map[string]*opera
 // MachineDeployments returns the generated machine deployments of the Worker.
 func (w *worker) MachineDeployments() []extensionsv1alpha1.MachineDeployment {
 	return w.machineDeployments
-}
-
-var versionConstraintK8sSmaller115 *semver.Constraints
-
-func init() {
-	var err error
-
-	versionConstraintK8sSmaller115, err = semver.NewConstraint("< 1.15")
-	utilruntime.Must(err)
 }
