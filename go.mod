@@ -6,10 +6,9 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
 	github.com/frankban/quicktest v1.11.3 // indirect
-	github.com/gardener/gardener v1.20.3
+	github.com/gardener/gardener v1.21.0
 	github.com/gardener/gardener-resource-manager v0.18.0
 	github.com/go-logr/logr v0.3.0
-	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/golang/mock v1.5.0
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect

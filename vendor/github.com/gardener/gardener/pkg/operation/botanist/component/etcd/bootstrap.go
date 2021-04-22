@@ -15,17 +15,15 @@
 package etcd
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"text/template"
 	"time"
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/operation/botanist/component"
-	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/gardener/gardener/pkg/utils"
+	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 
@@ -40,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -88,14 +85,6 @@ type bootstrapper struct {
 }
 
 func (b *bootstrapper) Deploy(ctx context.Context) error {
-	var crdYAML bytes.Buffer
-	if err := crdTemplate.Execute(&crdYAML, map[string]bool{
-		"k8sGreaterEqual112": versionConstraintK8sGreaterEqual112.Check(b.kubernetesVersion),
-		"k8sGreaterEqual115": versionConstraintK8sGreaterEqual115.Check(b.kubernetesVersion),
-	}); err != nil {
-		return err
-	}
-
 	var (
 		registry = managedresources.NewRegistry(kubernetes.SeedScheme, kubernetes.SeedCodec, kubernetes.SeedSerializer)
 		labels   = func() map[string]string { return map[string]string{v1beta1constants.GardenRole: Druid} }
@@ -289,9 +278,9 @@ func (b *bootstrapper) Deploy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resources["crd.yaml"] = crdYAML.Bytes()
+	resources["crd.yaml"] = []byte(crdYAML)
 
-	return common.DeployManagedResourceForSeed(ctx, b.client, managedResourceControlName, b.namespace, false, resources)
+	return managedresources.CreateForSeed(ctx, b.client, b.namespace, managedResourceControlName, false, resources)
 }
 
 func (b *bootstrapper) Destroy(ctx context.Context) error {
@@ -305,11 +294,11 @@ func (b *bootstrapper) Destroy(ctx context.Context) error {
 		return fmt.Errorf("cannot debootstrap etcd-druid because there are still druidv1alpha1.Etcd resources left in the cluster")
 	}
 
-	if err := common.ConfirmDeletion(ctx, b.client, &apiextensionsv1beta1.CustomResourceDefinition{ObjectMeta: metav1.ObjectMeta{Name: crdName}}); err != nil {
+	if err := gutil.ConfirmDeletion(ctx, b.client, &apiextensionsv1beta1.CustomResourceDefinition{ObjectMeta: metav1.ObjectMeta{Name: crdName}}); err != nil {
 		return err
 	}
 
-	return common.DeleteManagedResourceForSeed(ctx, b.client, managedResourceControlName, b.namespace)
+	return managedresources.DeleteForSeed(ctx, b.client, b.namespace, managedResourceControlName)
 }
 
 // TimeoutWaitForManagedResource is the timeout used while waiting for the ManagedResources to become healthy
@@ -320,44 +309,26 @@ func (b *bootstrapper) Wait(ctx context.Context) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, TimeoutWaitForManagedResource)
 	defer cancel()
 
-	return managedresources.WaitUntilManagedResourceHealthy(timeoutCtx, b.client, b.namespace, managedResourceControlName)
+	return managedresources.WaitUntilHealthy(timeoutCtx, b.client, b.namespace, managedResourceControlName)
 }
 
 func (b *bootstrapper) WaitCleanup(ctx context.Context) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, TimeoutWaitForManagedResource)
 	defer cancel()
 
-	return managedresources.WaitUntilManagedResourceDeleted(timeoutCtx, b.client, b.namespace, managedResourceControlName)
-}
-
-var (
-	crdTemplate                         *template.Template
-	versionConstraintK8sGreaterEqual112 *semver.Constraints
-	versionConstraintK8sGreaterEqual115 *semver.Constraints
-)
-
-func init() {
-	var err error
-
-	crdTemplate, err = template.New("crd").Parse(crdTmpl)
-	utilruntime.Must(err)
-
-	versionConstraintK8sGreaterEqual112, err = semver.NewConstraint(">= 1.12")
-	utilruntime.Must(err)
-	versionConstraintK8sGreaterEqual115, err = semver.NewConstraint(">= 1.15")
-	utilruntime.Must(err)
+	return managedresources.WaitUntilDeleted(timeoutCtx, b.client, b.namespace, managedResourceControlName)
 }
 
 const (
 	crdName = "etcds.druid.gardener.cloud"
-	crdTmpl = `apiVersion: apiextensions.k8s.io/v1beta1
+	crdYAML = `apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: ` + crdName + `
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   labels:
-    ` + common.GardenerDeletionProtected + `: "true"
+    ` + gutil.DeletionProtected + `: "true"
 spec:
   group: druid.gardener.cloud
   names:
@@ -372,9 +343,7 @@ spec:
       specReplicasPath: .spec.replicas
       statusReplicasPath: .status.replicas
     status: {}
-{{- if .k8sGreaterEqual115 }}
   preserveUnknownFields: false
-{{- end }}
   validation:
     openAPIV3Schema:
       description: Etcd is the Schema for the etcds API
@@ -817,9 +786,7 @@ spec:
               format: int32
               type: integer
           type: object
-      {{- if .k8sGreaterEqual112 }}
       type: object
-      {{- end }}
   additionalPrinterColumns:
   - name: Ready
     type: string

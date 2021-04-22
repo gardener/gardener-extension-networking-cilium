@@ -17,18 +17,16 @@ package controller
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-resource-manager/pkg/manager"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
-	"github.com/gardener/gardener/pkg/operation/common"
 	"github.com/gardener/gardener/pkg/utils/chart"
-
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -105,7 +103,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		NewManagedResource(a.client).
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
 		WithSecretRefs(secretRefs).
-		WithInjectedLabels(map[string]string{common.ShootNoCleanup: "true"}).
+		WithInjectedLabels(map[string]string{constants.ShootNoCleanup: "true"}).
 		Reconcile(ctx); err != nil {
 		return err
 	}
