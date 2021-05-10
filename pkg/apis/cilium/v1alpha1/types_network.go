@@ -78,6 +78,12 @@ type Hubble struct {
 	Enabled bool `json:"enabled"`
 }
 
+// IPv6 enablement for cilium
+type IPv6 struct {
+	// Enabled indicates whether IPv6 is enabled or not.
+	Enabled bool `json:"enabled"`
+}
+
 // Nodeport enablement for cilium
 type Nodeport struct {
 	// Enabled is used to define whether Nodeport is required or not.
@@ -124,4 +130,7 @@ type NetworkConfig struct {
 	// Store can be either Kubernetes or etcd.
 	// +optional
 	Store *Store `json:"store,omitempty"`
+	// Enable IPv6
+	// +optional
+	IPv6 *IPv6 `json:"ipv6,omitempty"`
 }

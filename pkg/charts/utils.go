@@ -154,5 +154,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 	}
 
+	// check if IPv6 is enabled
+	if config.IPv6 != nil {
+		globalConfig.Ipv6.Enabled = config.IPv6.Enabled
+	}
+
 	return requirementsConfig, globalConfig, nil
 }
