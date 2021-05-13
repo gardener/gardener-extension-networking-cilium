@@ -123,6 +123,20 @@ Store
 <p>Store can be either Kubernetes or etcd.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>ipv6</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.IPv6">
+IPv6
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enable IPv6</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Hubble">Hubble
@@ -151,6 +165,36 @@ bool
 </td>
 <td>
 <p>Enabled indicates whether hubble is enabled or not.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.IPv6">IPv6
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>IPv6 enablement for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled indicates whether IPv6 is enabled or not.</p>
 </td>
 </tr>
 </tbody>

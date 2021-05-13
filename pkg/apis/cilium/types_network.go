@@ -88,6 +88,12 @@ type Hubble struct {
 	Enabled bool
 }
 
+// IPv6 enablement for cilium
+type IPv6 struct {
+	// Enabled indicates whether IPv6 is enabled or not.
+	Enabled bool
+}
+
 // Nodeport enablement for cilium
 type Nodeport struct {
 	// Enabled is used to define whether Nodeport is required or not.
@@ -125,4 +131,6 @@ type NetworkConfig struct {
 	TunnelMode *TunnelMode
 	// Store can be either Kubernetes or etcd.
 	Store *Store
+	// Enable IPv6
+	IPv6 *IPv6
 }
