@@ -1,7 +1,6 @@
 {{- /*  Default values with backwards compatibility */ -}}
 {{- $defaultEnableCnpStatusUpdates := "true" -}}
 {{- $defaultBpfMapDynamicSizeRatio := 0.0 -}}
-{{- $defaultBpfMasquerade := "false" -}}
 {{- $defaultBpfClockProbe := "false" -}}
 {{- $defaultSessionAffinity := "false" -}}
 {{- $defaultOperatorApiServeAddr := "localhost:9234" -}}
@@ -13,7 +12,6 @@
 {{- if semverCompare ">=1.8" (default "1.8" .Values.upgradeCompatibility) -}}
 {{- $defaultEnableCnpStatusUpdates = "false" -}}
 {{- $defaultBpfMapDynamicSizeRatio = 0.0025 -}}
-{{- $defaultBpfMasquerade = "true" -}}
 {{- $defaultBpfClockProbe = "true" -}}
 {{- $defaultSessionAffinity = "true" -}}
 {{- if .Values.global.ipv4.enabled }}
@@ -240,6 +238,8 @@ data:
   bpf-map-dynamic-size-ratio: {{ $defaultBpfMapDynamicSizeRatio | quote }}
 {{- end }}
 
+  # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
+  # optimization for nodeport reverse NAT handling.
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
   # default value below will minimize memory usage in the default installation;
@@ -357,12 +357,10 @@ data:
 {{- end }}
 {{- end }}
 
-  masquerade: {{ .Values.global.masquerade | quote }}
-{{- if hasKey .Values "bpfMasquerade" }}
-  enable-bpf-masquerade: {{ .Values.bpfMasquerade | quote }}
-{{- else if eq $defaultBpfMasquerade "true" }}
-  enable-bpf-masquerade: {{ $defaultBpfMasquerade | quote }}
-{{- end }}
+  enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
+  enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
+  enable-bpf-masquerade: {{ .Values.global.enableBpfMasquerade | quote }}
+
 {{- if .Values.global.egressMasqueradeInterfaces }}
   egress-masquerade-interfaces: {{ .Values.global.egressMasqueradeInterfaces }}
 {{- end }}
@@ -388,6 +386,7 @@ data:
 {{- end }}
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
+  install-no-conntrack-iptables-rules: {{ .Values.global.installNoConntrackIptablesRules | quote }}
 {{- if .Values.global.iptablesLockTimeout }}
   iptables-lock-timeout: {{ .Values.global.iptablesLockTimeout | quote }}
 {{- end }}
