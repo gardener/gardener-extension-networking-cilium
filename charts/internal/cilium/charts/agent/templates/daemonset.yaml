@@ -56,6 +56,8 @@ spec:
           # The initial delay for the liveness probe is intentionally large to
           # avoid an endless kill & restart cycle if in the event that the initial
           # bootstrapping takes longer than expected.
+          # Starting from Kubernetes 1.20, we are using startupProbe instead
+          # of this field.
           initialDelaySeconds: 120
           periodSeconds: 30
           successThreshold: 1
@@ -94,18 +96,6 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        - name: CILIUM_FLANNEL_MASTER_DEVICE
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-master-device
-              name: cilium-config
-              optional: true
-        - name: CILIUM_FLANNEL_UNINSTALL_ON_EXIT
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-uninstall-on-exit
-              name: cilium-config
-              optional: true
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
         - name: CILIUM_CNI_CHAINING_MODE
@@ -129,6 +119,7 @@ spec:
               command:
               - "/cni-install.sh"
               -{{- if .Values.global.debug.enabled }} "--enable-debug=true"{{- else }} "--enable-debug=false"{{- end }}
+              - "--cni-exclusive=true"
           preStop:
             exec:
               command:
@@ -373,16 +364,12 @@ spec:
           - secret:
               name: hubble-server-certs
               items:
+                - key: ca.crt
+                  path: client-ca.crt
                 - key: tls.crt
                   path: server.crt
                 - key: tls.key
                   path: server.key
-              optional: true
-          - configMap:
-              name: hubble-ca-cert
-              items:
-                - key: ca.crt
-                  path: client-ca.crt
               optional: true
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
       - configMap:
