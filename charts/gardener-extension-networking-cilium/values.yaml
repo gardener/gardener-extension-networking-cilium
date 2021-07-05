@@ -31,6 +31,9 @@ controller:
     concurrentSyncs: 5
   ignoreOperationAnnotation: false
 
+leaderElection:
+  resourceLock: leases
+
 config:
   clientConnection:
     acceptContentTypes: application/json

@@ -30,6 +30,7 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/util"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -39,9 +40,10 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	var (
 		restOpts = &controllercmd.RESTOptions{}
 		mgrOpts  = &controllercmd.ManagerOptions{
-			LeaderElection:          true,
-			LeaderElectionID:        controllercmd.LeaderElectionNameID(cilium.Name),
-			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
+			LeaderElection:             true,
+			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
+			LeaderElectionID:           controllercmd.LeaderElectionNameID(cilium.Name),
+			LeaderElectionNamespace:    os.Getenv("LEADER_ELECTION_NAMESPACE"),
 		}
 		// options for the networking-cilium controller
 		ciliumCtrlOpts = &controllercmd.ControllerOptions{
