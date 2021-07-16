@@ -17,11 +17,11 @@ package charts
 import (
 	"fmt"
 
-	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 )
 
 var defaultCiliumConfig = requirementsConfig{
@@ -97,8 +97,8 @@ func newRequirementsConfig() requirementsConfig {
 }
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
-func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, err := generateChartValues(config, network)
+func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) (*ciliumConfig, error) {
+	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %v", err)
 	}
@@ -109,7 +109,7 @@ func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *ext
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network) (requirementsConfig, globalConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
@@ -118,22 +118,21 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
 	}
-	if config == nil {
-		return requirementsConfig, globalConfig, nil
-	}
-
 	// Settings for Kube-Proxy disabled and using the HostService option
 	// Also need to configure KubeProxy
-	// TODO: enabling this feature assumes that Gardener won't deploy kube-proxy in the control-plane.
-	if config.KubeProxy != nil && config.KubeProxy.Enabled != nil && *config.KubeProxy.Enabled {
+	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
 		globalConfig.KubeProxyReplacement = ciliumv1alpha1.Strict
 
-		if config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {
+		if config != nil && config.KubeProxy != nil && config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {
 			globalConfig.K8sServiceHost = *config.KubeProxy.ServiceHost
 			globalConfig.K8sServicePort = *config.KubeProxy.ServicePort
 		}
 
 		globalConfig.NodePort.Enabled = true
+	}
+
+	if config == nil {
+		return requirementsConfig, globalConfig, nil
 	}
 
 	// check if PSPs are enabled

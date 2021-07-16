@@ -129,7 +129,6 @@ func Convert_cilium_IPv6_To_v1alpha1_IPv6(in *cilium.IPv6, out *IPv6, s conversi
 }
 
 func autoConvert_v1alpha1_KubeProxy_To_cilium_KubeProxy(in *KubeProxy, out *cilium.KubeProxy, s conversion.Scope) error {
-	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
 	out.ServiceHost = (*string)(unsafe.Pointer(in.ServiceHost))
 	out.ServicePort = (*int32)(unsafe.Pointer(in.ServicePort))
 	return nil
@@ -141,7 +140,6 @@ func Convert_v1alpha1_KubeProxy_To_cilium_KubeProxy(in *KubeProxy, out *cilium.K
 }
 
 func autoConvert_cilium_KubeProxy_To_v1alpha1_KubeProxy(in *cilium.KubeProxy, out *KubeProxy, s conversion.Scope) error {
-	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
 	out.ServiceHost = (*string)(unsafe.Pointer(in.ServiceHost))
 	out.ServicePort = (*int32)(unsafe.Pointer(in.ServicePort))
 	return nil

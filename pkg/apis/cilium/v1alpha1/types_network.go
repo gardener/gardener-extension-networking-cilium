@@ -94,9 +94,6 @@ type Nodeport struct {
 
 // KubeProxy configuration for cilium
 type KubeProxy struct {
-	// Enabled specifies whether kubeproxy is disabled.
-	// +optional
-	Enabled *bool `json:"disabled"`
 	// ServiceHost specify the controlplane node IP Address.
 	// +optional
 	ServiceHost *string `json:"k8sServiceHost,omitempty"`
