@@ -17,6 +17,7 @@ package charts
 import (
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 
 	"github.com/gardener/gardener/pkg/chartrenderer"
@@ -27,8 +28,8 @@ import (
 const CiliumConfigKey = "config.yaml"
 
 // RenderCiliumChart renders the cilium chart with the given values.
-func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network) ([]byte, error) {
-	values, err := ComputeCiliumChartValues(config, network)
+func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) ([]byte, error) {
+	values, err := ComputeCiliumChartValues(config, network, cluster)
 	if err != nil {
 		return nil, err
 	}

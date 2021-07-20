@@ -462,3 +462,4 @@ global:
     certgen: "image-repository:image-tag"
     envoy: "image-repository:image-tag"
 
+    kube-proxy: "image-repository:image-tag"

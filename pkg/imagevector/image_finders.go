@@ -2,11 +2,12 @@ package imagevector
 
 import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
+	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"k8s.io/apimachinery/pkg/util/runtime"
 )
 
-func findImage(name string) string {
-	image, err := imageVector.FindImage(name)
+func findImage(name string, opts ...imagevector.FindOptionFunc) string {
+	image, err := imageVector.FindImage(name, opts...)
 	runtime.Must(err)
 	return image.String()
 }
@@ -59,4 +60,9 @@ func CiliumCertGenImage() string {
 // CiliumEnvoyImage returns the Envoy image.
 func CiliumEnvoyImage() string {
 	return findImage(cilium.EnvoyImageName)
+}
+
+// CiliumKubeProxyImage returns the kube-proxy image.
+func CiliumKubeProxyImage(kubernetesVersion string) string {
+	return findImage(cilium.KubeProxyImageName, imagevector.RuntimeVersion(kubernetesVersion), imagevector.TargetVersion(kubernetesVersion))
 }

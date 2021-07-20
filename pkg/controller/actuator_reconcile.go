@@ -89,7 +89,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return errors.Wrapf(err, "could not create chart renderer for shoot '%s'", network.Namespace)
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network)
+	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster)
 	if err != nil {
 		return err
 	}
