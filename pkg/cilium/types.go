@@ -44,6 +44,9 @@ const (
 	// EnvoyImageName defines the envoy image name.
 	EnvoyImageName = "envoy"
 
+	// KubeProxyImageName defines the kube-proxy image name.
+	KubeProxyImageName = "kube-proxy"
+
 	// MonitoringChartName
 	MonitoringName = "cilium-monitoring-config"
 

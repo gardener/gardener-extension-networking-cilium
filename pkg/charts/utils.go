@@ -122,6 +122,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// Also need to configure KubeProxy
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
 		globalConfig.KubeProxyReplacement = ciliumv1alpha1.Strict
+		globalConfig.Images[cilium.KubeProxyImageName] = imagevector.CiliumKubeProxyImage(cluster.Shoot.Spec.Kubernetes.Version)
 
 		if config != nil && config.KubeProxy != nil && config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {
 			globalConfig.K8sServiceHost = *config.KubeProxy.ServiceHost
