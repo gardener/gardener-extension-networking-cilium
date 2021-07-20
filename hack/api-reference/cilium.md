@@ -224,18 +224,6 @@ nodes by setting how they are stored. The options are &ldquo;crd&rdquo; or &ldqu
 <tbody>
 <tr>
 <td>
-<code>disabled</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Enabled specifies whether kubeproxy is disabled.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>k8sServiceHost</code></br>
 <em>
 string
