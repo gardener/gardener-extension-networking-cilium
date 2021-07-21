@@ -273,6 +273,10 @@ global:
   # backend and affinity maps.
     lbMapMax: "65536"
 
+  # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
+  # optimization for nodeport reverse NAT handling.
+    lbExternalClusterip: "false"
+
   # encryption is the encryption specific configuration
   encryption:
     # enabled enables encryption
