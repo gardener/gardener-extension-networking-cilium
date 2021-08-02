@@ -1,7 +1,6 @@
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
 # github.com/Masterminds/goutils v1.1.1
-## explicit
 github.com/Masterminds/goutils
 # github.com/Masterminds/semver v1.5.0
 github.com/Masterminds/semver
@@ -42,12 +41,15 @@ github.com/fatih/color
 ## explicit
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
+# github.com/gardener/dependency-watchdog v0.6.1-0.20210623112844-96f73d5dc311
+github.com/gardener/dependency-watchdog/pkg/restarter/api
+github.com/gardener/dependency-watchdog/pkg/scaler/api
 # github.com/gardener/etcd-druid v0.5.0
 github.com/gardener/etcd-druid/api/v1alpha1
 # github.com/gardener/external-dns-management v0.7.18
 github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
-# github.com/gardener/gardener v1.26.0
+# github.com/gardener/gardener v1.28.1
 ## explicit
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -126,6 +128,7 @@ github.com/gardener/gardener/pkg/operation/botanist/component/clusteridentity
 github.com/gardener/gardener/pkg/operation/botanist/component/etcd
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/containerruntime
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/controlplane
+github.com/gardener/gardener/pkg/operation/botanist/component/extensions/dnsrecord
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/extension
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/infrastructure
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig
@@ -139,14 +142,15 @@ github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operati
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/kernelconfig
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/kubelet
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/logrotate
+github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/promtail
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/rootcertificates
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/original/components/varlibmount
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig/utils
 github.com/gardener/gardener/pkg/operation/botanist/component/extensions/worker
-github.com/gardener/gardener/pkg/operation/botanist/component/istio
-github.com/gardener/gardener/pkg/operation/botanist/component/konnectivity
+github.com/gardener/gardener/pkg/operation/botanist/component/kubeapiserver
 github.com/gardener/gardener/pkg/operation/botanist/component/kubecontrollermanager
 github.com/gardener/gardener/pkg/operation/botanist/component/kubescheduler
+github.com/gardener/gardener/pkg/operation/botanist/component/logging
 github.com/gardener/gardener/pkg/operation/botanist/component/metricsserver
 github.com/gardener/gardener/pkg/operation/botanist/component/resourcemanager
 github.com/gardener/gardener/pkg/operation/botanist/component/vpnseedserver
@@ -178,12 +182,15 @@ github.com/gardener/gardener/pkg/utils/version
 github.com/gardener/gardener/test/framework
 github.com/gardener/gardener/test/framework/config
 github.com/gardener/gardener/test/framework/reporter
-# github.com/gardener/gardener-resource-manager v0.18.0
+# github.com/gardener/gardener-resource-manager v0.25.0
 ## explicit
-github.com/gardener/gardener-resource-manager/pkg/apis/resources
-github.com/gardener/gardener-resource-manager/pkg/apis/resources/v1alpha1
-github.com/gardener/gardener-resource-manager/pkg/apis/resources/v1alpha1/helper
+github.com/gardener/gardener-resource-manager/pkg/controller/garbagecollector/references
 github.com/gardener/gardener-resource-manager/pkg/manager
+# github.com/gardener/gardener-resource-manager/api v0.0.0-00010101000000-000000000000 => github.com/gardener/gardener-resource-manager/api v0.25.0
+## explicit
+github.com/gardener/gardener-resource-manager/api/resources
+github.com/gardener/gardener-resource-manager/api/resources/v1alpha1
+github.com/gardener/gardener-resource-manager/api/resources/v1alpha1/helper
 # github.com/gardener/hvpa-controller v0.3.1
 github.com/gardener/hvpa-controller/api/v1alpha1
 # github.com/gardener/machine-controller-manager v0.33.0
@@ -317,7 +324,6 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mholt/archiver v3.1.1+incompatible
 github.com/mholt/archiver
 # github.com/mitchellh/copystructure v1.1.1
-## explicit
 github.com/mitchellh/copystructure
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
@@ -1026,6 +1032,7 @@ sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
+# github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
 # k8s.io/api => k8s.io/api v0.21.2
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.2
 # k8s.io/apimachinery => k8s.io/apimachinery v0.21.2

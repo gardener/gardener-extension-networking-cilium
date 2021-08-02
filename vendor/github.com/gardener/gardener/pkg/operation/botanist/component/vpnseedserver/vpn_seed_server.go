@@ -20,8 +20,11 @@ import (
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/controllerutils"
+	"github.com/gardener/gardener/pkg/gardenlet/apis/config"
+	gardenletconfigv1alpha1 "github.com/gardener/gardener/pkg/gardenlet/apis/config/v1alpha1"
 	"github.com/gardener/gardener/pkg/operation/botanist/component"
-	istio "github.com/gardener/gardener/pkg/operation/botanist/component/istio"
+	"github.com/gardener/gardener/pkg/utils"
+	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	protobuftypes "github.com/gogo/protobuf/types"
 	istionetworkingv1alpha3 "istio.io/api/networking/v1alpha3"
@@ -42,6 +45,8 @@ import (
 )
 
 const (
+	// GatewayPort is the port exposed by the istio ingress gateway
+	GatewayPort = 8132
 	// VpnSeedServerTLSAuth is the name of seed server tlsauth Secret.
 	VpnSeedServerTLSAuth = "vpn-seed-server-tlsauth"
 	// vpnSeedServerDH is the name of seed server DH Secret.
@@ -80,6 +85,12 @@ type Interface interface {
 	SetSecrets(Secrets)
 	// SetSeedNamespaceObjectUID sets UID for the namespace
 	SetSeedNamespaceObjectUID(namespaceUID types.UID)
+
+	// SetExposureClassHandlerName sets the name of the ExposureClass handler.
+	SetExposureClassHandlerName(string)
+
+	// SetSNIConfig set the sni config.
+	SetSNIConfig(*config.SNI)
 }
 
 // Secrets is collection of secrets for the vpn-seed-server.
@@ -136,8 +147,11 @@ type vpnSeedServer struct {
 	podNetwork          string
 	nodeNetwork         *string
 	replicas            int32
-	istioIngressGateway IstioIngressGateway
-	secrets             Secrets
+
+	istioIngressGateway      IstioIngressGateway
+	exposureClassHandlerName *string
+	sniConfig                *config.SNI
+	secrets                  Secrets
 }
 
 func (v *vpnSeedServer) Deploy(ctx context.Context) error {
@@ -164,6 +178,7 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 		destinationRule = v.emptyDestinationRule()
 		vpa             = v.emptyVPA()
 		envoyFilter     = v.emptyEnvoyFilter()
+		igwSelectors    = v.getIngressGatewaySelectors()
 
 		vpaUpdateMode = autoscalingv1beta2.UpdateModeAuto
 	)
@@ -223,10 +238,7 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 							// we don't want to modify existing labels on the istio namespace
 							NamespaceSelector: &metav1.LabelSelector{},
 							PodSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									// TODO (mvladev): use configurable labels
-									v1beta1constants.LabelApp: "istio-ingressgateway",
-								},
+								MatchLabels: igwSelectors,
 							},
 						},
 					},
@@ -398,7 +410,8 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 							Name: DeploymentName,
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
-									SecretName: DeploymentName,
+									SecretName:  DeploymentName,
+									DefaultMode: pointer.Int32Ptr(0400),
 								},
 							},
 						},
@@ -406,7 +419,8 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 							Name: VpnSeedServerTLSAuth,
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
-									SecretName: VpnSeedServerTLSAuth,
+									SecretName:  VpnSeedServerTLSAuth,
+									DefaultMode: pointer.Int32Ptr(0400),
 								},
 							},
 						},
@@ -414,7 +428,8 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 							Name: vpnSeedServerDH,
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
-									SecretName: vpnSeedServerDH,
+									SecretName:  vpnSeedServerDH,
+									DefaultMode: pointer.Int32Ptr(0400),
 								},
 							},
 						},
@@ -454,15 +469,13 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 
 	if _, err := controllerutils.GetAndCreateOrMergePatch(ctx, v.client, gateway, func() error {
 		gateway.Spec = istionetworkingv1beta1.Gateway{
-			Selector: map[string]string{
-				"istio": "ingressgateway",
-			},
+			Selector: igwSelectors,
 			Servers: []*istionetworkingv1beta1.Server{
 				{
 					Hosts: []string{*v.kubeAPIServerHost},
 					Port: &istionetworkingv1beta1.Port{
 						Name:     "tls-tunnel",
-						Number:   istio.GatewayPort,
+						Number:   GatewayPort,
 						Protocol: "HTTP",
 					},
 				},
@@ -582,6 +595,11 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 		return err
 	}
 
+	envoyFilterSelector := v.istioIngressGateway.Labels
+	if v.sniConfig != nil && v.exposureClassHandlerName != nil {
+		envoyFilterSelector = igwSelectors
+	}
+
 	if _, err := controllerutils.GetAndCreateOrMergePatch(ctx, v.client, envoyFilter, func() error {
 		envoyFilter.ObjectMeta.Name = envoyFilter.Name
 		envoyFilter.ObjectMeta.Namespace = envoyFilter.Namespace
@@ -596,17 +614,17 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 			},
 		}
 		envoyFilter.Spec.WorkloadSelector = &istionetworkingv1alpha3.WorkloadSelector{
-			Labels: v.istioIngressGateway.Labels,
+			Labels: envoyFilterSelector,
 		}
 		envoyFilter.Spec.ConfigPatches = []*istionetworkingv1alpha3.EnvoyFilter_EnvoyConfigObjectPatch{
-			&istionetworkingv1alpha3.EnvoyFilter_EnvoyConfigObjectPatch{
+			{
 				ApplyTo: istionetworkingv1alpha3.EnvoyFilter_NETWORK_FILTER,
 				Match: &istionetworkingv1alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
 					Context: istionetworkingv1alpha3.EnvoyFilter_GATEWAY,
 					ObjectTypes: &istionetworkingv1alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
 						Listener: &istionetworkingv1alpha3.EnvoyFilter_ListenerMatch{
-							Name:       fmt.Sprintf("0.0.0.0_%d", istio.GatewayPort),
-							PortNumber: istio.GatewayPort,
+							Name:       fmt.Sprintf("0.0.0.0_%d", GatewayPort),
+							PortNumber: GatewayPort,
 							FilterChain: &istionetworkingv1alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
 								Filter: &istionetworkingv1alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
 									Name: "envoy.filters.network.http_connection_manager",
@@ -619,25 +637,25 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 					Operation: istionetworkingv1alpha3.EnvoyFilter_Patch_MERGE,
 					Value: &protobuftypes.Struct{
 						Fields: map[string]*protobuftypes.Value{
-							"name": &protobuftypes.Value{
+							"name": {
 								Kind: &protobuftypes.Value_StringValue{
 									StringValue: "envoy.filters.network.http_connection_manager",
 								},
 							},
-							"typed_config": &protobuftypes.Value{
+							"typed_config": {
 								Kind: &protobuftypes.Value_StructValue{
 									StructValue: &protobuftypes.Struct{
 										Fields: map[string]*protobuftypes.Value{
-											"@type": &protobuftypes.Value{
+											"@type": {
 												Kind: &protobuftypes.Value_StringValue{
 													StringValue: "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
 												},
 											},
-											"route_config": &protobuftypes.Value{
+											"route_config": {
 												Kind: &protobuftypes.Value_StructValue{
 													StructValue: &protobuftypes.Struct{
 														Fields: map[string]*protobuftypes.Value{
-															"virtual_hosts": &protobuftypes.Value{
+															"virtual_hosts": {
 																Kind: &protobuftypes.Value_ListValue{
 																	ListValue: &protobuftypes.ListValue{
 																		Values: []*protobuftypes.Value{
@@ -645,25 +663,25 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 																				Kind: &protobuftypes.Value_StructValue{
 																					StructValue: &protobuftypes.Struct{
 																						Fields: map[string]*protobuftypes.Value{
-																							"name": &protobuftypes.Value{
+																							"name": {
 																								Kind: &protobuftypes.Value_StringValue{
 																									StringValue: v.namespace,
 																								},
 																							},
-																							"domains": &protobuftypes.Value{
+																							"domains": {
 																								Kind: &protobuftypes.Value_ListValue{
 																									ListValue: &protobuftypes.ListValue{
 																										Values: []*protobuftypes.Value{
 																											{
 																												Kind: &protobuftypes.Value_StringValue{
-																													StringValue: fmt.Sprintf("%s:%d", *v.kubeAPIServerHost, istio.GatewayPort),
+																													StringValue: fmt.Sprintf("%s:%d", *v.kubeAPIServerHost, GatewayPort),
 																												},
 																											},
 																										},
 																									},
 																								},
 																							},
-																							"routes": &protobuftypes.Value{
+																							"routes": {
 																								Kind: &protobuftypes.Value_ListValue{
 																									ListValue: &protobuftypes.ListValue{
 																										Values: []*protobuftypes.Value{
@@ -671,11 +689,11 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 																												Kind: &protobuftypes.Value_StructValue{
 																													StructValue: &protobuftypes.Struct{
 																														Fields: map[string]*protobuftypes.Value{
-																															"match": &protobuftypes.Value{
+																															"match": {
 																																Kind: &protobuftypes.Value_StructValue{
 																																	StructValue: &protobuftypes.Struct{
 																																		Fields: map[string]*protobuftypes.Value{
-																																			"connect_matcher": &protobuftypes.Value{
+																																			"connect_matcher": {
 																																				Kind: &protobuftypes.Value_StructValue{
 																																					StructValue: &protobuftypes.Struct{},
 																																				},
@@ -684,16 +702,16 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 																																	},
 																																},
 																															},
-																															"route": &protobuftypes.Value{
+																															"route": {
 																																Kind: &protobuftypes.Value_StructValue{
 																																	StructValue: &protobuftypes.Struct{
 																																		Fields: map[string]*protobuftypes.Value{
-																																			"cluster": &protobuftypes.Value{
+																																			"cluster": {
 																																				Kind: &protobuftypes.Value_StringValue{
 																																					StringValue: "outbound|1194||" + ServiceName + "." + v.namespace + ".svc.cluster.local",
 																																				},
 																																			},
-																																			"upgrade_configs": &protobuftypes.Value{
+																																			"upgrade_configs": {
 																																				Kind: &protobuftypes.Value_ListValue{
 																																					ListValue: &protobuftypes.ListValue{
 																																						Values: []*protobuftypes.Value{
@@ -701,12 +719,12 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 																																								Kind: &protobuftypes.Value_StructValue{
 																																									StructValue: &protobuftypes.Struct{
 																																										Fields: map[string]*protobuftypes.Value{
-																																											"upgrade_type": &protobuftypes.Value{
+																																											"upgrade_type": {
 																																												Kind: &protobuftypes.Value_StringValue{
 																																													StringValue: "CONNECT",
 																																												},
 																																											},
-																																											"connect_config": &protobuftypes.Value{
+																																											"connect_config": {
 																																												Kind: &protobuftypes.Value_StructValue{
 																																													StructValue: &protobuftypes.Struct{},
 																																												},
@@ -787,6 +805,10 @@ func (v *vpnSeedServer) SetSecrets(secrets Secrets) { v.secrets = secrets }
 func (v *vpnSeedServer) SetSeedNamespaceObjectUID(namespaceUID types.UID) {
 	v.namespaceUID = namespaceUID
 }
+func (v *vpnSeedServer) SetExposureClassHandlerName(handlerName string) {
+	v.exposureClassHandlerName = &handlerName
+}
+func (v *vpnSeedServer) SetSNIConfig(cfg *config.SNI) { v.sniConfig = cfg }
 
 func (v *vpnSeedServer) emptyConfigMap() *corev1.ConfigMap {
 	return &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: envoyConfigName, Namespace: v.namespace}}
@@ -825,7 +847,26 @@ func (v *vpnSeedServer) emptyVPA() *autoscalingv1beta2.VerticalPodAutoscaler {
 }
 
 func (v *vpnSeedServer) emptyEnvoyFilter() *networkingv1alpha3.EnvoyFilter {
-	return &networkingv1alpha3.EnvoyFilter{ObjectMeta: metav1.ObjectMeta{Name: v.namespace + "-vpn", Namespace: v.istioIngressGateway.Namespace}}
+	var namespace = v.istioIngressGateway.Namespace
+	if v.sniConfig != nil && v.exposureClassHandlerName != nil {
+		namespace = *v.sniConfig.Ingress.Namespace
+	}
+	return &networkingv1alpha3.EnvoyFilter{ObjectMeta: metav1.ObjectMeta{Name: v.namespace + "-vpn", Namespace: namespace}}
+}
+
+func (v *vpnSeedServer) getIngressGatewaySelectors() map[string]string {
+	var defaulIgwSelectors = map[string]string{
+		v1beta1constants.LabelApp: gardenletconfigv1alpha1.DefaultIngressGatewayAppLabelValue,
+	}
+
+	if v.sniConfig != nil {
+		if v.exposureClassHandlerName != nil {
+			return gutil.GetMandatoryExposureClassHandlerSNILabels(v.sniConfig.Ingress.Labels, *v.exposureClassHandlerName)
+		}
+		return utils.MergeStringMaps(v.sniConfig.Ingress.Labels, defaulIgwSelectors)
+	}
+
+	return defaulIgwSelectors
 }
 
 var envoyConfig = `static_resources:
@@ -884,7 +925,7 @@ var envoyConfig = `static_resources:
           - upgrade_type: CONNECT
   clusters:
   - name: dynamic_forward_proxy_cluster
-    connect_timeout: 1s
+    connect_timeout: 20s
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
       name: envoy.clusters.dynamic_forward_proxy

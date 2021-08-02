@@ -26,11 +26,12 @@ import (
 	"github.com/gardener/gardener/pkg/operation/botanist/component/etcd"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/containerruntime"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/controlplane"
+	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/dnsrecord"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/extension"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/infrastructure"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/operatingsystemconfig"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/extensions/worker"
-	"github.com/gardener/gardener/pkg/operation/botanist/component/konnectivity"
+	"github.com/gardener/gardener/pkg/operation/botanist/component/kubeapiserver"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/kubecontrollermanager"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/kubescheduler"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/metricsserver"
@@ -76,11 +77,11 @@ type Shoot struct {
 	WantsAlertmanager          bool
 	IgnoreAlerts               bool
 	HibernationEnabled         bool
-	KonnectivityTunnelEnabled  bool
 	ReversedVPNEnabled         bool
 	NodeLocalDNSEnabled        bool
 	Networks                   *Networks
 	ExposureClass              *gardencorev1alpha1.ExposureClass
+	BackupEntryName            string
 
 	Components     *Components
 	ETCDEncryption *etcdencryption.EncryptionConfig
@@ -93,6 +94,7 @@ type Components struct {
 	Extensions       *Extensions
 	NetworkPolicies  component.Deployer
 	SystemComponents *SystemComponents
+	Logging          *Logging
 }
 
 // ControlPlane contains references to K8S control plane components.
@@ -102,11 +104,11 @@ type ControlPlane struct {
 	KubeAPIServerService  component.DeployWaiter
 	KubeAPIServerSNI      component.DeployWaiter
 	KubeAPIServerSNIPhase component.Phase
+	KubeAPIServer         kubeapiserver.Interface
 	KubeScheduler         kubescheduler.Interface
 	KubeControllerManager kubecontrollermanager.Interface
 	ClusterAutoscaler     clusterautoscaler.Interface
 	ResourceManager       resourcemanager.Interface
-	KonnectivityServer    konnectivity.Interface
 	VPNSeedServer         vpnseedserver.Interface
 }
 
@@ -116,6 +118,9 @@ type Extensions struct {
 	ControlPlane          controlplane.Interface
 	ControlPlaneExposure  controlplane.Interface
 	DNS                   *DNS
+	ExternalDNSRecord     dnsrecord.Interface
+	InternalDNSRecord     dnsrecord.Interface
+	IngressDNSRecord      dnsrecord.Interface
 	Extension             extension.Interface
 	Infrastructure        infrastructure.Interface
 	Network               component.DeployMigrateWaiter
@@ -141,6 +146,11 @@ type DNS struct {
 	AdditionalProviders map[string]component.DeployWaiter
 	NginxOwner          component.DeployWaiter
 	NginxEntry          component.DeployWaiter
+}
+
+// Logging contains references to logging deployers
+type Logging struct {
+	ShootRBACProxy component.Deployer
 }
 
 // Networks contains pre-calculated subnets and IP address for various components.
