@@ -233,6 +233,7 @@ func (b *Builder) Build(ctx context.Context, c client.Client) (*Shoot, error) {
 		},
 		ControlPlane:     &ControlPlane{},
 		SystemComponents: &SystemComponents{},
+		Logging:          &Logging{},
 	}
 
 	// Determine information about external domain for shoot cluster.
@@ -256,20 +257,11 @@ func (b *Builder) Build(ctx context.Context, c client.Client) (*Shoot, error) {
 	shoot.GardenerVersion = gardenerVersion
 
 	kubernetesVersionGeq118 := versionConstraintK8sGreaterEqual118.Check(kubernetesVersion)
-	shoot.KonnectivityTunnelEnabled = gardenletfeatures.FeatureGate.Enabled(features.KonnectivityTunnel) && kubernetesVersionGeq118
-	if konnectivityTunnelEnabled, err := strconv.ParseBool(shoot.Info.Annotations[v1beta1constants.AnnotationShootKonnectivityTunnel]); err == nil && kubernetesVersionGeq118 {
-		shoot.KonnectivityTunnelEnabled = konnectivityTunnelEnabled
-	}
-
 	shoot.ReversedVPNEnabled = gardenletfeatures.FeatureGate.Enabled(features.ReversedVPN) && kubernetesVersionGeq118
 	if reversedVPNEnabled, err := strconv.ParseBool(shoot.Info.Annotations[v1beta1constants.AnnotationReversedVPN]); err == nil && kubernetesVersionGeq118 {
 		if gardenletfeatures.FeatureGate.Enabled(features.APIServerSNI) {
 			shoot.ReversedVPNEnabled = reversedVPNEnabled
 		}
-	}
-
-	if shoot.ReversedVPNEnabled {
-		shoot.KonnectivityTunnelEnabled = false
 	}
 
 	needsClusterAutoscaler, err := gardencorev1beta1helper.ShootWantsClusterAutoscaler(shootObject)
@@ -290,6 +282,13 @@ func (b *Builder) Build(ctx context.Context, c client.Client) (*Shoot, error) {
 	}
 
 	shoot.Purpose = gardencorev1beta1helper.GetPurpose(shootObject)
+
+	// Determine backup entry name
+	backupEntryName, err := gutil.GenerateBackupEntryName(shootObject.Status.TechnicalID, shootObject.UID)
+	if err != nil {
+		return nil, err
+	}
+	shoot.BackupEntryName = backupEntryName
 
 	return shoot, nil
 }
@@ -398,6 +397,11 @@ func (s *Shoot) IPVSEnabled() bool {
 		*s.Info.Spec.Kubernetes.KubeProxy.Mode == gardencorev1beta1.ProxyModeIPVS
 }
 
+// IsLoggingEnabled return true if the Shoot controlplane logging is enabled
+func (s *Shoot) IsLoggingEnabled() bool {
+	return s.Purpose != gardencorev1beta1.ShootPurposeTesting && gardenletfeatures.FeatureGate.Enabled(features.Logging)
+}
+
 // TechnicalIDPrefix is a prefix used for a shoot's technical id.
 const TechnicalIDPrefix = "shoot--"
 
@@ -458,6 +462,7 @@ func ConstructExternalDomain(ctx context.Context, client client.Client, shoot *g
 	case defaultDomain != nil:
 		externalDomain.SecretData = defaultDomain.SecretData
 		externalDomain.Provider = defaultDomain.Provider
+		externalDomain.Zone = defaultDomain.Zone
 		externalDomain.IncludeDomains = defaultDomain.IncludeDomains
 		externalDomain.ExcludeDomains = defaultDomain.ExcludeDomains
 		externalDomain.IncludeZones = defaultDomain.IncludeZones
@@ -483,6 +488,9 @@ func ConstructExternalDomain(ctx context.Context, client client.Client, shoot *g
 		if zones := primaryProvider.Zones; zones != nil {
 			externalDomain.IncludeZones = zones.Include
 			externalDomain.ExcludeZones = zones.Exclude
+			if len(zones.Include) == 1 {
+				externalDomain.Zone = zones.Include[0]
+			}
 		}
 
 	default:
@@ -505,22 +513,22 @@ func ToNetworks(s *gardencorev1beta1.Shoot) (*Networks, error) {
 
 	_, svc, err := net.ParseCIDR(*s.Spec.Networking.Services)
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse shoot's network cidr %v", err)
+		return nil, fmt.Errorf("cannot parse shoot's network cidr %w", err)
 	}
 
 	_, pods, err := net.ParseCIDR(*s.Spec.Networking.Pods)
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse shoot's network cidr %v", err)
+		return nil, fmt.Errorf("cannot parse shoot's network cidr %w", err)
 	}
 
 	apiserver, err := common.ComputeOffsetIP(svc, 1)
 	if err != nil {
-		return nil, fmt.Errorf("cannot calculate default/kubernetes ClusterIP: %v", err)
+		return nil, fmt.Errorf("cannot calculate default/kubernetes ClusterIP: %w", err)
 	}
 
 	coreDNS, err := common.ComputeOffsetIP(svc, 10)
 	if err != nil {
-		return nil, fmt.Errorf("cannot calculate CoreDNS ClusterIP: %v", err)
+		return nil, fmt.Errorf("cannot calculate CoreDNS ClusterIP: %w", err)
 	}
 
 	return &Networks{
@@ -533,7 +541,7 @@ func ToNetworks(s *gardencorev1beta1.Shoot) (*Networks, error) {
 
 // ComputeRequiredExtensions compute the extension kind/type combinations that are required for the
 // reconciliation flow.
-func ComputeRequiredExtensions(shoot *gardencorev1beta1.Shoot, seed *gardencorev1beta1.Seed, controllerRegistrationList *gardencorev1beta1.ControllerRegistrationList, internalDomain, externalDomain *garden.Domain) sets.String {
+func ComputeRequiredExtensions(shoot *gardencorev1beta1.Shoot, seed *gardencorev1beta1.Seed, controllerRegistrationList *gardencorev1beta1.ControllerRegistrationList, internalDomain, externalDomain *garden.Domain, useDNSRecords bool) sets.String {
 	requiredExtensions := sets.NewString()
 
 	if seed.Spec.Backup != nil {
@@ -577,16 +585,26 @@ func ComputeRequiredExtensions(shoot *gardencorev1beta1.Shoot, seed *gardencorev
 			for _, provider := range shoot.Spec.DNS.Providers {
 				if provider.Type != nil && *provider.Type != core.DNSUnmanaged {
 					requiredExtensions.Insert(gardenerextensions.Id(dnsv1alpha1.DNSProviderKind, *provider.Type))
+					if provider.Primary != nil && *provider.Primary && useDNSRecords {
+						requiredExtensions.Insert(gardenerextensions.Id(extensionsv1alpha1.DNSRecordResource, *provider.Type))
+					}
 				}
 			}
 		}
 
 		if internalDomain != nil && internalDomain.Provider != core.DNSUnmanaged {
-			requiredExtensions.Insert(gardenerextensions.Id(dnsv1alpha1.DNSProviderKind, internalDomain.Provider))
+			if useDNSRecords {
+				requiredExtensions.Insert(gardenerextensions.Id(extensionsv1alpha1.DNSRecordResource, internalDomain.Provider))
+			} else {
+				requiredExtensions.Insert(gardenerextensions.Id(dnsv1alpha1.DNSProviderKind, internalDomain.Provider))
+			}
 		}
 
 		if externalDomain != nil && externalDomain.Provider != core.DNSUnmanaged {
 			requiredExtensions.Insert(gardenerextensions.Id(dnsv1alpha1.DNSProviderKind, externalDomain.Provider))
+			if useDNSRecords {
+				requiredExtensions.Insert(gardenerextensions.Id(extensionsv1alpha1.DNSRecordResource, externalDomain.Provider))
+			}
 		}
 	}
 

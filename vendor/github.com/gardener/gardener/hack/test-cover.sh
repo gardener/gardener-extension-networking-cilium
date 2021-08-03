@@ -13,13 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set -e
 
-source "$(dirname $0)/setup-envtest.sh"
+set -o errexit
+set -o nounset
+set -o pipefail
 
 echo "> Test Cover"
 
-export KUBEBUILDER_CONTROLPLANE_START_TIMEOUT=2m
 GO111MODULE=on ginkgo -cover -timeout=2m -race -mod=vendor $@
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
