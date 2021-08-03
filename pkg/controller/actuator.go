@@ -15,11 +15,12 @@
 package controller
 
 import (
+	"fmt"
+
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -59,7 +60,7 @@ func (a *actuator) InjectConfig(config *rest.Config) error {
 	var err error
 	a.gardenerClientset, err = gardenerkubernetes.NewWithConfig(gardenerkubernetes.WithRESTConfig(config))
 	if err != nil {
-		return errors.Wrap(err, "could not create Gardener client")
+		return fmt.Errorf("could not create Gardener client: %w", err)
 	}
 
 	a.chartApplier = a.gardenerClientset.ChartApplier()
