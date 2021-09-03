@@ -29,14 +29,14 @@ import (
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 
 	hvpav1alpha1 "github.com/gardener/hvpa-controller/api/v1alpha1"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	schedulingv1 "k8s.io/api/scheduling/v1"
-	schedulingv1beta1 "k8s.io/api/scheduling/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -49,6 +49,17 @@ func GetSecretKeysWithPrefix(kind string, m map[string]*corev1.Secret) []string 
 	for key := range m {
 		if strings.HasPrefix(key, kind) {
 			result = append(result, key)
+		}
+	}
+	return result
+}
+
+// FilterEntriesByPrefix returns a list of strings which begin with the given prefix.
+func FilterEntriesByPrefix(prefix string, entries []string) []string {
+	var result []string
+	for _, entry := range entries {
+		if strings.HasPrefix(entry, prefix) {
+			result = append(result, entry)
 		}
 	}
 	return result
@@ -106,50 +117,39 @@ func GenerateAddonConfig(values map[string]interface{}, enabled bool) map[string
 }
 
 // DeleteHvpa delete all resources required for the HVPA in the given namespace.
-func DeleteHvpa(ctx context.Context, k8sClient kubernetes.Interface, namespace string) error {
-	if k8sClient == nil {
-		return fmt.Errorf("require kubernetes client")
-	}
-
-	listOptions := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", v1beta1constants.GardenRole, v1beta1constants.GardenRoleHvpa),
-	}
+func DeleteHvpa(ctx context.Context, c client.Client, namespace string) error {
+	labelSelectorHVPA := client.MatchingLabels{v1beta1constants.GardenRole: v1beta1constants.GardenRoleHvpa}
 
 	// Delete all CRDs with label "gardener.cloud/role=hvpa"
 	// Workaround: Due to https://github.com/gardener/gardener/issues/2257, we first list the HVPA CRDs and then remove
 	// them one by one.
-	crdList, err := k8sClient.APIExtension().ApiextensionsV1beta1().CustomResourceDefinitions().List(ctx, listOptions)
-	if err != nil {
+	crdList := &apiextensionsv1.CustomResourceDefinitionList{}
+	if err := c.List(ctx, crdList, labelSelectorHVPA); err != nil {
 		return err
 	}
 	for _, crd := range crdList.Items {
-		if err := k8sClient.APIExtension().ApiextensionsV1beta1().CustomResourceDefinitions().Delete(ctx, crd.Name, metav1.DeleteOptions{}); client.IgnoreNotFound(err) != nil {
+		if err := c.Delete(ctx, &crd); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	// Delete all Deployments with label "gardener.cloud/role=hvpa"
-	deletePropagation := metav1.DeletePropagationForeground
-	if err := k8sClient.Kubernetes().AppsV1().Deployments(namespace).DeleteCollection(ctx, metav1.DeleteOptions{PropagationPolicy: &deletePropagation}, listOptions); client.IgnoreNotFound(err) != nil {
+	if err := c.DeleteAllOf(ctx, &appsv1.Deployment{}, client.InNamespace(namespace), labelSelectorHVPA, client.PropagationPolicy(metav1.DeletePropagationForeground)); err != nil {
 		return err
 	}
 
 	// Delete all ClusterRoles with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().RbacV1().ClusterRoles().DeleteCollection(ctx, metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
+	if err := c.DeleteAllOf(ctx, &rbacv1.ClusterRole{}, labelSelectorHVPA); err != nil {
 		return err
 	}
 
 	// Delete all ClusterRoleBindings with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().RbacV1().ClusterRoleBindings().DeleteCollection(ctx, metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
+	if err := c.DeleteAllOf(ctx, &rbacv1.ClusterRoleBinding{}, labelSelectorHVPA); err != nil {
 		return err
 	}
 
 	// Delete all ServiceAccounts with label "gardener.cloud/role=hvpa"
-	if err := k8sClient.Kubernetes().CoreV1().ServiceAccounts(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, listOptions); client.IgnoreNotFound(err) != nil {
-		return err
-	}
-
-	return nil
+	return c.DeleteAllOf(ctx, &corev1.ServiceAccount{}, client.InNamespace(namespace), labelSelectorHVPA)
 }
 
 // DeleteVpa delete all resources required for the VPA in the given namespace.
@@ -189,7 +189,7 @@ func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot b
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
 			&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
-			&admissionregistrationv1beta1.MutatingWebhookConfiguration{ObjectMeta: metav1.ObjectMeta{Name: "vpa-webhook-config-seed"}},
+			&admissionregistrationv1.MutatingWebhookConfiguration{ObjectMeta: metav1.ObjectMeta{Name: "vpa-webhook-config-seed"}},
 		)
 	}
 
@@ -230,6 +230,7 @@ func DeleteLoki(ctx context.Context, k8sClient client.Client, namespace string) 
 func DeleteShootNodeLoggingStack(ctx context.Context, k8sClient client.Client, namespace string) error {
 	resources := []client.Object{
 		&extensionsv1beta1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
+		&networkingv1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
 		&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: logging.SecretNameLokiKubeRBACProxyKubeconfig, Namespace: namespace}},
 		&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: LokiTLS, Namespace: namespace}},
 		&networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: "allow-from-prometheus-to-loki-telegraf", Namespace: namespace}},
@@ -276,7 +277,7 @@ func DeleteReserveExcessCapacity(ctx context.Context, k8sClient client.Client) e
 		return err
 	}
 
-	priorityClass := &schedulingv1beta1.PriorityClass{
+	priorityClass := &schedulingv1.PriorityClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "gardener-reserve-excess-capacity",
 		},
@@ -294,6 +295,12 @@ func DeleteAlertmanager(ctx context.Context, k8sClient client.Client, namespace 
 			},
 		},
 		&extensionsv1beta1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "alertmanager",
+				Namespace: namespace,
+			},
+		},
+		&networkingv1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "alertmanager",
 				Namespace: namespace,
