@@ -34,8 +34,7 @@ type actuator struct {
 
 	client client.Client
 
-	gardenerClientset gardenerkubernetes.Interface
-	chartApplier      gardenerkubernetes.ChartApplier
+	chartApplier gardenerkubernetes.ChartApplier
 }
 
 // LogID is the id that will be used in log statements.
@@ -58,12 +57,9 @@ func (a *actuator) InjectConfig(config *rest.Config) error {
 	a.restConfig = config
 
 	var err error
-	a.gardenerClientset, err = gardenerkubernetes.NewWithConfig(gardenerkubernetes.WithRESTConfig(config))
+	a.chartApplier, err = gardenerkubernetes.NewChartApplierForConfig(config)
 	if err != nil {
-		return fmt.Errorf("could not create Gardener client: %w", err)
+		return fmt.Errorf("could not create ChartApplier: %w", err)
 	}
-
-	a.chartApplier = a.gardenerClientset.ChartApplier()
-
 	return nil
 }
