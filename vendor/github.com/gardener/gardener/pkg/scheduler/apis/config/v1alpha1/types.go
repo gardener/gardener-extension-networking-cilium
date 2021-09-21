@@ -63,6 +63,9 @@ type SchedulerConfiguration struct {
 	// Server defines the configuration of the HTTP server. This is deprecated in favor of
 	// HealthServer.
 	Server ServerConfiguration `json:"server,omitempty"`
+	// Debugging holds configuration for Debugging related features.
+	// +optional
+	Debugging *componentbaseconfigv1alpha1.DebuggingConfiguration `json:"debugging,omitempty"`
 	// Scheduler defines the configuration of the schedulers.
 	Schedulers SchedulerControllerConfiguration `json:"schedulers"`
 	// FeatureGates is a map of feature names to bools that enable or disable alpha/experimental

@@ -348,6 +348,7 @@ func RegisterShootCreationFrameworkFlags() *ShootCreationConfig {
 	return shootCreationCfg
 }
 
+// CreateShoot creates a shoot using this framework's configuration.
 func (f *ShootCreationFramework) CreateShoot(ctx context.Context, initializeShootWithFlags, waitUntilShootIsReconciled bool) (*gardencorev1beta1.Shoot, error) {
 	if initializeShootWithFlags {
 		if err := f.InitializeShootWithFlags(ctx); err != nil {
@@ -367,7 +368,7 @@ func (f *ShootCreationFramework) CreateShoot(ctx context.Context, initializeShoo
 
 	if err := f.GardenerFramework.CreateShoot(ctx, f.Shoot); err != nil {
 		f.Logger.Fatalf("Cannot create shoot %s: %s", f.Shoot.GetName(), err.Error())
-		shootFramework, err2 := f.newShootFramework()
+		shootFramework, err2 := f.newShootFramework(ctx)
 		if err2 != nil {
 			f.Logger.Fatalf("Cannot dump shoot state %s: %s", f.Shoot.GetName(), err.Error())
 		} else {
@@ -377,7 +378,7 @@ func (f *ShootCreationFramework) CreateShoot(ctx context.Context, initializeShoo
 	}
 
 	f.Logger.Infof("Successfully created shoot %s", f.Shoot.GetName())
-	shootFramework, err := f.newShootFramework()
+	shootFramework, err := f.newShootFramework(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -398,6 +399,7 @@ func (f *ShootCreationFramework) CreateShoot(ctx context.Context, initializeShoo
 	return f.Shoot, nil
 }
 
+// InitializeShootWithFlags initializes a shoot to be created by this framework.
 func (f *ShootCreationFramework) InitializeShootWithFlags(ctx context.Context) error {
 	// if running in test machinery, test will be executed from root of the project
 	if !FileExists(fmt.Sprintf(".%s", f.Config.shootYamlPath)) {
@@ -427,16 +429,12 @@ func (f *ShootCreationFramework) InitializeShootWithFlags(ctx context.Context) e
 		return err
 	}
 
-	if err = setShootWorkerSettings(shootObject, f.Config, cloudProfile); err != nil {
-		return err
-	}
-
-	return nil
+	return setShootWorkerSettings(shootObject, f.Config, cloudProfile)
 }
 
 // newShootFramework creates a new ShootFramework with the Shoot created by the ShootCreationFramework
-func (f *ShootCreationFramework) newShootFramework() (*ShootFramework, error) {
-	shootFramework, err := f.GardenerFramework.NewShootFramework(f.Shoot)
+func (f *ShootCreationFramework) newShootFramework(ctx context.Context) (*ShootFramework, error) {
+	shootFramework, err := f.GardenerFramework.NewShootFramework(ctx, f.Shoot)
 	if err != nil {
 		return nil, err
 	}

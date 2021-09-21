@@ -309,6 +309,8 @@ const (
 	LabelNetworkPolicyFromPrometheus = "networking.gardener.cloud/from-prometheus"
 	// LabelNetworkPolicyToAggregatePrometheus allows Egress traffic to the aggregate Prometheus.
 	LabelNetworkPolicyToAggregatePrometheus = "networking.gardener.cloud/to-aggregate-prometheus"
+	// LabelNetworkPolicyToSeedPrometheus allows Egress traffic to the seed Prometheus.
+	LabelNetworkPolicyToSeedPrometheus = "networking.gardener.cloud/to-seed-prometheus"
 	// LabelNetworkPolicyShootFromSeed allows Ingress traffic from the seed cluster (where the shoot's kube-apiserver
 	// runs).
 	LabelNetworkPolicyShootFromSeed = "networking.gardener.cloud/from-seed"
@@ -448,6 +450,8 @@ const (
 
 	// SeedNginxIngressClass defines the ingress class for the seed nginx ingress controller
 	SeedNginxIngressClass = "nginx-gardener"
+	// SeedNginxIngressClass122 defines the ingress class for the seed nginx ingress controller for K8s >= 1.22
+	SeedNginxIngressClass122 = "nginx-ingress-gardener"
 	// IngressKindNginx defines nginx as kind as managed Seed ingress
 	IngressKindNginx = "nginx"
 	// ShootNginxIngressClass defines the ingress class for the seed nginx ingress controller

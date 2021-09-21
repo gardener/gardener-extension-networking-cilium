@@ -12,15 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package install
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	"github.com/gardener/gardener/pkg/apis/settings"
+	"github.com/gardener/gardener/pkg/apis/settings/v1alpha1"
 
-// HealthCheckConfig contains the health check controller configuration.
-type HealthCheckConfig struct {
-	// SyncPeriod is the duration how often the existing resources are reconciled (how
-	// often the health check of Shoot clusters is performed (only if no operation is
-	// already running on them).
-	// defaults to 30 sec
-	SyncPeriod metav1.Duration
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+)
+
+var (
+	localSchemeBuilder = runtime.SchemeBuilder{
+		v1alpha1.AddToScheme,
+	}
+	// AddToScheme adds all versioned API types to the given scheme.
+	AddToScheme = localSchemeBuilder.AddToScheme
+)
+
+// Install registers the API group and adds types to a scheme.
+func Install(scheme *runtime.Scheme) {
+	utilruntime.Must(settings.AddToScheme(scheme))
+	utilruntime.Must(v1alpha1.AddToScheme(scheme))
+
+	utilruntime.Must(scheme.SetVersionPriority(v1alpha1.SchemeGroupVersion))
 }
