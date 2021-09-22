@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 	klog "k8s.io/klog"
 )
 
@@ -349,6 +350,11 @@ func (in *GardenletConfiguration) DeepCopyInto(out *GardenletConfiguration) {
 	if in.Server != nil {
 		in, out := &in.Server, &out.Server
 		*out = new(ServerConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Debugging != nil {
+		in, out := &in.Debugging, &out.Debugging
+		*out = new(configv1alpha1.DebuggingConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.FeatureGates != nil {

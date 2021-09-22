@@ -44,7 +44,7 @@ github.com/gardener/etcd-druid/api/v1alpha1
 # github.com/gardener/external-dns-management v0.7.18
 github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
-# github.com/gardener/gardener v1.30.1-0.20210831145107-5b4604745d8e
+# github.com/gardener/gardener v1.32.0
 ## explicit
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -67,8 +67,6 @@ github.com/gardener/gardener/hack/.ci
 github.com/gardener/gardener/hack/api-reference/template
 github.com/gardener/gardener/pkg/api/core
 github.com/gardener/gardener/pkg/api/extensions
-github.com/gardener/gardener/pkg/apis/authentication
-github.com/gardener/gardener/pkg/apis/authentication/v1alpha1
 github.com/gardener/gardener/pkg/apis/core
 github.com/gardener/gardener/pkg/apis/core/install
 github.com/gardener/gardener/pkg/apis/core/v1alpha1
@@ -80,28 +78,22 @@ github.com/gardener/gardener/pkg/apis/core/v1beta1/helper
 github.com/gardener/gardener/pkg/apis/extensions
 github.com/gardener/gardener/pkg/apis/extensions/v1alpha1
 github.com/gardener/gardener/pkg/apis/operations
+github.com/gardener/gardener/pkg/apis/operations/install
 github.com/gardener/gardener/pkg/apis/operations/v1alpha1
 github.com/gardener/gardener/pkg/apis/seedmanagement
 github.com/gardener/gardener/pkg/apis/seedmanagement/encoding
+github.com/gardener/gardener/pkg/apis/seedmanagement/install
 github.com/gardener/gardener/pkg/apis/seedmanagement/v1alpha1
 github.com/gardener/gardener/pkg/apis/settings
+github.com/gardener/gardener/pkg/apis/settings/install
 github.com/gardener/gardener/pkg/apis/settings/v1alpha1
 github.com/gardener/gardener/pkg/chartrenderer
-github.com/gardener/gardener/pkg/client/core/clientset/versioned
-github.com/gardener/gardener/pkg/client/core/clientset/versioned/scheme
-github.com/gardener/gardener/pkg/client/core/clientset/versioned/typed/core/v1alpha1
-github.com/gardener/gardener/pkg/client/core/clientset/versioned/typed/core/v1beta1
 github.com/gardener/gardener/pkg/client/core/listers/core/internalversion
-github.com/gardener/gardener/pkg/client/extensions/clientset/versioned/scheme
 github.com/gardener/gardener/pkg/client/kubernetes
 github.com/gardener/gardener/pkg/client/kubernetes/cache
-github.com/gardener/gardener/pkg/client/operations/clientset/versioned
-github.com/gardener/gardener/pkg/client/operations/clientset/versioned/scheme
-github.com/gardener/gardener/pkg/client/operations/clientset/versioned/typed/operations/v1alpha1
 github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned
 github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned/scheme
 github.com/gardener/gardener/pkg/client/seedmanagement/clientset/versioned/typed/seedmanagement/v1alpha1
-github.com/gardener/gardener/pkg/client/settings/clientset/versioned/scheme
 github.com/gardener/gardener/pkg/controllerutils
 github.com/gardener/gardener/pkg/extensions
 github.com/gardener/gardener/pkg/gardenlet/apis/config
@@ -429,7 +421,7 @@ golang.org/x/crypto/poly1305
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5
+# golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 golang.org/x/lint
 golang.org/x/lint/golint
 # golang.org/x/mod v0.4.2
@@ -483,7 +475,7 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6
 golang.org/x/time/rate
-# golang.org/x/tools v0.1.2
+# golang.org/x/tools v0.1.5
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/ast/inspector
 golang.org/x/tools/go/gcexportdata
@@ -500,6 +492,7 @@ golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
@@ -616,10 +609,7 @@ k8s.io/api/storage/v1beta1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
-k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme
-k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1
-k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 # k8s.io/apimachinery v0.21.2 => k8s.io/apimachinery v0.21.2
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
@@ -884,10 +874,7 @@ k8s.io/klog/v2
 k8s.io/kube-aggregator/pkg/apis/apiregistration
 k8s.io/kube-aggregator/pkg/apis/apiregistration/v1
 k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1
-k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset
 k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/scheme
-k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/typed/apiregistration/v1
-k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1
 # k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
 k8s.io/kube-openapi/cmd/openapi-gen
 k8s.io/kube-openapi/cmd/openapi-gen/args
@@ -898,9 +885,7 @@ k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
 # k8s.io/metrics v0.21.2
 k8s.io/metrics/pkg/apis/metrics
-k8s.io/metrics/pkg/apis/metrics/v1alpha1
 k8s.io/metrics/pkg/apis/metrics/v1beta1
-k8s.io/metrics/pkg/client/clientset/versioned/scheme
 # k8s.io/utils v0.0.0-20210527160623-6fdb442a123b
 k8s.io/utils/buffer
 k8s.io/utils/integer
