@@ -46,19 +46,46 @@ spec:
         - --config-dir=/tmp/cilium/config-map
         command:
         - cilium-agent
+{{- if semverCompare ">= 1.20" .Capabilities.KubeVersion.GitVersion }}
+        startupProbe:
+          httpGet:
+            host: '127.0.0.1'
+            path: /healthz
+            port: {{ .Values.global.agent.healthPort }}
+            scheme: HTTP
+            httpHeaders:
+            - name: "brief"
+              value: "true"
+          failureThreshold: 105
+          periodSeconds: 2
+          successThreshold: 1
+{{- end }}
         livenessProbe:
+{{- if .Values.keepDeprecatedProbes }}
           exec:
             command:
             - cilium
             - status
             - --brief
+{{- else }}
+          httpGet:
+            host: '127.0.0.1'
+            path: /healthz
+            port: {{ .Values.global.agent.healthPort }}
+            scheme: HTTP
+            httpHeaders:
+            - name: "brief"
+              value: "true"
+{{- end }}
           failureThreshold: 10
+{{- if semverCompare "< 1.20" .Capabilities.KubeVersion.GitVersion }}
           # The initial delay for the liveness probe is intentionally large to
           # avoid an endless kill & restart cycle if in the event that the initial
           # bootstrapping takes longer than expected.
           # Starting from Kubernetes 1.20, we are using startupProbe instead
           # of this field.
           initialDelaySeconds: 120
+{{- end }}
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
@@ -276,12 +303,6 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        - name: CILIUM_WAIT_BPF_MOUNT
-          valueFrom:
-            configMapKeyRef:
-              key: wait-bpf-mount
-              name: cilium-config
-              optional: true
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
         name: clean-cilium-state
@@ -295,8 +316,6 @@ spec:
 {{- if not (eq .Values.global.containerRuntime.integration "crio") }}
         - mountPath: /sys/fs/bpf
           name: bpf-maps
-{{- /* Required for wait-bpf-mount to work */}}
-          mountPropagation: HostToContainer
 {{- end }}
         # Required to mount cgroup filesystem from the host to cilium agent pod
         - mountPath: /run/cilium/cgroupv2

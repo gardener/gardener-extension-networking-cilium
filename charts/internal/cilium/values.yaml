@@ -235,10 +235,6 @@ global:
 
   # bpf is the BPF datapath specific configuration
   bpf:
-    # waitForMount instructs the cilium-agent DaemoNSet to wait in an
-    # initContainer until the BPF filesystem has been mounted.
-    waitForMount: false
-
     # preallocateMaps enables pre allocation of BPF map values. This increases
     # memory usage but can reduce latency.
     preallocateMaps: false

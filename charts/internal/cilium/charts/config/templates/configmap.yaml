@@ -220,8 +220,15 @@ data:
   # BPF neighbor table.
   bpf-neigh-global-max: "{{ .Values.global.bpf.neighMax }}"
 {{- end }}
+{{- if hasKey .Values "bpfMapDynamicSizeRatio" }}
+  bpf-map-dynamic-size-ratio: {{ .Values.bpfMapDynamicSizeRatio | quote }}
+{{- else if ne $defaultBpfMapDynamicSizeRatio 0.0 }}
+  # Specifies the ratio (0.0-1.0) of total system memory to use for dynamic
+  # sizing of the TCP CT, non-TCP CT, NAT and policy BPF maps.
+  bpf-map-dynamic-size-ratio: {{ $defaultBpfMapDynamicSizeRatio | quote }}
+{{- end }}
 {{- if .Values.global.bpf.policyMapMax }}
-  # bpf-policy-map-max specified the maximum number of entries in endpoint
+  # bpf-policy-map-max specifies the maximum number of entries in endpoint
   # policy map (per endpoint)
   bpf-policy-map-max: "{{ .Values.global.bpf.policyMapMax }}"
 {{- end }}
@@ -234,13 +241,6 @@ data:
   # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
   # optimization for nodeport reverse NAT handling.
   bpf-lb-external-clusterip: "{{ .Values.global.bpf.lbExternalClusterip }}"
-{{- end }}
-{{- if hasKey .Values "bpfMapDynamicSizeRatio" }}
-  bpf-map-dynamic-size-ratio: {{ .Values.bpfMapDynamicSizeRatio | quote }}
-{{- else if ne $defaultBpfMapDynamicSizeRatio 0.0 }}
-  # Specifies the ratio (0.0-1.0) of total system memory to use for dynamic
-  # sizing of the TCP CT, non-TCP CT, NAT and policy BPF maps.
-  bpf-map-dynamic-size-ratio: {{ $defaultBpfMapDynamicSizeRatio | quote }}
 {{- end }}
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
@@ -264,13 +264,6 @@ data:
   # container image names
   sidecar-istio-proxy-image: "{{ .Values.global.proxy.sidecarImageRegex }}"
 
-  # Encapsulation mode for communication between nodes
-  # Possible values:
-  #   - disabled
-  #   - vxlan (default)
-  #   - geneve
-  tunnel: {{ .Values.global.tunnel }}
-
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: {{ .Values.global.cluster.name }}
 
@@ -279,6 +272,13 @@ data:
   # in the range of 1 and 255. Only relevant when building a mesh of clusters.
   cluster-id: "{{ .Values.global.cluster.id }}"
 {{- end }}
+
+  # Encapsulation mode for communication between nodes
+  # Possible values:
+  #   - disabled
+  #   - vxlan (default)
+  #   - geneve
+  tunnel: {{ .Values.global.tunnel }}
 
 {{- if .Values.global.eni }}
   enable-endpoint-routes: "true"
@@ -312,6 +312,22 @@ data:
   enable-l7-proxy: {{ .Values.global.l7Proxy.enabled | quote }}
 {{- end }}
 
+  enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
+  enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
+  enable-bpf-masquerade: {{ .Values.global.enableBpfMasquerade | quote }}
+
+  enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
+  install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
+  install-no-conntrack-iptables-rules: {{ .Values.global.installNoConntrackIptablesRules | quote }}
+
+  auto-direct-node-routes: {{ .Values.global.autoDirectNodeRoutes | quote }}
+{{- if .Values.global.bandwidthManager.enabled }}
+  enable-bandwidth-manager: {{ .Values.global.bandwidthManager.enabled | quote }}
+{{- end }}
+{{- if .Values.global.localRedirectPolicy.enabled }}
+  enable-local-redirect-policy: {{ .Values.global.localRedirectPolicy.enabled | quote }}
+{{- end }}
+
   # DNS Polling periodically issues a DNS lookup for each `matchName` from
   # cilium-agent. The result is used to regenerate endpoint policy.
   # DNS lookups are repeated with an interval of 5 seconds, and are made for
@@ -332,9 +348,6 @@ data:
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "false"
-
-  # wait-bpf-mount makes init container wait until bpf filesystem is mounted
-  wait-bpf-mount: "{{ .Values.global.bpf.waitForMount }}"
 
 {{- if ne .Values.global.cni.chainingMode "none" }}
   # Enable chaining with another CNI plugin
@@ -360,10 +373,6 @@ data:
 {{- end }}
 {{- end }}
 
-  enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
-  enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
-  enable-bpf-masquerade: {{ .Values.global.enableBpfMasquerade | quote }}
-
 {{- if .Values.global.egressMasqueradeInterfaces }}
   egress-masquerade-interfaces: {{ .Values.global.egressMasqueradeInterfaces }}
 {{- end }}
@@ -387,18 +396,8 @@ data:
   ipvlan-master-device: {{ .Values.global.ipvlan.masterDevice }}
 {{- end }}
 {{- end }}
-  enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
-  install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
-  install-no-conntrack-iptables-rules: {{ .Values.global.installNoConntrackIptablesRules | quote }}
 {{- if .Values.global.iptablesLockTimeout }}
   iptables-lock-timeout: {{ .Values.global.iptablesLockTimeout | quote }}
-{{- end }}
-  auto-direct-node-routes: {{ .Values.global.autoDirectNodeRoutes | quote }}
-{{- if .Values.global.bandwidthManager.enabled }}
-  enable-bandwidth-manager: {{ .Values.global.bandwidthManager.enabled | quote }}
-{{- end }}
-{{- if .Values.global.localRedirectPolicy.enabled }}
-  enable-local-redirect-policy: {{ .Values.global.localRedirectPolicy.enabled | quote }}
 {{- end }}
 {{- if .Values.global.nativeRoutingCIDR }}
   native-routing-cidr: {{ .Values.global.nativeRoutingCIDR }}

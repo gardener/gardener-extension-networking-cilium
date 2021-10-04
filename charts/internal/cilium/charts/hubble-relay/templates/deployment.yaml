@@ -58,6 +58,7 @@ spec:
             readOnly: true
       restartPolicy: Always
       serviceAccountName: hubble-relay
+      automountServiceAccountToken: false
       terminationGracePeriodSeconds: 0
       tolerations:
       - operator: Exists
