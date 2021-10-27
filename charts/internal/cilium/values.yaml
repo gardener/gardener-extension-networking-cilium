@@ -429,6 +429,9 @@ global:
       clusterPoolIPv6PodCIDR: "fd00::/104"
       clusterPoolIPv6MaskSize: 120
 
+  l2NeighDiscovery:
+    enabled: true
+
   endpointHealthChecking:
     enabled: true
 
