@@ -12,6 +12,7 @@ rules:
   - extensions.gardener.cloud
   resources:
   - clusters
+  - dnsrecords
   verbs:
   - get
   - list
