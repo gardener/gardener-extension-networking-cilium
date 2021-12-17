@@ -67,7 +67,7 @@ data:
   # - "crd" stores identities in kubernetes as CRDs (custom resource definition).
   #   These can be queried with:
   #     kubectl get ciliumid
-  # - "kvstore" stores identities in a kvstore, etcd or consul, that is
+  # - "kvstore" stores identities in an etcd kvstore, that is
   #   configured below. Cilium versions before 1.6 supported only the kvstore
   #   backend. Upgrades from these older cilium versions should continue using
   #   the kvstore by commenting out the identity-allocation-mode below, or
@@ -81,6 +81,9 @@ data:
 {{- end }}
 {{- if .Values.global.endpointGCInterval }}
   cilium-endpoint-gc-interval: "{{ .Values.global.endpointGCInterval }}"
+{{- end }}
+{{- if .Values.global.disableEndpointCrd }}
+  disable-endpoint-crd: "{{ .Values.global.disableEndpointCrd }}"
 {{- end }}
 
 {{- if .Values.identityChangeGracePeriod }}
@@ -314,7 +317,6 @@ data:
 
   enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
-  enable-bpf-masquerade: {{ .Values.global.enableBpfMasquerade | quote }}
 
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
@@ -574,6 +576,7 @@ kube-proxy-replacement-healthz-bind-address: "{{ .Values.global.kubeProxyReplace
 {{- end }}
 
   cgroup-root: "/run/cilium/cgroupv2"
+  enable-k8s-terminating-endpoint: "true"
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.

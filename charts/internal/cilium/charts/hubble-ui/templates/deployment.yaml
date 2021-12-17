@@ -2,8 +2,8 @@
 apiVersion: {{ include "deploymentversion" .}}
 kind: Deployment
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: hubble-ui
+  namespace: {{ .Release.Namespace }}
   labels:
     k8s-app: hubble-ui
 spec:
@@ -45,8 +45,8 @@ spec:
             - name: FLOWS_API_ADDR
               value: "hubble-relay:80"
           ports:
-            - containerPort: 8090
-              name: grpc
+            - name: grpc
+              containerPort: 8090
           resources:
             limits:
               cpu: 1000m
@@ -58,8 +58,8 @@ spec:
           image: {{ index .Values.global.images "envoy" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
           ports:
-            - containerPort: 12000
-              name: http
+            - name: http
+              containerPort: 12000
           resources:
             limits:
               cpu: 1000m
@@ -69,17 +69,15 @@ spec:
               memory: 64Mi
           command: ["envoy"]
           args:
-            [
-              "-c",
-              "/etc/envoy.yaml",
-              "-l",
-              "info"
-            ]
+          - -c
+          - /etc/envoy.yaml
+          - -l
+          - info
           volumeMounts:
-            - name: hubble-ui-envoy-yaml
-              mountPath: /etc/envoy.yaml
-              subPath: envoy.yaml
+          - name: hubble-ui-envoy-yaml
+            mountPath: /etc/envoy.yaml
+            subPath: envoy.yaml
       volumes:
-        - name: hubble-ui-envoy-yaml
-          configMap:
-            name: hubble-ui-envoy
+      - name: hubble-ui-envoy-yaml
+        configMap:
+          name: hubble-ui-envoy

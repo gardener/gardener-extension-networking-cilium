@@ -47,14 +47,14 @@ spec:
 {{- toYaml .Values.resources | trim | nindent 10 }}
 {{- end }}
           volumeMounts:
-          - mountPath: {{ dir .Values.global.hubble.socketPath }}
-            name: hubble-sock-dir
+          - name: hubble-sock-dir
+            mountPath: {{ dir .Values.global.hubble.socketPath }}
             readOnly: true
-          - mountPath: /etc/hubble-relay
-            name: config
+          - name: config
+            mountPath: /etc/hubble-relay
             readOnly: true
-          - mountPath: /var/lib/hubble-relay/tls
-            name: tls
+          - name: tls
+            mountPath: /var/lib/hubble-relay/tls
             readOnly: true
       restartPolicy: Always
       serviceAccountName: hubble-relay
@@ -63,17 +63,20 @@ spec:
       tolerations:
       - operator: Exists
       volumes:
-      - hostPath:
+      - name: hubble-sock-dir
+        hostPath:
           path: {{ dir .Values.global.hubble.socketPath }}
           type: Directory
-        name: hubble-sock-dir
-      - configMap:
+      - name: config
+        configMap:
           name: hubble-relay-config
           items:
           - key: config.yaml
             path: config.yaml
-        name: config
-      - projected:
+      - name: tls
+        projected:
+          # note: the leading zero means this number is in octal representation: do not remove it
+          defaultMode: 0400
           sources:
           - secret:
               name: hubble-relay-client-certs
@@ -84,5 +87,3 @@ spec:
                   path: client.crt
                 - key: tls.key
                   path: client.key
-        name: tls
-
