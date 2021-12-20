@@ -16,11 +16,11 @@ package controller
 
 import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
+
 	extensioncontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
 	"github.com/gardener/gardener/extensions/pkg/util"
-
-	resourcemanagerscheme "github.com/gardener/gardener-resource-manager/api/resources/v1alpha1"
+	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -42,7 +42,7 @@ type AddOptions struct {
 // The opts.Reconciler is being set with a newly instantiated actuator.
 func AddToManagerWithOptions(mgr manager.Manager, opts AddOptions) error {
 	scheme := mgr.GetScheme()
-	if err := resourcemanagerscheme.AddToScheme(scheme); err != nil {
+	if err := resourcesv1alpha1.AddToScheme(scheme); err != nil {
 		return err
 	}
 

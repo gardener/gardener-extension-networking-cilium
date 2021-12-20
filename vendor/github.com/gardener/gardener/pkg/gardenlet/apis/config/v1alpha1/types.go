@@ -50,7 +50,7 @@ type GardenletConfiguration struct {
 	Resources *ResourcesConfiguration `json:"resources,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	// +optional
-	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	LeaderElection *componentbaseconfigv1alpha1.LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// LogLevel is the level/severity for the logs. Must be one of [info,debug,error].
 	// +optional
 	LogLevel *string `json:"logLevel,omitempty"`
@@ -83,9 +83,16 @@ type GardenletConfiguration struct {
 	// by the Gardenlet in the seed clusters.
 	// +optional
 	SNI *SNI `json:"sni,omitempty"`
+	// ETCDConfig contains an optional configuration for the
+	// backup compaction feature in etcdbr
+	// +optional
+	ETCDConfig *ETCDConfig `json:"etcdConfig,omitempty"`
 	// ExposureClassHandlers is a list of optional of exposure class handlers.
 	// +optional
 	ExposureClassHandlers []ExposureClassHandler `json:"exposureClassHandlers,omitempty"`
+	// MonitoringConfig is optional and adds additional settings for the monitoring stack.
+	// +optional
+	Monitoring *MonitoringConfig `json:"monitoring,omitempty"`
 }
 
 // GardenClientConnection specifies the kubeconfig file and the client connection settings
@@ -132,6 +139,9 @@ type GardenletControllerConfiguration struct {
 	// BackupEntry defines the configuration of the BackupEntry controller.
 	// +optional
 	BackupEntry *BackupEntryControllerConfiguration `json:"backupEntry,omitempty"`
+	// BackupEntryMigration defines the configuration of the BackupEntryMigration controller.
+	// +optional
+	BackupEntryMigration *BackupEntryMigrationControllerConfiguration `json:"backupEntryMigration,omitempty"`
 	// Bastion defines the configuration of the Bastion controller.
 	// +optional
 	Bastion *BastionControllerConfiguration `json:"bastion,omitempty"`
@@ -153,6 +163,9 @@ type GardenletControllerConfiguration struct {
 	// ShootCare defines the configuration of the ShootCare controller.
 	// +optional
 	ShootCare *ShootCareControllerConfiguration `json:"shootCare,omitempty"`
+	// ShootMigration defines the configuration of the ShootMigration controller.
+	// +optional
+	ShootMigration *ShootMigrationControllerConfiguration `json:"shootMigration,omitempty"`
 	// ShootStateSync defines the configuration of the ShootState controller
 	// +optional
 	ShootStateSync *ShootStateSyncControllerConfiguration `json:"shootStateSync,omitempty"`
@@ -186,6 +199,25 @@ type BackupEntryControllerConfiguration struct {
 	// BackupEntries corresponding to Shoots with different purposes will be deleted immediately.
 	// +optional
 	DeletionGracePeriodShootPurposes []gardencorev1beta1.ShootPurpose `json:"deletionGracePeriodShootPurposes,omitempty"`
+}
+
+// BackupEntryMigrationControllerConfiguration defines the configuration of the BackupEntryMigration
+// controller.
+type BackupEntryMigrationControllerConfiguration struct {
+	// ConcurrentSyncs is the number of workers used for the controller to work on
+	// events.
+	// +optional
+	ConcurrentSyncs *int `json:"concurrentSyncs,omitempty"`
+	// SyncPeriod is the duration how often the existing resources are reconciled.
+	// It is only relevant for backup entries that are currently being migrated.
+	// +optional
+	SyncPeriod *metav1.Duration `json:"syncPeriod,omitempty"`
+	// GracePeriod is the period to wait before forcing the restoration after the migration has started.
+	// +optional
+	GracePeriod *metav1.Duration `json:"gracePeriod,omitempty"`
+	// LastOperationStaleDuration is the duration to consider the last operation stale after it was last updated.
+	// +optional
+	LastOperationStaleDuration *metav1.Duration `json:"lastOperationStaleDuration,omitempty"`
 }
 
 // BastionControllerConfiguration defines the configuration of the Bastion
@@ -236,6 +268,15 @@ type SeedControllerConfiguration struct {
 	// SyncPeriod is the duration how often the existing resources are reconciled.
 	// +optional
 	SyncPeriod *metav1.Duration `json:"syncPeriod,omitempty"`
+	// LeaseResyncSeconds defines how often (in seconds) the seed lease is renewed.
+	// Defaults to 2
+	// +optional
+	LeaseResyncSeconds *int32 `json:"leaseResyncSeconds,omitempty"`
+	// LeaseResyncMissThreshold is the amount of missed lease resyncs before the health status
+	// is changed to false.
+	// Defaults to 10
+	// +optional
+	LeaseResyncMissThreshold *int32 `json:"leaseResyncMissThreshold,omitempty"`
 }
 
 // ShootControllerConfiguration defines the configuration of the Shoot
@@ -290,6 +331,25 @@ type ShootCareControllerConfiguration struct {
 	// ConditionThresholds defines the condition threshold per condition type.
 	// +optional
 	ConditionThresholds []ConditionThreshold `json:"conditionThresholds,omitempty"`
+}
+
+// ShootMigrationControllerConfiguration defines the configuration of the ShootMigration
+// controller.
+type ShootMigrationControllerConfiguration struct {
+	// ConcurrentSyncs is the number of workers used for the controller to work on
+	// events.
+	// +optional
+	ConcurrentSyncs *int `json:"concurrentSyncs,omitempty"`
+	// SyncPeriod is the duration how often the existing resources are reconciled.
+	// +optional
+	SyncPeriod *metav1.Duration `json:"syncPeriod,omitempty"`
+	// GracePeriod is the period to wait before forcing the restoration after the migration has started.
+	// It is only relevant for shoots that are currently being migrated.
+	// +optional
+	GracePeriod *metav1.Duration `json:"gracePeriod,omitempty"`
+	// LastOperationStaleDuration is the duration to consider the last operation stale after it was last updated.
+	// +optional
+	LastOperationStaleDuration *metav1.Duration `json:"lastOperationStaleDuration,omitempty"`
 }
 
 // StaleExtensionHealthChecks defines the configuration of the check for stale extension health checks.
@@ -361,18 +421,6 @@ type ResourcesConfiguration struct {
 	Reserved corev1.ResourceList `json:"reserved,omitempty"`
 }
 
-// LeaderElectionConfiguration defines the configuration of leader election
-// clients for components that can run with leader election enabled.
-type LeaderElectionConfiguration struct {
-	componentbaseconfigv1alpha1.LeaderElectionConfiguration `json:",inline"`
-	// LockObjectNamespace defines the namespace of the lock object.
-	// +optional
-	LockObjectNamespace *string `json:"lockObjectNamespace,omitempty"`
-	// LockObjectName defines the lock object name.
-	// +optional
-	LockObjectName *string `json:"lockObjectName,omitempty"`
-}
-
 // SeedConfig contains configuration for the seed cluster.
 type SeedConfig struct {
 	gardencorev1beta1.SeedTemplate `json:",inline"`
@@ -396,7 +444,13 @@ type FluentBit struct {
 
 // Loki contains configuration for the Loki.
 type Loki struct {
+	// Enabled is used to enable or disable the shoot and seed Loki.
+	// If FluentBit is used with a custom output the Loki can, Loki is maybe unused and can be disabled.
+	// If not set, by default Loki is enabled
+	// +optional
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	// Garden contains configuration for the Loki in garden namespace.
+	// +optional
 	Garden *GardenLoki `json:"garden,omitempty" yaml:"garden,omitempty"`
 }
 
@@ -487,6 +541,55 @@ type SNIIngress struct {
 	Labels map[string]string `json:"labels,omitempty"`
 }
 
+// ETCDConfig contains ETCD related configs
+type ETCDConfig struct {
+	// ETCDController contains config specific to ETCD controller
+	// +optional
+	ETCDController *ETCDController `json:"etcdController,omitempty"`
+	// CustodianController contains config specific to custodian controller
+	// +optional
+	CustodianController *CustodianController `json:"custodianController,omitempty"`
+	// BackupCompactionController contains config specific to backup compaction controller
+	// +optional
+	BackupCompactionController *BackupCompactionController `json:"backupCompactionController,omitempty"`
+}
+
+// ETCDController contains config specific to ETCD controller
+type ETCDController struct {
+	// Workers specify number of worker threads in ETCD controller
+	// Defaults to 50
+	// +optional
+	Workers *int64 `json:"workers,omitempty"`
+}
+
+// CustodianController contains config specific to custodian controller
+type CustodianController struct {
+	// Workers specify number of worker threads in custodian controller
+	// Defaults to 10
+	// +optional
+	Workers *int64 `json:"workers,omitempty"`
+}
+
+// BackupCompactionController contains config specific to backup compaction controller
+type BackupCompactionController struct {
+	// Workers specify number of worker threads in backup compaction controller
+	// Defaults to 3
+	// +optional
+	Workers *int64 `json:"workers,omitempty"`
+	// EnableBackupCompaction enables automatic compaction of etcd backups
+	// Defaults to false
+	// +optional
+	EnableBackupCompaction *bool `json:"enableBackupCompaction,omitempty"`
+	// EventsThreshold defines total number of etcd events that can be allowed before a backup compaction job is triggered
+	// Defaults to 1 Million events
+	// +optional
+	EventsThreshold *int64 `json:"eventsThreshold,omitempty"`
+	// ActiveDeadlineDuration defines duration after which a running backup compaction job will be killed
+	// Defaults to 3 hours
+	// +optional
+	ActiveDeadlineDuration *metav1.Duration `json:"activeDeadlineDuration,omitempty"`
+}
+
 // ExposureClassHandler contains configuration for an exposure class handler.
 type ExposureClassHandler struct {
 	// Name is the name of the exposure class handler.
@@ -505,6 +608,35 @@ type ExposureClassHandler struct {
 type LoadBalancerServiceConfig struct {
 	// Annotations is a key value map to annotate the underlying load balancer services.
 	Annotations map[string]string `json:"annotations"`
+}
+
+// MonitoringConfig contains settings for the monitoring stack.
+type MonitoringConfig struct {
+	// Shoot is optional and contains settings for the shoot monitoring stack.
+	// +optional
+	Shoot *ShootMonitoringConfig `json:"shoot,omitempty"`
+}
+
+// ShootMonitoringConfig contains settings for the shoot monitoring stack.
+type ShootMonitoringConfig struct {
+	// RemoteWrite is optional and contains remote write setting.
+	// +optional
+	RemoteWrite *RemoteWriteMonitoringConfig `json:"remoteWrite,omitempty"`
+	// ExternalLabels is optional and sets additional external labels for the monitoring stack.
+	// +optional
+	ExternalLabels map[string]string `json:"externalLabels,omitempty"`
+}
+
+// RemoteWriteMonitoringConfig contains settings for the remote write setting for monitoring stack.
+type RemoteWriteMonitoringConfig struct {
+	// URL contains an Url for remote write setting in prometheus.
+	URL string `json:"url"`
+	// Keep contains a list of metrics that will be remote written
+	// +optional
+	Keep []string `json:"keep,omitempty"`
+	// QueueConfig contains the queue_config for prometheus remote write.
+	// +optional
+	QueueConfig *string `json:"queueConfig,omitempty"`
 }
 
 const (

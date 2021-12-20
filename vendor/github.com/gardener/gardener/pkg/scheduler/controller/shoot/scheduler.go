@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	"github.com/gardener/gardener/pkg/predicate"
+	"github.com/gardener/gardener/pkg/controllerutils/predicate"
 	"github.com/gardener/gardener/pkg/scheduler/apis/config"
 
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -40,7 +40,6 @@ func AddToManager(
 	ctrlOptions := controller.Options{
 		Reconciler: &reconciler{
 			config:       config,
-			logger:       mgr.GetLogger().WithName(ControllerName),
 			gardenClient: mgr.GetClient(),
 			recorder:     mgr.GetEventRecorderFor(ControllerName),
 		},

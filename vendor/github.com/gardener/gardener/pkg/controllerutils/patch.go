@@ -17,8 +17,6 @@ package controllerutils
 import (
 	"context"
 
-	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -106,16 +104,6 @@ func CreateOrGetAndStrategicMergePatch(ctx context.Context, c client.Client, obj
 }
 
 func createOrGetAndPatch(ctx context.Context, c client.Client, obj client.Object, patchFunc patchFn, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
-	var (
-		namespace = obj.GetNamespace()
-		name      = obj.GetName()
-	)
-
-	resetObj, err := kutil.CreateResetObjectFunc(obj, c.Scheme())
-	if err != nil {
-		return controllerutil.OperationResultNone, err
-	}
-
 	if err := f(); err != nil {
 		return controllerutil.OperationResultNone, err
 	}
@@ -125,16 +113,11 @@ func createOrGetAndPatch(ctx context.Context, c client.Client, obj client.Object
 			return controllerutil.OperationResultNone, err
 		}
 
-		resetObj()
-		obj.SetNamespace(namespace)
-		obj.SetName(name)
-
 		if err2 := c.Get(ctx, client.ObjectKeyFromObject(obj), obj); err2 != nil {
 			return controllerutil.OperationResultNone, err2
 		}
 
 		patch := patchFunc(obj.DeepCopyObject().(client.Object))
-
 		if err2 := f(); err2 != nil {
 			return controllerutil.OperationResultNone, err2
 		}

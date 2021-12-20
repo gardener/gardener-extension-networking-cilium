@@ -143,6 +143,9 @@ const (
 	LabelSeedProvider = "seed.gardener.cloud/provider"
 	// LabelShootProvider is used to identify the shoot provider.
 	LabelShootProvider = "shoot.gardener.cloud/provider"
+	// LabelShootProviderPrefix is used to prefix label that indicates the provider type.
+	// The label key is in the form provider.shoot.gardener.cloud/<type>.
+	LabelShootProviderPrefix = "provider.shoot.gardener.cloud/"
 	// LabelNetworkingProvider is used to identify the networking provider for the cni plugin.
 	LabelNetworkingProvider = "networking.shoot.gardener.cloud/provider"
 	// LabelExtensionPrefix is used to prefix extension specific labels.
@@ -226,6 +229,10 @@ const (
 	AnnotationReversedVPN = "alpha.featuregates.shoot.gardener.cloud/reversed-vpn"
 	// AnnotationNodeLocalDNS enables a per node dns cache on the shoot cluster.
 	AnnotationNodeLocalDNS = "alpha.featuregates.shoot.gardener.cloud/node-local-dns"
+	// AnnotationNodeLocalDNSForceTcpToClusterDns enforces upgrade to tcp connections for communication between node local and cluster dns.
+	AnnotationNodeLocalDNSForceTcpToClusterDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-cluster-dns"
+	// AnnotationNodeLocalDNSForceTcpToUpstreamDns enforces upgrade to tcp connections for communication between node local and upstream dns.
+	AnnotationNodeLocalDNSForceTcpToUpstreamDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-upstream-dns"
 
 	// OperatingSystemConfigUnitNameKubeletService is a constant for a unit in the operating system config that contains the kubelet service.
 	OperatingSystemConfigUnitNameKubeletService = "kubelet.service"

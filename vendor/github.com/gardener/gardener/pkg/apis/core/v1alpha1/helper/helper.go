@@ -22,12 +22,12 @@ import (
 
 	gardencorev1alpha1 "github.com/gardener/gardener/pkg/apis/core/v1alpha1"
 	v1alpha1constants "github.com/gardener/gardener/pkg/apis/core/v1alpha1/constants"
-	"github.com/gardener/gardener/pkg/logger"
 	versionutils "github.com/gardener/gardener/pkg/utils/version"
 
 	"github.com/Masterminds/semver"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -87,19 +87,16 @@ func GetOrInitCondition(conditions []gardencorev1alpha1.Condition, conditionType
 
 // UpdatedCondition updates the properties of one specific condition.
 func UpdatedCondition(condition gardencorev1alpha1.Condition, status gardencorev1alpha1.ConditionStatus, reason, message string, codes ...gardencorev1alpha1.ErrorCode) gardencorev1alpha1.Condition {
-	newCondition := gardencorev1alpha1.Condition{
-		Type:               condition.Type,
-		Status:             status,
-		Reason:             reason,
-		Message:            message,
-		LastTransitionTime: condition.LastTransitionTime,
-		LastUpdateTime:     Now(),
-		Codes:              codes,
-	}
+	builder, err := NewConditionBuilder(condition.Type)
+	utilruntime.Must(err)
+	newCondition, _ := builder.
+		WithOldCondition(condition).
+		WithStatus(status).
+		WithReason(reason).
+		WithMessage(message).
+		WithCodes(codes...).
+		Build()
 
-	if condition.Status != status {
-		newCondition.LastTransitionTime = Now()
-	}
 	return newCondition
 }
 
@@ -659,18 +656,6 @@ func GetShootMachineImageFromLatestMachineImageVersion(image gardencorev1alpha1.
 		return nil, gardencorev1alpha1.ShootMachineImage{}, err
 	}
 	return latestSemVerVersion, gardencorev1alpha1.ShootMachineImage{Name: image.Name, Version: &latestImage.Version}, nil
-}
-
-// UpdateMachineImages updates the machine images in place.
-func UpdateMachineImages(workers []gardencorev1alpha1.Worker, machineImages []*gardencorev1alpha1.ShootMachineImage) {
-	for _, machineImage := range machineImages {
-		for idx, worker := range workers {
-			if worker.Machine.Image != nil && machineImage.Name == worker.Machine.Image.Name {
-				logger.Logger.Infof("Updating worker images of worker '%s' from version %s to version %s", worker.Name, *worker.Machine.Image.Version, *machineImage.Version)
-				workers[idx].Machine.Image = machineImage
-			}
-		}
-	}
 }
 
 // KubernetesVersionExistsInCloudProfile checks if the given Kubernetes version exists in the CloudProfile
