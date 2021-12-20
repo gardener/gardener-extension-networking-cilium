@@ -35,7 +35,8 @@ start:
 		./cmd/$(EXTENSION_PREFIX)-$(NAME) \
 		--ignore-operation-annotation=$(IGNORE_OPERATION_ANNOTATION) \
 		--leader-election=$(LEADER_ELECTION) \
-		--config-file=./example/00-componentconfig.yaml
+		--config-file=./example/00-componentconfig.yaml \
+		--gardener-version="v1.39.0"
 
 #################################################################
 # Rules related to binary build, Docker image build and release #

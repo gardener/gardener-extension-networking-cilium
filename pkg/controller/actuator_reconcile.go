@@ -51,7 +51,7 @@ func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*bui
 		WithNamespacedName(namespace, CiliumConfigSecretName), withLocalObjectRefs(CiliumConfigSecretName)
 }
 
-func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
+func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool, useProjectedTokenMount bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
 		Name: cilium.MonitoringName,
 		Path: cilium.CiliumMonitoringChartPath,
@@ -67,7 +67,7 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 		return client.IgnoreNotFound(ciliumControlPlaneMonitoringChart.Delete(ctx, seedClient, network.Namespace))
 	}
 
-	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{})
+	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{"useProjectedTokenMount": useProjectedTokenMount})
 }
 
 // Reconcile implements Network.Actuator.
@@ -90,7 +90,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster)
+	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, a.useProjectedTokenMount)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return err
 	}
 
-	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, false); err != nil {
+	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, false, a.useProjectedTokenMount); err != nil {
 		return err
 	}
 

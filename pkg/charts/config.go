@@ -31,6 +31,7 @@ type globalConfig struct {
 	K8sServicePort         int32                                   `json:"k8sServicePort"`
 	NodePort               nodePort                                `json:"nodePort"`
 	PodCIDR                string                                  `json:"podCIDR"`
+	UseProjectedTokenMount bool                                    `json:"useProjectedTokenMount bool"`
 }
 
 // etcd related configuration for cilium

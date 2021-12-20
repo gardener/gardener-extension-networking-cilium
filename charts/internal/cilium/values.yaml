@@ -24,6 +24,7 @@ requirements:
 
 # global groups all configuration options that have effect on all sub-charts
 global:
+  useProjectedTokenMount: false
   podCIDR: ""
   # pullPolicy is the container image pull policy
   pullPolicy: IfNotPresent

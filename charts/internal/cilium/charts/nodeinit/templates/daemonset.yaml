@@ -15,6 +15,7 @@ spec:
       labels:
         app: cilium-node-init
     spec:
+      automountServiceAccountToken: false
       tolerations:
       - operator: Exists
       hostPID: true

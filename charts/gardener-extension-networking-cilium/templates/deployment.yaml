@@ -37,6 +37,9 @@ spec:
         - --healthcheck-max-concurrent-reconciles={{ .Values.controller.healthcheck.concurrentSyncs }}
         - --ignore-operation-annotation={{ .Values.controller.ignoreOperationAnnotation }}
         - --config-file=/etc/{{ include "name" . }}/config/config.yaml
+        {{- if .Values.gardener.version }}
+        - --gardener-version={{ .Values.gardener.version }}
+        {{- end }}
         env:
         - name: LEADER_ELECTION_NAMESPACE
           valueFrom:
