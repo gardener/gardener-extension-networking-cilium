@@ -1,4 +1,4 @@
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: hubble-generate-certs
@@ -16,8 +16,6 @@ spec:
           labels:
             k8s-app: hubble-generate-certs
         spec:
-          serviceAccount: hubble-generate-certs
-          serviceAccountName: hubble-generate-certs
           containers:
             - name: certgen
               image: {{ index .Values.global.images "certgen" }}
@@ -29,20 +27,15 @@ spec:
               # the values used in past runs by inspecting the completed pod.
               args:
                 - "--cilium-namespace=kube-system"
-                - "--hubble-ca-reuse-secret=true"
-                - "--hubble-ca-secret-name=hubble-ca-secret"
-                - "--hubble-ca-generate=true"
-                - "--hubble-ca-validity-duration=94608000s"
-                - "--hubble-ca-config-map-create=true"
-                - "--hubble-ca-config-map-name=hubble-ca-cert"
-                - "--hubble-server-cert-generate=true"
+                - "--hubble-ca-generate"
+                - "--hubble-ca-reuse-secret"
+                - "--hubble-server-cert-generate"
                 - "--hubble-server-cert-common-name=*.{{ .Values.global.cluster.name }}.hubble-grpc.cilium.io"
                 - "--hubble-server-cert-validity-duration=94608000s"
-                - "--hubble-server-cert-secret-name=hubble-server-certs"
-                - "--hubble-relay-client-cert-generate=true"
+                - "--hubble-relay-client-cert-generate"
                 - "--hubble-relay-client-cert-validity-duration=94608000s"
-                - "--hubble-relay-client-cert-secret-name=hubble-relay-client-certs"
-                - "--hubble-relay-server-cert-generate=false"
           hostNetwork: true
+          serviceAccount: hubble-generate-certs
+          serviceAccountName: hubble-generate-certs
           restartPolicy: OnFailure
       ttlSecondsAfterFinished: 1800
