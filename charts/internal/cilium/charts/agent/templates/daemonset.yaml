@@ -49,7 +49,7 @@ spec:
 {{- if semverCompare ">= 1.20" .Capabilities.KubeVersion.GitVersion }}
         startupProbe:
           httpGet:
-            host: '127.0.0.1'
+            host: "127.0.0.1"
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -69,7 +69,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: '127.0.0.1'
+            host: "127.0.0.1"
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -98,7 +98,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: '127.0.0.1'
+            host: "127.0.0.1"
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -169,65 +169,61 @@ spec:
           protocol: TCP
 {{- end }}
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-            - SYS_MODULE
           privileged: true
         volumeMounts:
 {{- /* CRI-O already mounts the BPF filesystem */ -}}
 {{- if not (eq .Values.global.containerRuntime.integration "crio") }}
-        - mountPath: /sys/fs/bpf
-          name: bpf-maps
+        - name: bpf-maps
+          mountPath: /sys/fs/bpf
 {{- end }}
-        - mountPath: /var/run/cilium
-          name: cilium-run
-        - mountPath: /host/opt/cni/bin
-          name: cni-path
-        - mountPath: {{ .Values.global.cni.hostConfDirMountPath }}
-          name: etc-cni-netd
+        - name: cilium-run
+          mountPath: /var/run/cilium
+        - name: cni-path
+          mountPath: /host/opt/cni/bin
+        - name: etc-cni-netd
+          mountPath: {{ .Values.global.cni.hostConfDirMountPath }}
 {{- if .Values.global.etcd.enabled }}
-        - mountPath: /var/lib/etcd-config
-          name: etcd-config-path
+        - name: etcd-config-path
+          mountPath: /var/lib/etcd-config
           readOnly: true
 {{- if or .Values.global.etcd.ssl .Values.global.etcd.managed }}
-        - mountPath: /var/lib/etcd-secrets
-          name: etcd-secrets
+        - name: etcd-secrets
+          mountPath: /var/lib/etcd-secrets
           readOnly: true
 {{- end }}
 {{- end }}
-        - mountPath: /var/lib/cilium/clustermesh
-          name: clustermesh-secrets
+        - name: clustermesh-secrets
+          mountPath: /var/lib/cilium/clustermesh
           readOnly: true
-        - mountPath: /tmp/cilium/config-map
-          name: cilium-config-path
+        - name: cilium-config-path
+          mountPath: /tmp/cilium/config-map
           readOnly: true
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
-        - mountPath: /etc/config
-          name: ip-masq-agent
+        - name: ip-masq-agent
+          mountPath: /etc/config
           readOnly: true
 {{- end }}
 {{- if .Values.global.cni.configMap }}
-        - mountPath: {{ .Values.global.cni.confFileMountPath }}
-          name: cni-configuration
+        - name: cni-configuration
+          mountPath: {{ .Values.global.cni.confFileMountPath }}
           readOnly: true
 {{- end }}
           # Needed to be able to load kernel modules
-        - mountPath: /lib/modules
-          name: lib-modules
+        - name: lib-modules
+          mountPath: /lib/modules
           readOnly: true
-        - mountPath: /run/xtables.lock
-          name: xtables-lock
-        - mountPath: /var/lib/cilium/tls/hubble
-          name: hubble-tls
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
+        - name: hubble-tls
+          mountPath: /var/lib/cilium/tls/hubble
           readOnly: true
 {{- if .Values.global.encryption.enabled }}
-        - mountPath: {{ .Values.global.encryption.mountPath }}
-          name: cilium-ipsec-secrets
+        - name: cilium-ipsec-secrets
+          mountPath: {{ .Values.global.encryption.mountPath }}
 {{- end }}
 {{- if .Values.global.kubeConfigPath }}
-        - mountPath: {{ .Values.global.kubeConfigPath }}
-          name: kube-config
+        - name: kube-config
+          mountPath: {{ .Values.global.kubeConfigPath }}
           readOnly: true
 {{- end}}
 {{- if .Values.monitor.enabled }}
@@ -263,20 +259,23 @@ spec:
             value: /opt/cni/bin
         command:
           - sh
-          - -c
+          - -ec
           # The statically linked Go program binary is invoked to avoid any
           # dependency on utilities like sh and mount that can be missing on certain
           # distros installed on the underlying host. Copy the binary to the
           # same directory where we install cilium cni plugin so that exec permissions
           # are available.
-          - 'cp /usr/bin/cilium-mount /hostbin/cilium-mount && nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT; rm /hostbin/cilium-mount'
+          - |
+            cp /usr/bin/cilium-mount /hostbin/cilium-mount;
+            nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
+            rm /hostbin/cilium-mount
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
-          - mountPath: /hostproc
-            name: hostproc
-          - mountPath: /hostbin
-            name: cni-path
+          - name: hostproc
+            mountPath: /hostproc
+          - name: cni-path
+            mountPath: /hostbin
         securityContext:
           privileged: true
 {{- if and .Values.global.nodeinit.enabled (not (eq .Values.global.nodeinit.bootstrapFile "")) }}
@@ -294,35 +293,32 @@ spec:
         - name: CILIUM_ALL_STATE
           valueFrom:
             configMapKeyRef:
-              key: clean-cilium-state
               name: cilium-config
+              key: clean-cilium-state
               optional: true
         - name: CILIUM_BPF_STATE
           valueFrom:
             configMapKeyRef:
-              key: clean-cilium-bpf-state
               name: cilium-config
+              key: clean-cilium-bpf-state
               optional: true
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
         name: clean-cilium-state
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
           privileged: true
         volumeMounts:
 {{- /* CRI-O already mounts the BPF filesystem */ -}}
 {{- if not (eq .Values.global.containerRuntime.integration "crio") }}
-        - mountPath: /sys/fs/bpf
-          name: bpf-maps
+        - name: bpf-maps
+          mountPath: /sys/fs/bpf
 {{- end }}
         # Required to mount cgroup filesystem from the host to cilium agent pod
-        - mountPath: /run/cilium/cgroupv2
-          name: cilium-cgroup
+        - name: cilium-cgroup
+          mountPath: /run/cilium/cgroupv2
           mountPropagation: HostToContainer
-        - mountPath: /var/run/cilium
-          name: cilium-run
+        - name: cilium-run
+          mountPath: /var/run/cilium
         resources:
           {{- toYaml .Values.initResources | trim | nindent 10 }}
 {{- if eq .Values.global.kubeProxyReplacement "strict" }}
@@ -375,58 +371,58 @@ spec:
       - operator: Exists
       volumes:
         # To keep state between restarts / upgrades
-      - hostPath:
+      - name: cilium-run
+        hostPath:
           path: {{ .Values.global.daemon.runPath }}
           type: DirectoryOrCreate
-        name: cilium-run
 {{- /* CRI-O already mounts the BPF filesystem */ -}}
 {{- if not (eq .Values.global.containerRuntime.integration "crio") }}
         # To keep state between restarts / upgrades for bpf maps
-      - hostPath:
+      - name: bpf-maps
+        hostPath:
           path: /sys/fs/bpf
           type: DirectoryOrCreate
-        name: bpf-maps
 {{- end }}
       # To mount cgroup2 filesystem on the host
-      - hostPath:
+      - name: hostproc
+        hostPath:
           path: /proc
           type: Directory
-        name: hostproc
       # To keep state between restarts / upgrades for cgroup2 filesystem
-      - hostPath:
+      - name: cilium-cgroup
+        hostPath:
           path: /run/cilium/cgroupv2
           type: DirectoryOrCreate
-        name: cilium-cgroup
       # To install cilium cni plugin in the host
-      - hostPath:
+      - name: cni-path
+        hostPath:
           path:  {{ .Values.global.cni.binPath }}
           type: DirectoryOrCreate
-        name: cni-path
         # To install cilium cni configuration in the host
-      - hostPath:
+      - name: etc-cni-netd
+        hostPath:
           path: {{ .Values.global.cni.confPath }}
           type: DirectoryOrCreate
-        name: etc-cni-netd
         # To be able to load kernel modules
-      - hostPath:
+      - name: lib-modules
+        hostPath:
           path: /lib/modules
-        name: lib-modules
         # To access iptables concurrently with other processes (e.g. kube-proxy)
-      - hostPath:
+      - name: xtables-lock
+        hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
-        name: xtables-lock
 {{- if .Values.global.kubeConfigPath }}
-      - hostPath:
+      - name: kube-config
+        hostPath:
           path: {{ .Values.global.kubeConfigPath }}
           type: FileOrCreate
-        name: kube-config
 {{- end }}
 {{- if and .Values.global.nodeinit.enabled (not (eq .Values.global.nodeinit.bootstrapFile "")) }}
-      - hostPath:
+      - name: cilium-bootstrap-file
+        hostPath:
           path: {{ .Values.global.nodeinit.bootstrapFile }}
           type: FileOrCreate
-        name: cilium-bootstrap-file
 {{- end }}
 {{- if .Values.global.etcd.enabled }}
         # To read the etcd config stored in config maps
@@ -449,18 +445,22 @@ spec:
         # To read the clustermesh configuration
       - name: clustermesh-secrets
         secret:
-          defaultMode: 420
-          optional: true
           secretName: cilium-clustermesh
+          # note: the leading zero means this number is in octal representation: do not remove it
+          defaultMode: 0400
+          optional: true
         # To read the configuration from the config map
-      - configMap:
+      - name: cilium-config-path
+        configMap:
           name: cilium-config
-        name: cilium-config-path
       - name: hubble-tls
         projected:
+          # note: the leading zero means this number is in octal representation: do not remove it
+          defaultMode: 0400
           sources:
           - secret:
               name: hubble-server-certs
+              optional: true
               items:
                 - key: ca.crt
                   path: client-ca.crt
@@ -468,7 +468,6 @@ spec:
                   path: server.crt
                 - key: tls.key
                   path: server.key
-              optional: true
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
       - configMap:
           name: ip-masq-agent

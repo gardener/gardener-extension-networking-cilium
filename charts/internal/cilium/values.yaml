@@ -77,6 +77,9 @@ global:
 
   endpointGCInterval: 5m0s
 
+  # Disable the usage of CiliumEndpoint CRD
+  disableEndpointCrd: false
+
   # ipv4 is the IPv4 addressing configuration
   ipv4:
     enabled: true
@@ -142,7 +145,6 @@ global:
   # destinations outside of the cluster.
   enableIpv4Masquerade: true
   enableIpv6Masquerade: true
-  enableBpfMasquerade : true
 
   # ipMasqAgent enables and controls BPF ip-masq-agent
   ipMasqAgent:

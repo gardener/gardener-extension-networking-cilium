@@ -9,5 +9,5 @@ roleRef:
   name: hubble-ui 
 subjects:
   - kind: ServiceAccount
-    namespace: {{ .Release.Namespace }}
     name: hubble-ui
+    namespace: {{ .Release.Namespace }}

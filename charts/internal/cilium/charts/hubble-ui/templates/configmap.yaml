@@ -69,7 +69,7 @@ data:
           lb_policy: round_robin
           http2_protocol_options: {}
           load_assignment:
-            cluster_name: frontend
+            cluster_name: backend
             endpoints:
               - lb_endpoints:
                   - endpoint:

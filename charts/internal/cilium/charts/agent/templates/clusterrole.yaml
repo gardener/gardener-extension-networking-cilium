@@ -99,5 +99,6 @@ rules:
   - ciliumlocalredirectpolicies
   - ciliumlocalredirectpolicies/status
   - ciliumegressnatpolicies
+  - ciliumendpointslices
   verbs:
   - '*'

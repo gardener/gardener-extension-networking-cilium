@@ -27,7 +27,6 @@ rules:
       - ""
     resources:
       - secrets
-      - configmaps
     verbs:
       - create
   - apiGroups:
@@ -43,16 +42,9 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - configmaps
-    resourceNames:
-      - hubble-ca-cert
-    verbs:
-      - update
-  - apiGroups:
-      - ""
-    resources:
       - secrets
     resourceNames:
       - hubble-ca-secret
     verbs:
       - get
+      - update
