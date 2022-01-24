@@ -2,15 +2,15 @@ images:
   - name: cilium-agent
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.11.0
+    tag: v1.11.1
   - name: cilium-preflight
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.11.0
+    tag: v1.11.1
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
-    tag: v1.11.0
+    tag: v1.11.1
   - name: cilium-etcd-operator
     sourceRepository: github.com/cilium/cilium
     repository: docker.io/cilium/cilium-etcd-operator
@@ -22,11 +22,11 @@ images:
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui
-    tag: v0.7.9
+    tag: v0.8.5
   - name: hubble-ui-backend
     sourceRepository: github.com/cilium/hubble-ui-backend
     repository: quay.io/cilium/hubble-ui-backend
-    tag: v0.7.9
+    tag: v0.8.5
   - name: envoy
     sourceRepository: github.com/envoyproxy/envoy
     repository: docker.io/envoyproxy/envoy
@@ -34,7 +34,7 @@ images:
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
-    tag: v1.11.0
+    tag: v1.11.1
   - name: certgen
     sourceRepository: github.com/cilium/certgen
     repository: quay.io/cilium/certgen
