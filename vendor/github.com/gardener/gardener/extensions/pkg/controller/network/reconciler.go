@@ -33,6 +33,7 @@ import (
 	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/controllerutils"
+	reconcilerutils "github.com/gardener/gardener/pkg/controllerutils/reconciler"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 )
 
@@ -50,7 +51,7 @@ type reconciler struct {
 func NewReconciler(actuator Actuator) reconcile.Reconciler {
 	logger := log.Log.WithName(ControllerName)
 
-	return extensionscontroller.OperationAnnotationWrapper(
+	return reconcilerutils.OperationAnnotationWrapper(
 		func() client.Object { return &extensionsv1alpha1.Network{} },
 		&reconciler{
 			logger:        logger,
@@ -136,8 +137,8 @@ func (r *reconciler) reconcile(ctx context.Context, network *extensionsv1alpha1.
 
 	r.logger.Info("Starting the reconciliation of network", "network", kutil.ObjectName(network))
 	if err := r.actuator.Reconcile(ctx, network, cluster); err != nil {
-		_ = r.statusUpdater.Error(ctx, network, extensionscontroller.ReconcileErrCauseOrErr(err), operationType, "Error reconciling network")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, network, reconcilerutils.ReconcileErrCauseOrErr(err), operationType, "Error reconciling network")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, network, operationType, "Successfully reconciled network"); err != nil {
@@ -157,8 +158,8 @@ func (r *reconciler) restore(ctx context.Context, network *extensionsv1alpha1.Ne
 	}
 
 	if err := r.actuator.Restore(ctx, network, cluster); err != nil {
-		_ = r.statusUpdater.Error(ctx, network, extensionscontroller.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeRestore, "Error restoring network")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, network, reconcilerutils.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeRestore, "Error restoring network")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, network, gardencorev1beta1.LastOperationTypeRestore, "Successfully restored network"); err != nil {
@@ -184,8 +185,8 @@ func (r *reconciler) delete(ctx context.Context, network *extensionsv1alpha1.Net
 
 	r.logger.Info("Starting the deletion of network", "network", kutil.ObjectName(network))
 	if err := r.actuator.Delete(ctx, network, cluster); err != nil {
-		_ = r.statusUpdater.Error(ctx, network, extensionscontroller.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeDelete, "Error deleting network")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, network, reconcilerutils.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeDelete, "Error deleting network")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, network, gardencorev1beta1.LastOperationTypeDelete, "Successfully deleted network"); err != nil {
@@ -206,8 +207,8 @@ func (r *reconciler) migrate(ctx context.Context, network *extensionsv1alpha1.Ne
 	}
 
 	if err := r.actuator.Migrate(ctx, network, cluster); err != nil {
-		_ = r.statusUpdater.Error(ctx, network, extensionscontroller.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeMigrate, "Error migrating network")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, network, reconcilerutils.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeMigrate, "Error migrating network")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, network, gardencorev1beta1.LastOperationTypeMigrate, "Successfully migrated network"); err != nil {
@@ -215,7 +216,7 @@ func (r *reconciler) migrate(ctx context.Context, network *extensionsv1alpha1.Ne
 	}
 
 	r.logger.Info("Removing all finalizers", "network", kutil.ObjectName(network))
-	if err := extensionscontroller.DeleteAllFinalizers(ctx, r.client, network); err != nil {
+	if err := controllerutils.RemoveAllFinalizers(ctx, r.client, r.client, network); err != nil {
 		return reconcile.Result{}, fmt.Errorf("error removing finalizers from the network: %+v", err)
 	}
 

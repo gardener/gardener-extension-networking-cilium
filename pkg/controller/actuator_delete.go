@@ -18,27 +18,27 @@ import (
 	"context"
 	"time"
 
-	resourcemanager "github.com/gardener/gardener-resource-manager/pkg/manager"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
+	"github.com/gardener/gardener/pkg/utils/managedresources"
+	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
 )
 
 // Delete implements Network.Actuator.
 func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
 	// First delete the monitoring configuration
-	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, true); err != nil {
+	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, true, a.useProjectedTokenMount); err != nil {
 		return err
 	}
 
 	// Then delete the managed resource along with its secrets
-	if err := resourcemanager.
+	if err := builder.
 		NewSecret(a.client).
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
 		Delete(ctx); err != nil {
 		return err
 	}
-	if err := resourcemanager.
+	if err := builder.
 		NewManagedResource(a.client).
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
 		Delete(ctx); err != nil {

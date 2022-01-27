@@ -38,8 +38,9 @@ import (
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
 func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	var (
-		restOpts = &controllercmd.RESTOptions{}
-		mgrOpts  = &controllercmd.ManagerOptions{
+		generalOpts = &controllercmd.GeneralOptions{}
+		restOpts    = &controllercmd.RESTOptions{}
+		mgrOpts     = &controllercmd.ManagerOptions{
 			LeaderElection:             true,
 			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
 			LeaderElectionID:           controllercmd.LeaderElectionNameID(cilium.Name),
@@ -61,6 +62,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		configFileOpts = &ciliumcmd.ConfigOptions{}
 
 		aggOption = controllercmd.NewOptionAggregator(
+			generalOpts,
 			restOpts,
 			mgrOpts,
 			ciliumCtrlOpts,
@@ -97,6 +99,12 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			if err := ciliuminstall.AddToScheme(mgr.GetScheme()); err != nil {
 				controllercmd.LogErrAndExit(err, "Could not update manager scheme")
 			}
+
+			useProjectedTokenMount, err := controller.UseServiceAccountTokenVolumeProjection(generalOpts.Completed().GardenerVersion)
+			if err != nil {
+				controllercmd.LogErrAndExit(err, "could not determine whether service account token volume projection should be used")
+			}
+			ciliumcontroller.DefaultAddOptions.UseProjectedTokenMount = useProjectedTokenMount
 
 			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)

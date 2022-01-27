@@ -30,6 +30,9 @@ const (
 	// SecretNameCAMetricsServer is a constant for the name of a Kubernetes secret object that contains the CA
 	// certificate of the metrics-server of a shoot cluster.
 	SecretNameCAMetricsServer = "ca-metrics-server"
+	// SecretNameCAVPN is a constant for the name of a Kubernetes secret object that contains the CA
+	// certificate of the VPN components of a shoot cluster.
+	SecretNameCAVPN = "ca-vpn"
 	// SecretNameCloudProvider is a constant for the name of a Kubernetes secret object that contains the provider
 	// specific credentials that shall be used to create/delete the shoot.
 	SecretNameCloudProvider = "cloudprovider"
@@ -55,6 +58,10 @@ const (
 	// privileges. The difference to the "gardener" secret is that is contains the in-cluster endpoint as address to
 	// for the shoot API server instead the DNS name or load balancer address.
 	SecretNameGardenerInternal = "gardener-internal"
+
+	// SecretNameGenericTokenKubeconfig is a constant for the name of the kubeconfig used by the shoot controlplane
+	// components to authenticate against the shoot Kubernetes API server.
+	SecretNameGenericTokenKubeconfig = "generic-token-kubeconfig"
 
 	// SecretPrefixGeneratedBackupBucket is a constant for the prefix of a secret name in the garden cluster related to
 	// BackpuBuckets.
@@ -189,6 +196,8 @@ const (
 	GardenRoleOpenVPNDiffieHellman = "openvpn-diffie-hellman"
 	// GardenRoleGlobalMonitoring is the value of the GardenRole key indicating type 'global-monitoring'
 	GardenRoleGlobalMonitoring = "global-monitoring"
+	// GardenRoleGlobalShootRemoteWriteMonitoring is the value of the GardenRole key indicating type 'global-shoot-remote-write-monitoring'
+	GardenRoleGlobalShootRemoteWriteMonitoring = "global-shoot-remote-write-monitoring"
 	// GardenRoleAlerting is the value of GardenRole key indicating type 'alerting'.
 	GardenRoleAlerting = "alerting"
 	// GardenRoleHvpa is the value of GardenRole key indicating type 'hvpa'.
@@ -264,6 +273,9 @@ const (
 	LabelSeedProvider = "seed.gardener.cloud/provider"
 	// LabelShootProvider is used to identify the shoot provider.
 	LabelShootProvider = "shoot.gardener.cloud/provider"
+	// LabelShootProviderPrefix is used to prefix label that indicates the provider type.
+	// The label key is in the form provider.shoot.gardener.cloud/<type>.
+	LabelShootProviderPrefix = "provider.shoot.gardener.cloud/"
 	// LabelNetworkingProvider is used to identify the networking provider for the cni plugin.
 	LabelNetworkingProvider = "networking.shoot.gardener.cloud/provider"
 	// LabelExtensionPrefix is used to prefix extension specific labels.
@@ -379,10 +391,21 @@ const (
 	// namespaces' step. Concretely, after the specified seconds, all the finalizers of the affected resources are
 	// forcefully removed.
 	AnnotationShootCleanupNamespaceResourcesFinalizeGracePeriodSeconds = "shoot.gardener.cloud/cleanup-namespaces-finalize-grace-period-seconds"
+	// AnnotationShootInfrastructureCleanupWaitPeriodSeconds is a key for an annotation on a Shoot
+	// resource that declares the wait period in seconds for infrastructure resources cleanup. Concretely,
+	// Gardener will wait for the specified time after the Infrastructure extension object has been deleted to allow
+	// controllers to gracefully cleanup everything (default behaviour is 300s).
+	AnnotationShootInfrastructureCleanupWaitPeriodSeconds = "shoot.gardener.cloud/infrastructure-cleanup-wait-period-seconds"
+	// AnnotationShootForceRestore is a key for an annotation on a Shoot or BackupEntry resource to trigger a forceful restoration to a different seed.
+	AnnotationShootForceRestore = "shoot.gardener.cloud/force-restore"
 	// AnnotationReversedVPN moves the vpn-server to the seed.
 	AnnotationReversedVPN = "alpha.featuregates.shoot.gardener.cloud/reversed-vpn"
 	// AnnotationNodeLocalDNS enables a per node dns cache on the shoot cluster.
 	AnnotationNodeLocalDNS = "alpha.featuregates.shoot.gardener.cloud/node-local-dns"
+	// AnnotationNodeLocalDNSForceTcpToClusterDns enforces upgrade to tcp connections for communication between node local and cluster dns.
+	AnnotationNodeLocalDNSForceTcpToClusterDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-cluster-dns"
+	// AnnotationNodeLocalDNSForceTcpToUpstreamDns enforces upgrade to tcp connections for communication between node local and upstream dns.
+	AnnotationNodeLocalDNSForceTcpToUpstreamDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-upstream-dns"
 
 	// AnnotationShootAPIServerSNIPodInjector is the key for an annotation of a Shoot cluster whose value indicates
 	// if pod injection of 'KUBERNETES_SERVICE_HOST' environment variable should happen for clusters where APIServerSNI
@@ -429,6 +452,8 @@ const (
 	LabelPodMaintenanceRestart = "maintenance.gardener.cloud/restart"
 	// LabelWorkerPool is a constant for a label that indicates the worker pool the node belongs to
 	LabelWorkerPool = "worker.gardener.cloud/pool"
+	// LabelWorkerKubernetesVersion is a constant for a label that indicates the Kubernetes version used for the worker pool nodes.
+	LabelWorkerKubernetesVersion = "worker.gardener.cloud/kubernetes-version"
 	// LabelWorkerPoolDeprecated is a deprecated constant for a label that indicates the worker pool the node belongs to
 	LabelWorkerPoolDeprecated = "worker.garden.sapcloud.io/group"
 	// LabelWorkerPoolSystemComponents is a constant that indicates whether the worker pool should host system components
@@ -461,8 +486,6 @@ const (
 	SeedsGroup = "gardener.cloud:system:seeds"
 	// SeedUserNamePrefix is the identity user name prefix for gardenlets when authenticating to the API server.
 	SeedUserNamePrefix = "gardener.cloud:system:seed:"
-	// SeedUserNameSuffixAmbiguous is the default seed name in case the gardenlet config.SeedConfig is not set
-	SeedUserNameSuffixAmbiguous = "<ambiguous>"
 
 	// ProjectName is the key of a label on namespaces whose value holds the project name.
 	ProjectName = "project.gardener.cloud/name"
@@ -479,6 +502,16 @@ const (
 
 	// DefaultVpnRange is the default network range for the vpn between seed and shoot cluster.
 	DefaultVpnRange = "192.168.123.0/24"
+
+	// BackupSecretName is the name of secret having credentials for etcd backups.
+	BackupSecretName string = "etcd-backup"
+	// DataKeyBackupBucketName is the name of a data key whose value contains the backup bucket name.
+	DataKeyBackupBucketName string = "bucketName"
+	// BackupSourcePrefix is the prefix for names of resources related to source backupentries when copying backups.
+	BackupSourcePrefix = "source"
+
+	// GardenerAudience is the identifier for Gardener controllers when interacting with the API Server
+	GardenerAudience = "gardener"
 )
 
 // ControlPlaneSecretRoles contains all role values used for control plane secrets synced to the Garden cluster.

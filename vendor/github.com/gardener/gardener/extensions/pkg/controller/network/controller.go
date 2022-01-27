@@ -15,9 +15,9 @@
 package network
 
 import (
-	extensionshandler "github.com/gardener/gardener/extensions/pkg/handler"
 	extensionspredicate "github.com/gardener/gardener/extensions/pkg/predicate"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/controllerutils/mapper"
 
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -54,20 +54,7 @@ type AddArgs struct {
 
 // DefaultPredicates returns the default predicates for a Network reconciler.
 func DefaultPredicates(ignoreOperationAnnotation bool) []predicate.Predicate {
-	if ignoreOperationAnnotation {
-		return []predicate.Predicate{
-			predicate.GenerationChangedPredicate{},
-		}
-	}
-
-	return []predicate.Predicate{
-		predicate.Or(
-			extensionspredicate.HasOperationAnnotation(),
-			extensionspredicate.LastOperationNotSuccessful(),
-			extensionspredicate.IsDeleting(),
-		),
-		extensionspredicate.ShootNotFailed(),
-	}
+	return extensionspredicate.DefaultControllerPredicates(ignoreOperationAnnotation, extensionspredicate.ShootNotFailedPredicate())
 }
 
 // Add creates a new network Controller and adds it to the Manager.
@@ -89,7 +76,7 @@ func add(mgr manager.Manager, args AddArgs) error {
 	if args.IgnoreOperationAnnotation {
 		if err := ctrl.Watch(
 			&source.Kind{Type: &extensionsv1alpha1.Cluster{}},
-			extensionshandler.EnqueueRequestsFromMapper(ClusterToNetworkMapper(predicates), extensionshandler.UpdateWithNew),
+			mapper.EnqueueRequestsFrom(ClusterToNetworkMapper(predicates), mapper.UpdateWithNew),
 		); err != nil {
 			return err
 		}

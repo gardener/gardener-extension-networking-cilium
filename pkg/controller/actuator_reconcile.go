@@ -21,12 +21,13 @@ import (
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
-	"github.com/gardener/gardener-resource-manager/pkg/manager"
+
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/chart"
+	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -44,13 +45,13 @@ func withLocalObjectRefs(refs ...string) []corev1.LocalObjectReference {
 	return localObjectRefs
 }
 
-func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*manager.Secret, []corev1.LocalObjectReference) {
-	return manager.NewSecret(cl).
+func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*builder.Secret, []corev1.LocalObjectReference) {
+	return builder.NewSecret(cl).
 		WithKeyValues(map[string][]byte{charts.CiliumConfigKey: ciliumConfig}).
 		WithNamespacedName(namespace, CiliumConfigSecretName), withLocalObjectRefs(CiliumConfigSecretName)
 }
 
-func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
+func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool, useProjectedTokenMount bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
 		Name: cilium.MonitoringName,
 		Path: cilium.CiliumMonitoringChartPath,
@@ -66,7 +67,7 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 		return client.IgnoreNotFound(ciliumControlPlaneMonitoringChart.Delete(ctx, seedClient, network.Namespace))
 	}
 
-	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{})
+	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{"useProjectedTokenMount": useProjectedTokenMount})
 }
 
 // Reconcile implements Network.Actuator.
@@ -89,7 +90,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster)
+	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, a.useProjectedTokenMount)
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return err
 	}
 
-	if err := manager.
+	if err := builder.
 		NewManagedResource(a.client).
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
 		WithSecretRefs(secretRefs).
@@ -108,7 +109,7 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		return err
 	}
 
-	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, false); err != nil {
+	if err := applyMonitoringConfig(ctx, a.client, a.chartApplier, network, false, a.useProjectedTokenMount); err != nil {
 		return err
 	}
 

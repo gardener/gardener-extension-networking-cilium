@@ -17,7 +17,19 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"unicode"
+	"unicode/utf8"
 )
+
+// Options are options for marshalling
+type Options struct {
+	// LowerCaseKeys forces the keys to be lower case for the first character
+	LowerCaseKeys bool
+	// RemoveZeroEntries removes the map entry if the value is the zero value for its type
+	// For example: removes the map entry if the value is string(""), bool(false) or int(0)
+	RemoveZeroEntries bool
+}
 
 // ToValuesMap converts the given value v to a values map, by first marshalling it to JSON,
 // and then unmarshalling the result from JSON into a values map.
@@ -28,6 +40,76 @@ func ToValuesMap(v interface{}) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+// ToValuesMapWithOptions converts the given value v to a values map, by first marshalling it to JSON,
+// and then unmarshalling the result from JSON into a values map.
+// If v cannot be marshalled to JSON, or if the result cannot be unmarshalled into a values map, an error is returned.
+func ToValuesMapWithOptions(v interface{}, opt Options) (map[string]interface{}, error) {
+	var m map[string]interface{}
+	if err := convert(v, &m); err != nil {
+		return nil, err
+	}
+
+	if hasOptions(opt) {
+		m = opt.applyOptions(m)
+	}
+
+	return m, nil
+}
+
+// hasOptions returns true if there are any enabled options
+func hasOptions(opt Options) bool {
+	return opt.LowerCaseKeys || opt.RemoveZeroEntries
+}
+
+// applyOptions recursively ensures that the keys in a map[string]interface{} are lower-case
+func (opt *Options) applyOptions(input map[string]interface{}) map[string]interface{} {
+	if input == nil {
+		return nil
+	}
+
+	if len(input) == 0 {
+		return input
+	}
+
+	result := make(map[string]interface{})
+	for key, value := range input {
+		if value == nil {
+			continue
+		}
+
+		v := reflect.ValueOf(value)
+		if opt.RemoveZeroEntries && v.IsZero() {
+			continue
+		}
+
+		if opt.LowerCaseKeys {
+			r, n := utf8.DecodeRuneInString(key)
+			key = string(unicode.ToLower(r)) + key[n:]
+		}
+
+		if m, ok := value.(map[string]interface{}); ok {
+			value = opt.applyOptions(m)
+		} else if m, ok := value.([]interface{}); ok {
+			value = opt.sliceToValues(m)
+		}
+
+		result[key] = value
+	}
+	return result
+}
+
+func (opt *Options) sliceToValues(input []interface{}) []interface{} {
+	var result = make([]interface{}, len(input))
+	for index, v2 := range input {
+		if m2, ok := v2.(map[string]interface{}); ok {
+			result[index] = opt.applyOptions(m2)
+			continue
+		}
+		result[index] = v2
+	}
+	return result
 }
 
 // FromValuesMap converts the given values map values to the given value v, by first marshalling it to JSON,

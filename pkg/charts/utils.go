@@ -85,7 +85,8 @@ var defaultGlobalConfig = globalConfig{
 		cilium.CertGenImageName:         imagevector.CiliumCertGenImage(),
 		cilium.EnvoyImageName:           imagevector.CiliumEnvoyImage(),
 	},
-	PodCIDR: "",
+	PodCIDR:                "",
+	UseProjectedTokenMount: false,
 }
 
 func newGlobalConfig() globalConfig {
@@ -97,8 +98,8 @@ func newRequirementsConfig() requirementsConfig {
 }
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
-func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster)
+func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, useProjectedTokenMount bool) (*ciliumConfig, error) {
+	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster, useProjectedTokenMount)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %v", err)
 	}
@@ -109,11 +110,13 @@ func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *ext
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) (requirementsConfig, globalConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, useProjectedTokenMount bool) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
 	)
+
+	globalConfig.UseProjectedTokenMount = useProjectedTokenMount
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR

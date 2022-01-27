@@ -28,8 +28,8 @@ import (
 const CiliumConfigKey = "config.yaml"
 
 // RenderCiliumChart renders the cilium chart with the given values.
-func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) ([]byte, error) {
-	values, err := ComputeCiliumChartValues(config, network, cluster)
+func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, useProjectedTokenMount bool) ([]byte, error) {
+	values, err := ComputeCiliumChartValues(config, network, cluster, useProjectedTokenMount)
 	if err != nil {
 		return nil, err
 	}
