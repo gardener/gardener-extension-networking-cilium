@@ -35,4 +35,4 @@ spec:
       serviceAccount: hubble-generate-certs
       serviceAccountName: hubble-generate-certs
       restartPolicy: OnFailure
-  ttlSecondsAfterFinished: 1800
+  ttlSecondsAfterFinished: 86400
