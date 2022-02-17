@@ -47,7 +47,7 @@ scheduling.k8s.io/v1
 {{- end -}}
 
 {{- define "cronjobversion" -}}
-batch/v1beta1
+batch/v1
 {{- end -}}
 
 {{- define "hpaversion" -}}
