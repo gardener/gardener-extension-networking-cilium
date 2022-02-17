@@ -249,6 +249,17 @@ spec:
 {{- end }}
       hostNetwork: true
       initContainers:
+      # Disable source validation / rp_filter.
+      - name: disable-rp-filter
+        image: {{ index .Values.global.images "cilium-agent" }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - "sed -i 's/^net.ipv4.conf.all.rp_filter/#net.ipv4.conf.all.rp_filter/g' /host/etc/sysctl.d/*"
+        volumeMounts:
+        - name: host-etc
+          mountPath: /host/etc
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
@@ -424,6 +435,11 @@ spec:
           path: {{ .Values.global.nodeinit.bootstrapFile }}
           type: FileOrCreate
 {{- end }}
+      # To mount /etc directory
+      - name: host-etc
+        hostPath:
+          path: /etc
+          type: Directory
 {{- if .Values.global.etcd.enabled }}
         # To read the etcd config stored in config maps
       - configMap:
