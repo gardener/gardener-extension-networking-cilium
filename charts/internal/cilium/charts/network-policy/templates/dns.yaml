@@ -1,0 +1,23 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  annotations:
+    gardener.cloud/description: "Allows CoreDNS to be reachable by non-pod remote node IPs, in particular Cilium DNS proxies."
+  name: gardener.cloud--allow-dns-from-remote-nodes
+  namespace: kube-system
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: k8s-app
+      operator: In
+      values:
+      - kube-dns
+  ingress:
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "8053"
+        protocol: TCP
+      - port: "8053"
+        protocol: UDP
