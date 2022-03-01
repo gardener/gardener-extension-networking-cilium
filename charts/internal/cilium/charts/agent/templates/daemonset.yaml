@@ -256,7 +256,7 @@ spec:
         command:
         - sh
         - -c
-        - "sed -i 's/^net.ipv4.conf.all.rp_filter/#net.ipv4.conf.all.rp_filter/g' /host/etc/sysctl.d/*"
+        - "echo 'net.ipv4.conf.all.rp_filter=0' > /host/etc/sysctl.d/99-cilium-rp-filter.conf"
         volumeMounts:
         - name: host-etc
           mountPath: /host/etc
