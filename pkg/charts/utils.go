@@ -87,6 +87,9 @@ var defaultGlobalConfig = globalConfig{
 	},
 	PodCIDR:                "",
 	UseProjectedTokenMount: false,
+	BPFSocketLBHostnsOnly: bpfSocketLBHostnsOnly{
+		Enabled: false,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -162,5 +165,9 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.Ipv6.Enabled = config.IPv6.Enabled
 	}
 
+	// check if BPFSocketLBHostnsOnly is enabled
+	if config.BPFSocketLBHostnsOnly != nil {
+		globalConfig.BPFSocketLBHostnsOnly.Enabled = config.BPFSocketLBHostnsOnly.Enabled
+	}
 	return requirementsConfig, globalConfig, nil
 }

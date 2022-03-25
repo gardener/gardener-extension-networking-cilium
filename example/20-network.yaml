@@ -42,6 +42,8 @@ spec:
   providerConfig:
     apiVersion: cilium.networking.extensions.gardener.cloud/v1alpha1
     kind: NetworkConfig
+#    bpfSocketLBHostnsOnly:
+#      enabled: true
 #    hubble:
 #      enabled: true
 #      ui: true

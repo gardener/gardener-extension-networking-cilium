@@ -32,6 +32,7 @@ type globalConfig struct {
 	NodePort               nodePort                                `json:"nodePort"`
 	PodCIDR                string                                  `json:"podCIDR"`
 	UseProjectedTokenMount bool                                    `json:"useProjectedTokenMount bool"`
+	BPFSocketLBHostnsOnly  bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
 }
 
 // etcd related configuration for cilium
@@ -119,5 +120,9 @@ type agent struct {
 // config enable option for cilium
 type config struct {
 	// config is required or not
+	Enabled bool `json:"enabled"`
+}
+
+type bpfSocketLBHostnsOnly struct {
 	Enabled bool `json:"enabled"`
 }
