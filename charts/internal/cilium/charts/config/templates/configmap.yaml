@@ -245,6 +245,11 @@ data:
   # optimization for nodeport reverse NAT handling.
   bpf-lb-external-clusterip: "{{ .Values.global.bpf.lbExternalClusterip }}"
 {{- end }}
+{{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
+  # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
+  # Socket LB is still used when in the host namespace. Required by service mesh (e.g., Istio, Linkerd).
+  bpf-lb-sock-hostns-only: "{{ .Values.global.bpfSocketLBHostnsOnly.enabled }}"
+{{- end }}
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The

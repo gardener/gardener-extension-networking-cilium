@@ -84,6 +84,11 @@ type IPv6 struct {
 	Enabled bool `json:"enabled"`
 }
 
+// BPFSocketLBHostnsOnly enablement for cilium
+type BPFSocketLBHostnsOnly struct {
+	Enabled bool `json:"enabled"`
+}
+
 // Nodeport enablement for cilium
 type Nodeport struct {
 	// Enabled is used to define whether Nodeport is required or not.
@@ -130,4 +135,7 @@ type NetworkConfig struct {
 	// Enable IPv6
 	// +optional
 	IPv6 *IPv6 `json:"ipv6,omitempty"`
+	// BPFSocketLBHostnsOnly flag to be enabled or not
+	// +optional
+	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly `json:"bpfSocketLBHostnsOnly,omitempty"`
 }
