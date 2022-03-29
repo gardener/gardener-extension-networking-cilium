@@ -17,7 +17,6 @@ package main
 import (
 	"github.com/gardener/gardener-extension-networking-cilium/cmd/gardener-extension-networking-cilium/app"
 
-	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/pkg/logger"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
@@ -28,6 +27,6 @@ func main() {
 	cmd := app.NewControllerManagerCommand(signals.SetupSignalHandler())
 
 	if err := cmd.Execute(); err != nil {
-		controllercmd.LogErrAndExit(err, "error executing the main controller command")
+		runtimelog.Log.Error(err, "Error executing the main controller command")
 	}
 }

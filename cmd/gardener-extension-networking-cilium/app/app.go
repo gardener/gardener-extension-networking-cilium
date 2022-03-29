@@ -75,9 +75,9 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: fmt.Sprintf("%s-controller-manager", cilium.Name),
 
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := aggOption.Complete(); err != nil {
-				controllercmd.LogErrAndExit(err, "Error completing options")
+				return fmt.Errorf("error completing options: %w", err)
 			}
 			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
 
@@ -89,20 +89,20 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 
 			mgr, err := manager.New(restOpts.Completed().Config, completedMgrOpts)
 			if err != nil {
-				controllercmd.LogErrAndExit(err, "Could not instantiate manager")
+				return fmt.Errorf("could not instantiate manager: %w", err)
 			}
 
 			if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not update manager scheme")
+				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
 			if err := ciliuminstall.AddToScheme(mgr.GetScheme()); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not update manager scheme")
+				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
 			useProjectedTokenMount, err := controller.UseServiceAccountTokenVolumeProjection(generalOpts.Completed().GardenerVersion)
 			if err != nil {
-				controllercmd.LogErrAndExit(err, "could not determine whether service account token volume projection should be used")
+				return fmt.Errorf("could not determine whether service account token volume projection should be used: %w", err)
 			}
 			ciliumcontroller.DefaultAddOptions.UseProjectedTokenMount = useProjectedTokenMount
 
@@ -112,16 +112,18 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
 
 			if err := ciliumcontroller.AddToManager(mgr); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not add controllers to manager")
+				return fmt.Errorf("could not add controllers to manager: %w", err)
 			}
 
 			if err := healthcheck.AddToManager(mgr); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not add health check controller to manager")
+				return fmt.Errorf("could not add health check controller to manager: %w", err)
 			}
 
 			if err := mgr.Start(ctx); err != nil {
-				controllercmd.LogErrAndExit(err, "Error running manager")
+				return fmt.Errorf("error running manager: %w", err)
 			}
+
+			return nil
 		},
 	}
 

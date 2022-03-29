@@ -15,7 +15,6 @@
 package config
 
 import (
-	"github.com/gardener/gardener/pkg/apis/core"
 	gardencore "github.com/gardener/gardener/pkg/apis/core"
 
 	corev1 "k8s.io/api/core/v1"
@@ -331,6 +330,10 @@ type ManagedSeedControllerConfiguration struct {
 	// If its value is greater than 0 then the managed seeds will not be enqueued immediately but only after a random
 	// duration between 0 and the configured value. It is defaulted to 5m.
 	SyncJitterPeriod *metav1.Duration
+	// JitterUpdates enables enqueuing managed seeds with a random duration(jitter) in case of an update to the spec.
+	// The applied jitterPeriod is taken from SyncJitterPeriod.
+	// Defaults to false.
+	JitterUpdates *bool
 }
 
 // ResourcesConfiguration defines the total capacity for seed resources and the amount reserved for use by Gardener.
@@ -379,11 +382,13 @@ type GardenLoki struct {
 // ShootNodeLogging contains configuration for the shoot node logging.
 type ShootNodeLogging struct {
 	// ShootPurposes determines which shoots can have node logging by their purpose
-	ShootPurposes []core.ShootPurpose
+	ShootPurposes []gardencore.ShootPurpose
 }
 
 // Logging contains configuration for the logging stack.
 type Logging struct {
+	// Enabled is used to enable or disable logging stack for clusters.
+	Enabled *bool
 	// FluentBit contains configurations for the fluent-bit
 	FluentBit *FluentBit
 	// Loki contains configuration for the Loki
