@@ -408,6 +408,10 @@ type ManagedSeedControllerConfiguration struct {
 	// duration between 0 and the configured value. It is defaulted to 5m.
 	// +optional
 	SyncJitterPeriod *metav1.Duration `json:"syncJitterPeriod,omitempty"`
+	// JitterUpdates enables enqueuing managed seeds with a random duration(jitter) in case of an update to the spec.
+	// The applied jitterPeriod is taken from SyncJitterPeriod.
+	// +optional
+	JitterUpdates *bool `json:"jitterUpdates,omitempty"`
 }
 
 // ResourcesConfiguration defines the total capacity for seed resources and the amount reserved for use by Gardener.
@@ -469,6 +473,9 @@ type ShootNodeLogging struct {
 
 // Logging contains configuration for the logging stack.
 type Logging struct {
+	// Enabled is used to enable or disable logging stack for clusters.
+	// +optional
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	// FluentBit contains configurations for the fluent-bit
 	// +optional
 	FluentBit *FluentBit `json:"fluentBit,omitempty" yaml:"fluentBit,omitempty"`
@@ -662,9 +669,6 @@ const (
 	// DefaultDiscoveryTTL is the default ttl for the cached discovery client.
 	DefaultDiscoveryTTL = 10 * time.Second
 
-	// DefaultLogLevel is the default log level.
-	DefaultLogLevel = "info"
-
 	// DefaultKubernetesLogLevel is the default Kubernetes log level.
 	DefaultKubernetesLogLevel klog.Level = 0
 
@@ -679,6 +683,18 @@ const (
 
 	// DefaultIngressGatewayAppLabelValue is the ingress gateway value for the app label.
 	DefaultIngressGatewayAppLabelValue = "istio-ingressgateway"
+
+	// LogLevelDebug is the debug log level, i.e. the most verbose.
+	LogLevelDebug = "debug"
+	// LogLevelInfo is the default log level.
+	LogLevelInfo = "info"
+	// LogLevelError is a log level where only errors are logged.
+	LogLevelError = "error"
+
+	// LogFormatJSON is the output type that produces a JSON object per log line.
+	LogFormatJSON = "json"
+	// LogFormatText outputs the log as human-readable text.
+	LogFormatText = "text"
 )
 
 // DefaultControllerSyncPeriod is a default value for sync period for controllers.
