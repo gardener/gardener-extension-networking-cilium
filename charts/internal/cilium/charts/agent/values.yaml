@@ -10,7 +10,11 @@ monitor:
   resources: {}
 
 # Specifies the resources for the agent container
-resources: {}
+resources:
+  requests:
+    memory: 200Mi
+  limits:
+    memory: 1Gi
 
 # Specifies the resources for the clean-cilium-state init container
 initResources:
