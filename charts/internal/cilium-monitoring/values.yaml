@@ -68,5 +68,3 @@ allowedMetrics:
   ciliumOperator:
   - cilium_operator_process_cpu_seconds_total
   - cilium_operator_process_resident_memory_bytes
-
-useProjectedTokenMount: false

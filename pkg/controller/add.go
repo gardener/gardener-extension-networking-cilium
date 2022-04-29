@@ -36,8 +36,6 @@ type AddOptions struct {
 	Controller controller.Options
 	// IgnoreOperationAnnotation specifies whether to ignore the operation annotation or not.
 	IgnoreOperationAnnotation bool
-	// UseProjectedTokenMount specifies whether the projected token mount shall be used for cilium.
-	UseProjectedTokenMount bool
 }
 
 // AddToManagerWithOptions adds a controller with the given Options to the given manager.
@@ -49,7 +47,7 @@ func AddToManagerWithOptions(mgr manager.Manager, opts AddOptions) error {
 	}
 
 	return network.Add(mgr, network.AddArgs{
-		Actuator:          NewActuator(extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot), opts.UseProjectedTokenMount),
+		Actuator:          NewActuator(extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot)),
 		ControllerOptions: opts.Controller,
 		Predicates:        network.DefaultPredicates(opts.IgnoreOperationAnnotation),
 		Type:              cilium.Type,
