@@ -34,19 +34,16 @@ type actuator struct {
 
 	chartRendererFactory extensionscontroller.ChartRendererFactory
 	chartApplier         gardenerkubernetes.ChartApplier
-
-	useProjectedTokenMount bool
 }
 
 // LogID is the id that will be used in log statements.
 const LogID = "network-cilium-actuator"
 
 // NewActuator creates a new Actuator that updates the status of the handled Network resources.
-func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory, useProjectedTokenMount bool) network.Actuator {
+func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory) network.Actuator {
 	return &actuator{
-		logger:                 log.Log.WithName(LogID),
-		chartRendererFactory:   chartRendererFactory,
-		useProjectedTokenMount: useProjectedTokenMount,
+		logger:               log.Log.WithName(LogID),
+		chartRendererFactory: chartRendererFactory,
 	}
 }
 

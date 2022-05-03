@@ -82,7 +82,8 @@ type CertificateSecretConfig struct {
 	SigningCA *Certificate
 	PKCS      int
 
-	Validity *time.Duration
+	Validity                    *time.Duration
+	SkipPublishingCACertificate bool
 
 	Clock clock.Clock
 }
@@ -92,7 +93,8 @@ type CertificateSecretConfig struct {
 type Certificate struct {
 	Name string
 
-	CA *Certificate
+	CA                          *Certificate
+	SkipPublishingCACertificate bool
 
 	PrivateKey    *rsa.PrivateKey
 	PrivateKeyPEM []byte
@@ -133,8 +135,9 @@ func (s *CertificateSecretConfig) GenerateFromInfoData(infoData infodata.InfoDat
 		return nil, fmt.Errorf("could not convert InfoData entry %s to CertificateInfoData", s.Name)
 	}
 	certificateObj := &Certificate{
-		Name: s.Name,
-		CA:   s.SigningCA,
+		Name:                        s.Name,
+		CA:                          s.SigningCA,
+		SkipPublishingCACertificate: s.SkipPublishingCACertificate,
 
 		PrivateKeyPEM:  data.PrivateKey,
 		CertificatePEM: data.Certificate,
@@ -177,13 +180,14 @@ func (s *CertificateSecretConfig) LoadFromSecretData(secretData map[string][]byt
 // GenerateCertificate computes a CA, server, or client certificate based on the configuration.
 func (s *CertificateSecretConfig) GenerateCertificate() (*Certificate, error) {
 	certificateObj := &Certificate{
-		Name: s.Name,
-		CA:   s.SigningCA,
+		Name:                        s.Name,
+		CA:                          s.SigningCA,
+		SkipPublishingCACertificate: s.SkipPublishingCACertificate,
 	}
 
 	// If no cert type is given then we only return a certificate object that contains the CA.
 	if s.CertType != "" {
-		privateKey, err := generateRSAPrivateKey(2048)
+		privateKey, err := GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return nil, err
 		}
@@ -239,7 +243,9 @@ func (c *Certificate) SecretData() map[string][]byte {
 		// keys in the secret data.
 		data[DataKeyPrivateKey] = c.PrivateKeyPEM
 		data[DataKeyCertificate] = c.CertificatePEM
-		data[DataKeyCertificateCA] = c.CA.CertificatePEM
+		if !c.SkipPublishingCACertificate {
+			data[DataKeyCertificateCA] = c.CA.CertificatePEM
+		}
 	}
 
 	return data
@@ -482,15 +488,4 @@ func SelfGenerateTLSServerCertificate(name string, dnsNames []string, ips []net.
 	}
 
 	return certificate, caCertificate, tempDir, nil
-}
-
-// CertificateIsExpired returns `true` if the given certificate is expired.
-// The given `renewalWindow` lets the certificate expire earlier.
-func CertificateIsExpired(clock clock.Clock, cert []byte, renewalWindow time.Duration) (bool, error) {
-	x509, err := utils.DecodeCertificate(cert)
-	if err != nil {
-		return false, err
-	}
-
-	return clock.Now().After(x509.NotAfter.Add(-renewalWindow)), nil
 }
