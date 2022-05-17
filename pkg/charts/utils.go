@@ -142,6 +142,12 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.NodePort.Enabled = true
 	}
 
+	// If node local dns feature is enabled, enable local redirect policy
+	if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
+		globalConfig.NodeLocalDNS.Enabled = true
+		globalConfig.LocalRedirectPolicy.Enabled = true
+	}
+
 	if config == nil {
 		return requirementsConfig, globalConfig, nil
 	}
@@ -182,11 +188,6 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// check if debug is set
 	if config.Debug != nil {
 		globalConfig.Debug.Enabled = *config.Debug
-	}
-	// If node local dns feature is enabled, enable local redirect policy
-	if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
-		globalConfig.NodeLocalDNS.Enabled = true
-		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
 
 	return requirementsConfig, globalConfig, nil
