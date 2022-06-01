@@ -24,14 +24,14 @@ import (
 	ciliumcmd "github.com/gardener/gardener-extension-networking-cilium/pkg/cmd"
 	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
-	"github.com/pkg/errors"
 
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,7 +70,13 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		}
 
 		webhookSwitches = ciliumcmd.WebhookSwitchOptions()
-		webhookOptions  = webhookcmd.NewAddToManagerOptions(cilium.Name, webhookServerOptions, webhookSwitches)
+		webhookOptions  = webhookcmd.NewAddToManagerOptions(
+			cilium.Name,
+			ciliumcontroller.ShootWebhooksResourceName,
+			map[string]string{v1beta1constants.LabelNetworkingProvider: cilium.Type},
+			webhookServerOptions,
+			webhookSwitches,
+		)
 
 		aggOption = controllercmd.NewOptionAggregator(
 			generalOpts,
@@ -117,21 +123,11 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.AddOptions.HealthCheckConfig)
 			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
 
-			_, shootWebhooks, err := webhookOptions.Completed().AddToManager(ctx, mgr)
+			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr)
 			if err != nil {
 				return errors.Wrap(err, "Could not add webhooks to manager")
 			}
-
-			ciliumcontroller.DefaultAddOptions.ShootWebhooks = shootWebhooks
-
-			// Update shoot webhook configuration in case the webhook server port has changed.
-			if err := mgr.Add(&shootWebhookReconciler{
-				client:            mgr.GetClient(),
-				webhookServerPort: mgr.GetWebhookServer().Port,
-				shootWebhooks:     shootWebhooks,
-			}); err != nil {
-				return fmt.Errorf("error adding runnable for reconciling shoot webhooks in all namespaces: %w", err)
-			}
+			ciliumcontroller.DefaultAddOptions.ShootWebhookConfig = shootWebhookConfig
 
 			if err := ciliumcontroller.AddToManager(mgr); err != nil {
 				return fmt.Errorf("could not add controllers to manager: %w", err)
@@ -152,18 +148,4 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	aggOption.AddFlags(cmd.Flags())
 
 	return cmd
-}
-
-type shootWebhookReconciler struct {
-	client            client.Client
-	webhookServerPort int
-	shootWebhooks     []admissionregistrationv1.MutatingWebhook
-}
-
-func (s *shootWebhookReconciler) NeedLeaderElection() bool {
-	return true
-}
-
-func (s *shootWebhookReconciler) Start(ctx context.Context) error {
-	return ciliumcontroller.ReconcileShootWebhooksForAllNamespaces(ctx, s.client, cilium.Name, cilium.Type, s.webhookServerPort, s.shootWebhooks)
 }

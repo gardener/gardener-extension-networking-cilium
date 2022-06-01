@@ -15,7 +15,6 @@
 package controller
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 
@@ -24,25 +23,15 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	"github.com/gardener/gardener/extensions/pkg/webhook"
-	extensionswebhookshoot "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
+	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
-	"github.com/gardener/gardener/pkg/extensions"
 	"github.com/gardener/gardener/pkg/utils/chart"
-	"github.com/gardener/gardener/pkg/utils/flow"
-	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -107,8 +96,23 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		}
 	}
 
-	if len(a.shootWebhooks) > 0 {
-		if err := ReconcileShootWebhooks(ctx, a.client, network.Namespace, cilium.Name, a.webhookServerPort, a.shootWebhooks, cluster); err != nil {
+	if a.atomicShootWebhookConfig != nil {
+		value := a.atomicShootWebhookConfig.Load()
+		webhookConfig, ok := value.(*admissionregistrationv1.MutatingWebhookConfiguration)
+		if !ok {
+			return fmt.Errorf("expected *admissionregistrationv1.MutatingWebhookConfiguration, got %T", value)
+		}
+
+		if err := extensionshootwebhook.ReconcileWebhookConfig(
+			ctx,
+			a.client,
+			network.Namespace,
+			cilium.Name,
+			ShootWebhooksResourceName,
+			a.webhookServerPort,
+			webhookConfig,
+			cluster,
+		); err != nil {
 			return fmt.Errorf("could not reconcile shoot webhooks: %w", err)
 		}
 	}
@@ -143,93 +147,4 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 	}
 
 	return a.updateProviderStatus(ctx, network, networkConfig)
-}
-
-func marshalWebhooks(webhooks []admissionregistrationv1.MutatingWebhook, name string) ([]byte, error) {
-	var (
-		buf     = new(bytes.Buffer)
-		encoder = json.NewYAMLSerializer(json.DefaultMetaFactory, nil, nil)
-
-		apiVersion, kind                            = admissionregistrationv1.SchemeGroupVersion.WithKind("MutatingWebhookConfiguration").ToAPIVersionAndKind()
-		mutatingWebhookConfiguration runtime.Object = &admissionregistrationv1.MutatingWebhookConfiguration{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: apiVersion,
-				Kind:       kind,
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name: webhook.NamePrefix + name + webhook.NameSuffixShoot,
-			},
-			Webhooks: webhooks,
-		}
-	)
-
-	if err := encoder.Encode(mutatingWebhookConfiguration, buf); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-// ReconcileShootWebhooks deploys the shoot webhook configuration and a managed resource that contains the MutatingWebhookConfiguration.
-func ReconcileShootWebhooks(ctx context.Context, c client.Client, namespace, providerName string, serverPort int, shootWebhooks []admissionregistrationv1.MutatingWebhook, cluster *extensionscontroller.Cluster) error {
-	if err := extensionswebhookshoot.EnsureNetworkPolicy(ctx, c, namespace, providerName, serverPort); err != nil {
-		return fmt.Errorf("could not create or update network policy for shoot webhooks in namespace '%s': %w", namespace, err)
-	}
-
-	if cluster.Shoot == nil {
-		return fmt.Errorf("no shoot found in cluster resource")
-	}
-
-	webhookConfiguration, err := marshalWebhooks(shootWebhooks, providerName)
-	if err != nil {
-		return err
-	}
-	data := map[string][]byte{"mutatingwebhookconfiguration.yaml": webhookConfiguration}
-
-	if err := managedresources.Create(ctx, c, namespace, ShootWebhooksResourceName, false, "", data, nil, nil, nil); err != nil {
-		return fmt.Errorf("could not create or update managed resource '%s/%s' containing shoot webhooks: %w", namespace, ShootWebhooksResourceName, err)
-	}
-
-	return nil
-}
-
-// ReconcileShootWebhooksForAllNamespaces reconciles the shoot webhooks in all shoot namespaces of the given
-// provider type. This is necessary in case the webhook port is changed (otherwise, the network policy would only be
-// updated again as part of the ControlPlane reconciliation which might only happen in the next 24h).
-func ReconcileShootWebhooksForAllNamespaces(ctx context.Context, c client.Client, providerName, providerType string, port int, shootWebhooks []admissionregistrationv1.MutatingWebhook) error {
-	namespaceList := &corev1.NamespaceList{}
-	if err := c.List(ctx, namespaceList, client.MatchingLabels{
-		v1beta1constants.GardenRole:         v1beta1constants.GardenRoleShoot,
-		v1beta1constants.LabelShootProvider: providerType,
-	}); err != nil {
-		return err
-	}
-
-	fns := make([]flow.TaskFn, 0, len(namespaceList.Items))
-
-	for _, namespace := range namespaceList.Items {
-		var (
-			networkPolicy     = extensionswebhookshoot.GetNetworkPolicyMeta(namespace.Name, providerName)
-			namespaceName     = namespace.Name
-			networkPolicyName = networkPolicy.Name
-		)
-
-		fns = append(fns, func(ctx context.Context) error {
-			if err := c.Get(ctx, kutil.Key(namespaceName, networkPolicyName), &networkingv1.NetworkPolicy{}); err != nil {
-				if !apierrors.IsNotFound(err) {
-					return err
-				}
-				return nil
-			}
-
-			cluster, err := extensions.GetCluster(ctx, c, namespaceName)
-			if err != nil {
-				return err
-			}
-
-			return ReconcileShootWebhooks(ctx, c, namespaceName, providerName, port, shootWebhooks, cluster)
-		})
-	}
-
-	return flow.Parallel(fns...)(ctx)
 }

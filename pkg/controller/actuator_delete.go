@@ -49,7 +49,7 @@ func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Netwo
 		return err
 	}
 
-	if len(a.shootWebhooks) > 0 {
+	if a.atomicShootWebhookConfig != nil {
 		networkPolicy := extensionswebhookshoot.GetNetworkPolicyMeta(network.Namespace, cilium.Name)
 		if err := a.client.Delete(ctx, networkPolicy); client.IgnoreNotFound(err) != nil {
 			return fmt.Errorf("could not delete network policy for shoot webhooks in namespace '%s': %w", network.Namespace, err)
