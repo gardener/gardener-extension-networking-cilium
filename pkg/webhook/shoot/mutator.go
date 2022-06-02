@@ -56,16 +56,21 @@ func (m *mutator) Mutate(ctx context.Context, new, _ client.Object) error {
 	case *corev1.ConfigMap:
 		switch regexNodeLocalDNS.MatchString(x.Name) {
 		case true:
-			extensionswebhook.LogMutation(logger, x.Kind, x.Namespace, x.Name)
+			logMutation(logger, x.ClusterName, x.Kind, x.Namespace, x.Name)
 			return m.mutateNodeLocalDNSConfigMap(ctx, x)
 		}
 
 	case *appsv1.DaemonSet:
 		switch x.Name {
 		case "node-local-dns":
-			extensionswebhook.LogMutation(logger, x.Kind, x.Namespace, x.Name)
+			logMutation(logger, x.ClusterName, x.Kind, x.Namespace, x.Name)
 			return m.mutateNodeLocalDNSDaemonSet(ctx, x)
 		}
 	}
 	return nil
+}
+
+// LogMutation provides a log message.
+func logMutation(logger logr.Logger, shoot, kind, namespace, name string) {
+	logger.Info("Mutating resource", "shoot", shoot, "kind", kind, "namespace", namespace, "name", name)
 }
