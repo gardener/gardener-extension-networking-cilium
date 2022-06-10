@@ -6,10 +6,13 @@ image:
 resources: {}
 vpa:
   enabled: true
-# resourcePolicy:
-#   minAllowed:
-#     cpu: 100m
-#     memory: 128Mi
+  resourcePolicy:
+#    minAllowed:
+#      cpu: 100m
+#      memory: 128Mi
+    maxAllowed:
+      cpu: 4
+      memory: 10G
 
 # imageVectorOverwrite: |
 #   images:
