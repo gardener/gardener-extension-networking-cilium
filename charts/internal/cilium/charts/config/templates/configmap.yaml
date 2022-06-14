@@ -82,6 +82,9 @@ data:
 {{- if .Values.global.endpointGCInterval }}
   cilium-endpoint-gc-interval: "{{ .Values.global.endpointGCInterval }}"
 {{- end }}
+{{- if .Values.global.nodesGCInterval }}
+  nodes-gc-interval: "5m0s"
+{{- end }}
 {{- if .Values.global.disableEndpointCrd }}
   disable-endpoint-crd: "{{ .Values.global.disableEndpointCrd }}"
 {{- end }}
@@ -474,6 +477,9 @@ kube-proxy-replacement-healthz-bind-address: "{{ .Values.global.kubeProxyReplace
 {{- if .Values.global.l2NeighDiscovery.enabled }}
   enable-l2-neigh-discovery: {{ .Values.global.l2NeighDiscovery.enabled | quote }}
 {{- end }}
+{{- if .Values.global.arpingRefreshPeriod }}
+  arping-refresh-period: {{ .Values.global.arpingRefreshPeriod }}
+{{- end }}
 {{- if and .Values.global.pprof .Values.global.pprof.enabled }}
   pprof: {{ .Values.global.pprof.enabled | quote }}
 {{- end }}
@@ -582,6 +588,10 @@ kube-proxy-replacement-healthz-bind-address: "{{ .Values.global.kubeProxyReplace
 
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
+  annotate-k8s-node: "true"
+  remove-cilium-node-taints: "true"
+  set-cilium-is-up-condition: "true"
+  unmanaged-pod-watcher-interval: "15"
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.

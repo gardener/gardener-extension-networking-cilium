@@ -29,7 +29,8 @@ global:
   pullPolicy: IfNotPresent
 
   hubble:
-    socketPath: /var/run/cilium/hubble.sock
+    clusterName: default
+    peerService: "hubble-peer.kube-system.svc.cluster.local:4254"
     enabled: true
     listenAddress: ":4244"
     metrics:
@@ -75,7 +76,9 @@ global:
   #  kvstore: Key-value store backend (better scalability)
   identityAllocationMode: crd
 
-  endpointGCInterval: 5m0s
+  endpointGCInterval: "5m0s"
+
+  nodesGCInterval: "5m0s"
 
   # Disable the usage of CiliumEndpoint CRD
   disableEndpointCrd: false
@@ -438,6 +441,9 @@ global:
 
   l2NeighDiscovery:
     enabled: true
+
+  # Period for remote node ARP entry refresh
+  arpingRefreshPeriod: "30s"
 
   endpointHealthChecking:
     enabled: true

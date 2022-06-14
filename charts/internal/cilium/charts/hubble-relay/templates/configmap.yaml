@@ -6,7 +6,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.yaml: |
-    peer-service: unix://{{ .Values.global.hubble.socketPath }}
+    cluster-name: {{ .Values.global.hubble.clusterName }}
+    peer-service: {{ .Values.global.hubble.peerService }}
     listen-address: {{ .Values.listenHost }}:{{ .Values.listenPort }}
     dial-timeout: {{ .Values.dialTimeout }}
     retry-timeout: {{ .Values.retryTimeout }}

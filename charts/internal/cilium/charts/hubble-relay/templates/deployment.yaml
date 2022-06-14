@@ -47,9 +47,6 @@ spec:
 {{- toYaml .Values.resources | trim | nindent 10 }}
 {{- end }}
           volumeMounts:
-          - name: hubble-sock-dir
-            mountPath: {{ dir .Values.global.hubble.socketPath }}
-            readOnly: true
           - name: config
             mountPath: /etc/hubble-relay
             readOnly: true
@@ -63,10 +60,6 @@ spec:
       tolerations:
       - operator: Exists
       volumes:
-      - name: hubble-sock-dir
-        hostPath:
-          path: {{ dir .Values.global.hubble.socketPath }}
-          type: Directory
       - name: config
         configMap:
           name: hubble-relay-config
