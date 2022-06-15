@@ -20,6 +20,8 @@ github.com/bronze1man/yaml2json
 github.com/bronze1man/yaml2json/y2jLib
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
+# github.com/coreos/go-systemd/v22 v22.3.2
+github.com/coreos/go-systemd/v22/unit
 # github.com/cyphar/filepath-securejoin v0.2.2
 github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
@@ -59,6 +61,9 @@ github.com/gardener/gardener/extensions/pkg/controller/healthcheck/general
 github.com/gardener/gardener/extensions/pkg/controller/network
 github.com/gardener/gardener/extensions/pkg/predicate
 github.com/gardener/gardener/extensions/pkg/util
+github.com/gardener/gardener/extensions/pkg/webhook
+github.com/gardener/gardener/extensions/pkg/webhook/cmd
+github.com/gardener/gardener/extensions/pkg/webhook/shoot
 github.com/gardener/gardener/extensions/test/testmachinery/healthcheck
 github.com/gardener/gardener/extensions/test/testmachinery/operation
 github.com/gardener/gardener/hack
@@ -310,6 +315,7 @@ github.com/pelletier/go-toml
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.11.0
 github.com/prometheus/client_golang/prometheus

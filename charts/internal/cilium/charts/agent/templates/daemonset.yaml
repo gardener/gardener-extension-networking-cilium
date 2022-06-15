@@ -13,6 +13,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/configmap-cilium: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 {{- if and .Values.global.prometheus.enabled (not .Values.global.prometheus.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.global.prometheus.port }}"
         prometheus.io/scrape: "true"

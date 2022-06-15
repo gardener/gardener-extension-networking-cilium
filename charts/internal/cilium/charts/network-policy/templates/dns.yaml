@@ -4,7 +4,7 @@ metadata:
   annotations:
     gardener.cloud/description: "Allows CoreDNS to be reachable by non-pod remote node IPs, in particular Cilium DNS proxies."
   name: gardener.cloud--allow-dns-from-remote-nodes
-  namespace: kube-system
+  namespace: {{ .Release.Namespace }}
 spec:
   endpointSelector:
     matchExpressions:

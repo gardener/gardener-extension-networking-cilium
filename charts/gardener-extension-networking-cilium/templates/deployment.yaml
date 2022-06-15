@@ -37,6 +37,9 @@ spec:
         - --healthcheck-max-concurrent-reconciles={{ .Values.controller.healthcheck.concurrentSyncs }}
         - --ignore-operation-annotation={{ .Values.controller.ignoreOperationAnnotation }}
         - --config-file=/etc/{{ include "name" . }}/config/config.yaml
+        - --webhook-config-namespace={{ .Release.Namespace }}
+        - --webhook-config-service-port={{ .Values.webhookConfig.servicePort }}
+        - --webhook-config-server-port={{ .Values.webhookConfig.serverPort }}
         - --gardener-version={{ .Values.gardener.version }}
         env:
         - name: LEADER_ELECTION_NAMESPACE
@@ -47,6 +50,10 @@ spec:
         - name: IMAGEVECTOR_OVERWRITE
           value: /charts_overwrite/images_overwrite.yaml
         {{- end }}
+        ports:
+        - name: webhook-server
+          containerPort: {{ .Values.webhookConfig.serverPort }}
+          protocol: TCP
 {{- if .Values.resources }}
         resources:
 {{ toYaml .Values.resources | nindent 10 }}
