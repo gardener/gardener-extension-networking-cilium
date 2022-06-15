@@ -166,5 +166,15 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if config.BPFSocketLBHostnsOnly != nil {
 		globalConfig.BPFSocketLBHostnsOnly.Enabled = config.BPFSocketLBHostnsOnly.Enabled
 	}
+
+	// check if tunnel mode is set
+	if config.TunnelMode != nil {
+		globalConfig.Tunnel = *config.TunnelMode
+	}
+
+	// check if debug is set
+	if config.Debug != nil {
+		globalConfig.Debug.Enabled = *config.Debug
+	}
 	return requirementsConfig, globalConfig, nil
 }
