@@ -40,7 +40,7 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/gardener/etcd-druid v0.8.0 // indirect
+	github.com/gardener/etcd-druid v0.9.0 // indirect
 	github.com/gardener/external-dns-management v0.7.18 // indirect
 	github.com/gardener/hvpa-controller/api v0.5.0 // indirect
 	github.com/gardener/machine-controller-manager v0.41.0 // indirect
