@@ -16,12 +16,16 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	extensionswebhookshoot "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Delete implements Network.Actuator.
@@ -43,6 +47,23 @@ func (a *actuator) Delete(ctx context.Context, network *extensionsv1alpha1.Netwo
 		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
 		Delete(ctx); err != nil {
 		return err
+	}
+
+	if a.atomicShootWebhookConfig != nil {
+		networkPolicy := extensionswebhookshoot.GetNetworkPolicyMeta(network.Namespace, cilium.Name)
+		if err := a.client.Delete(ctx, networkPolicy); client.IgnoreNotFound(err) != nil {
+			return fmt.Errorf("could not delete network policy for shoot webhooks in namespace '%s': %w", network.Namespace, err)
+		}
+
+		if err := managedresources.Delete(ctx, a.client, network.Namespace, ShootWebhooksResourceName, false); err != nil {
+			return fmt.Errorf("could not delete managed resource containing shoot webhook '%s': %w", ShootWebhooksResourceName, err)
+		}
+
+		timeoutCtx4, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		defer cancel()
+		if err := managedresources.WaitUntilDeleted(timeoutCtx4, a.client, network.Namespace, ShootWebhooksResourceName); err != nil {
+			return fmt.Errorf("error while waiting for managed resource containing shoot webhook '%s' to be deleted: %w", ShootWebhooksResourceName, err)
+		}
 	}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)

@@ -130,6 +130,8 @@ type GardenletControllerConfiguration struct {
 	Shoot *ShootControllerConfiguration
 	// ShootCare defines the configuration of the ShootCare controller.
 	ShootCare *ShootCareControllerConfiguration
+	// SeedCare defines the configuration of the SeedCare controller.
+	SeedCare *SeedCareControllerConfiguration
 	// ShootMigration defines the configuration of the ShootMigration controller.
 	ShootMigration *ShootMigrationControllerConfiguration
 	// ShootStateSync defines the configuration of the ShootState controller.
@@ -270,6 +272,16 @@ type ShootCareControllerConfiguration struct {
 	ConditionThresholds []ConditionThreshold
 }
 
+// SeedCareControllerConfiguration defines the configuration of the SeedCare
+// controller.
+type SeedCareControllerConfiguration struct {
+	// SyncPeriod is the duration how often the existing resources are reconciled (how
+	// often the health check of Seed clusters is performed.
+	SyncPeriod *metav1.Duration
+	// ConditionThresholds defines the condition threshold per condition type.
+	ConditionThresholds []ConditionThreshold
+}
+
 // ShootMigrationControllerConfiguration defines the configuration of the ShootMigration
 // controller.
 type ShootMigrationControllerConfiguration struct {
@@ -370,6 +382,14 @@ type FluentBit struct {
 	// OutputSection defines [OUTPUT] configuration for the fluent-bit.
 	// If it is nil, fluent-bit uses default output configuration.
 	OutputSection *string
+	// NetworkPolicy defines settings for the fluent-bit NetworkPolicy.
+	NetworkPolicy *FluentBitNetworkPolicy
+}
+
+// FluentBitNetworkPolicy defines settings for the fluent-bit NetworkPolicy.
+type FluentBitNetworkPolicy struct {
+	// AdditionalEgressIPBlocks contains IP CIDRs for the egress network policy.
+	AdditionalEgressIPBlocks []string
 }
 
 // Loki contains configuration for the Loki.

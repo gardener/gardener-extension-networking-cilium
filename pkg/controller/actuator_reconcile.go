@@ -23,18 +23,24 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/chart"
 	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	// CiliumConfigSecretName is the name of the secret used for the managed resource of networking cilium
 	CiliumConfigSecretName = "extension-networking-cilium-config"
+	// ShootWebhooksResourceName is the name of the managed resource for the gardener networking extension cilium webhooks
+	ShootWebhooksResourceName = "extension-cilium-shoot-webhooks"
 )
 
 func withLocalObjectRefs(refs ...string) []corev1.LocalObjectReference {
@@ -81,6 +87,33 @@ func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Ne
 		networkConfig, err = CiliumNetworkConfigFromNetworkResource(network)
 		if err != nil {
 			return err
+		}
+	}
+
+	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled && cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" {
+		if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
+			return field.Forbidden(field.NewPath("spec", "kubernetes", "kubeProxy", "mode"), "Running kube-proxy with IPVS mode is forbidden in conjunction with node local dns enabled")
+		}
+	}
+
+	if a.atomicShootWebhookConfig != nil {
+		value := a.atomicShootWebhookConfig.Load()
+		webhookConfig, ok := value.(*admissionregistrationv1.MutatingWebhookConfiguration)
+		if !ok {
+			return fmt.Errorf("expected *admissionregistrationv1.MutatingWebhookConfiguration, got %T", value)
+		}
+
+		if err := extensionshootwebhook.ReconcileWebhookConfig(
+			ctx,
+			a.client,
+			network.Namespace,
+			cilium.Name,
+			ShootWebhooksResourceName,
+			a.webhookServerPort,
+			webhookConfig,
+			cluster,
+		); err != nil {
+			return fmt.Errorf("could not reconcile shoot webhooks: %w", err)
 		}
 	}
 

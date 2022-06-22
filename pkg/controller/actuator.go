@@ -16,6 +16,7 @@ package controller
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
@@ -34,16 +35,21 @@ type actuator struct {
 
 	chartRendererFactory extensionscontroller.ChartRendererFactory
 	chartApplier         gardenerkubernetes.ChartApplier
+
+	atomicShootWebhookConfig *atomic.Value
+	webhookServerPort        int
 }
 
 // LogID is the id that will be used in log statements.
 const LogID = "network-cilium-actuator"
 
 // NewActuator creates a new Actuator that updates the status of the handled Network resources.
-func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory) network.Actuator {
+func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory, shootWebhookConfig *atomic.Value, webhookServerPort int) network.Actuator {
 	return &actuator{
-		logger:               log.Log.WithName(LogID),
-		chartRendererFactory: chartRendererFactory,
+		logger:                   log.Log.WithName(LogID),
+		chartRendererFactory:     chartRendererFactory,
+		atomicShootWebhookConfig: shootWebhookConfig,
+		webhookServerPort:        webhookServerPort,
 	}
 }
 

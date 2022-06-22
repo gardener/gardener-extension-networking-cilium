@@ -15,6 +15,8 @@
 package controller
 
 import (
+	"sync/atomic"
+
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 
 	extensioncontroller "github.com/gardener/gardener/extensions/pkg/controller"
@@ -36,6 +38,8 @@ type AddOptions struct {
 	Controller controller.Options
 	// IgnoreOperationAnnotation specifies whether to ignore the operation annotation or not.
 	IgnoreOperationAnnotation bool
+	// ShootWebhookConfig specifies the desired Shoot MutatingWebhooksConfiguration.
+	ShootWebhookConfig *atomic.Value
 }
 
 // AddToManagerWithOptions adds a controller with the given Options to the given manager.
@@ -47,7 +51,7 @@ func AddToManagerWithOptions(mgr manager.Manager, opts AddOptions) error {
 	}
 
 	return network.Add(mgr, network.AddArgs{
-		Actuator:          NewActuator(extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot)),
+		Actuator:          NewActuator(extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot), opts.ShootWebhookConfig, mgr.GetWebhookServer().Port),
 		ControllerOptions: opts.Controller,
 		Predicates:        network.DefaultPredicates(opts.IgnoreOperationAnnotation),
 		Type:              cilium.Type,

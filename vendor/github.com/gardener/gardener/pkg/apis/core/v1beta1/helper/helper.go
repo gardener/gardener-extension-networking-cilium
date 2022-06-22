@@ -896,6 +896,11 @@ func SeedSettingDependencyWatchdogProbeEnabled(settings *gardencorev1beta1.SeedS
 	return settings == nil || settings.DependencyWatchdog == nil || settings.DependencyWatchdog.Probe == nil || settings.DependencyWatchdog.Probe.Enabled
 }
 
+// SeedUsesNginxIngressController returns true if the seed's specification requires an nginx ingress controller to be deployed.
+func SeedUsesNginxIngressController(seed *gardencorev1beta1.Seed) bool {
+	return seed.Spec.DNS.Provider != nil && seed.Spec.Ingress != nil && seed.Spec.Ingress.Controller.Kind == v1beta1constants.IngressKindNginx
+}
+
 // DetermineMachineImageForName finds the cloud specific machine images in the <cloudProfile> for the given <name> and
 // region. In case it does not find the machine image with the <name>, it returns false. Otherwise, true and the
 // cloud-specific machine image will be returned.
@@ -1573,4 +1578,113 @@ func IsShootSSHKeypairRotationInitiationTimeAfterLastCompletionTime(credentials 
 
 	return credentials.Rotation.SSHKeypair.LastCompletionTime == nil ||
 		credentials.Rotation.SSHKeypair.LastCompletionTime.Before(credentials.Rotation.SSHKeypair.LastInitiationTime)
+}
+
+// MutateObservabilityRotation mutates the .status.credentials.rotation.observability field based on the provided
+// mutation function. If the field is nil then it is initialized.
+func MutateObservabilityRotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootObservabilityRotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.Observability == nil {
+		shoot.Status.Credentials.Rotation.Observability = &gardencorev1beta1.ShootObservabilityRotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.Observability)
+}
+
+// IsShootObservabilityRotationInitiationTimeAfterLastCompletionTime returns true when the lastInitiationTime in the
+// .status.credentials.rotation.observability field is newer than the lastCompletionTime. This is also true if the
+// lastCompletionTime is unset.
+func IsShootObservabilityRotationInitiationTimeAfterLastCompletionTime(credentials *gardencorev1beta1.ShootCredentials) bool {
+	if credentials == nil ||
+		credentials.Rotation == nil ||
+		credentials.Rotation.Observability == nil ||
+		credentials.Rotation.Observability.LastInitiationTime == nil {
+		return false
+	}
+
+	return credentials.Rotation.Observability.LastCompletionTime == nil ||
+		credentials.Rotation.Observability.LastCompletionTime.Before(credentials.Rotation.Observability.LastInitiationTime)
+}
+
+// GetShootServiceAccountKeyRotationPhase returns the specified shoot service account key rotation phase or an empty
+// string.
+func GetShootServiceAccountKeyRotationPhase(credentials *gardencorev1beta1.ShootCredentials) gardencorev1beta1.ShootCredentialsRotationPhase {
+	if credentials != nil && credentials.Rotation != nil && credentials.Rotation.ServiceAccountKey != nil {
+		return credentials.Rotation.ServiceAccountKey.Phase
+	}
+	return ""
+}
+
+// MutateShootServiceAccountKeyRotation mutates the .status.credentials.rotation.serviceAccountKey field based on the
+// provided mutation function. If the field is nil then it is initialized.
+func MutateShootServiceAccountKeyRotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootServiceAccountKeyRotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.ServiceAccountKey == nil {
+		shoot.Status.Credentials.Rotation.ServiceAccountKey = &gardencorev1beta1.ShootServiceAccountKeyRotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.ServiceAccountKey)
+}
+
+// GetShootETCDEncryptionKeyRotationPhase returns the specified shoot ETCD encryption key rotation phase or an empty
+// string.
+func GetShootETCDEncryptionKeyRotationPhase(credentials *gardencorev1beta1.ShootCredentials) gardencorev1beta1.ShootCredentialsRotationPhase {
+	if credentials != nil && credentials.Rotation != nil && credentials.Rotation.ETCDEncryptionKey != nil {
+		return credentials.Rotation.ETCDEncryptionKey.Phase
+	}
+	return ""
+}
+
+// MutateShootETCDEncryptionKeyRotation mutates the .status.credentials.rotation.etcdEncryptionKey field based on the
+// provided mutation function. If the field is nil then it is initialized.
+func MutateShootETCDEncryptionKeyRotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootETCDEncryptionKeyRotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.ETCDEncryptionKey == nil {
+		shoot.Status.Credentials.Rotation.ETCDEncryptionKey = &gardencorev1beta1.ShootETCDEncryptionKeyRotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.ETCDEncryptionKey)
+}
+
+// IsValidShootOperation checks whether the provided operation annotation value is valid. It returns two bools: The
+// first value specifies whether it's valid, and the second bool value specifies whether the gardener-apiserver removes
+// the annotation before the Shoot is persisted to etcd.
+func IsValidShootOperation(operation string, lastOperation *gardencorev1beta1.LastOperation) (isValid bool) {
+	if lastOperation != nil && lastOperation.State == gardencorev1beta1.LastOperationStateFailed {
+		return operation == v1beta1constants.ShootOperationRetry
+	}
+
+	switch operation {
+	case v1beta1constants.GardenerOperationReconcile,
+		v1beta1constants.ShootOperationRotateCredentialsStart,
+		v1beta1constants.ShootOperationRotateCredentialsComplete,
+		v1beta1constants.ShootOperationRotateKubeconfigCredentials,
+		v1beta1constants.ShootOperationRotateObservabilityCredentials,
+		v1beta1constants.ShootOperationRotateSSHKeypair,
+		v1beta1constants.ShootOperationRotateCAStart,
+		v1beta1constants.ShootOperationRotateCAComplete,
+		v1beta1constants.ShootOperationRotateServiceAccountKeyStart,
+		v1beta1constants.ShootOperationRotateServiceAccountKeyComplete,
+		v1beta1constants.ShootOperationRotateETCDEncryptionKeyStart,
+		v1beta1constants.ShootOperationRotateETCDEncryptionKeyComplete:
+		return true
+
+	default:
+		return false
+	}
 }
