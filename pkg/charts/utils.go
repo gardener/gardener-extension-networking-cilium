@@ -84,7 +84,6 @@ var defaultGlobalConfig = globalConfig{
 		cilium.HubbleUIImageName:        imagevector.CiliumHubbleUIImage(),
 		cilium.HubbleUIBackendImageName: imagevector.CiliumHubbleUIBackendImage(),
 		cilium.CertGenImageName:         imagevector.CiliumCertGenImage(),
-		cilium.EnvoyImageName:           imagevector.CiliumEnvoyImage(),
 	},
 	PodCIDR: "",
 	BPFSocketLBHostnsOnly: bpfSocketLBHostnsOnly{

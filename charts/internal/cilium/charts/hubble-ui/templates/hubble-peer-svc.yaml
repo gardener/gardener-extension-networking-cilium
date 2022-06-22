@@ -11,7 +11,7 @@ spec:
     k8s-app: cilium
   ports:
   - name: peer-service
-    port: 4254
+    port: 443
     protocol: TCP
     targetPort: 4244
   internalTrafficPolicy: Local
