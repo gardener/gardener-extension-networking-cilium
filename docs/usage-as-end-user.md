@@ -9,7 +9,7 @@ In this document we are describing how this configuration looks like for Cilium 
 Hubble is a fully distributed networking and security observability platform build on top of Cilium and BPF. It is optional and is deployed to the cluster when enabled in the `NetworkConfig`.
 If the dashboard is not externally exposed
 ```
-kubectl port-forward -n kube-system deployment/hubble-ui 12000
+kubectl port-forward -n kube-system deployment/hubble-ui 8081
 ```
 can be used to acess it locally.
 

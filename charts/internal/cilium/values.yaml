@@ -32,8 +32,9 @@ global:
   pullPolicy: IfNotPresent
 
   hubble:
+    socketPath: "/var/run/cilium/hubble.sock"
     clusterName: default
-    peerService: "hubble-peer.kube-system.svc.cluster.local:4254"
+    peerService: "hubble-peer.kube-system.svc.cluster.local:443"
     enabled: true
     listenAddress: ":4244"
     metrics:
@@ -102,7 +103,7 @@ global:
     #verbose: flow
   agent:
     # TCP port for the agent health API. This is not the port for cilium-health.
-    healthPort: 9876
+    healthPort: 9879
     # Do not run Cilium agent when running with clean mode. Useful to completely
     # uninstall Cilium as it will stop Cilium from starting and create artifacts
     # in the node.
@@ -479,6 +480,5 @@ global:
     hubble-ui: "image-repository:image-tag"
     hubble-ui-backend: "image-repository:image-tag"
     certgen: "image-repository:image-tag"
-    envoy: "image-repository:image-tag"
 
     kube-proxy: "image-repository:image-tag"

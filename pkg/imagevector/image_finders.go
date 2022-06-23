@@ -57,11 +57,6 @@ func CiliumCertGenImage() string {
 	return findImage(cilium.CertGenImageName)
 }
 
-// CiliumEnvoyImage returns the Envoy image.
-func CiliumEnvoyImage() string {
-	return findImage(cilium.EnvoyImageName)
-}
-
 // CiliumKubeProxyImage returns the kube-proxy image.
 func CiliumKubeProxyImage(kubernetesVersion string) string {
 	return findImage(cilium.KubeProxyImageName, imagevector.RuntimeVersion(kubernetesVersion), imagevector.TargetVersion(kubernetesVersion))
