@@ -20,4 +20,24 @@ spec:
       - port: "53"
         name: dns-tcp
         protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-to-node-local-dns
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpointSelector:
+    matchLabels:
+      component: blackbox-exporter
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s-app: node-local-dns
+    toPorts:
+      - ports:
+         - port: "53"
+           protocol: UDP
+         - port: "53"
+           protocol: TCP
 {{- end }}
