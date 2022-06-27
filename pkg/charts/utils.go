@@ -21,7 +21,7 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 )
 
@@ -142,7 +142,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	// If node local dns feature is enabled, enable local redirect policy
-	if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
+	if helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents, cluster.Shoot.Annotations) {
 		globalConfig.NodeLocalDNS.Enabled = true
 		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
