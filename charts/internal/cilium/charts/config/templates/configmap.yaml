@@ -423,7 +423,7 @@ data:
   devices: {{ join " " .Values.global.devices | quote }}
 {{- end }}
 
-{{- if .Values.global.egressGateway.enabled }}
+{{- if .Values.global.egressGateway }}
   {{ if ne .Values.global.kubeProxyReplacement "strict" }}
     {{ fail "kubeProxyReplacement must be set to 'strict' in order to enable egressGateway" }}
   {{- end}}

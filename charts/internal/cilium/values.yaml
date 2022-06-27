@@ -24,8 +24,7 @@ requirements:
 
 # global groups all configuration options that have effect on all sub-charts
 global:
-  egressGateway:
-    enabled: false
+  egressGateway: false
 
   nodeLocalDNS:
     enabled: false

@@ -59,6 +59,9 @@ var defaultGlobalConfig = globalConfig{
 	Debug: debug{
 		Enabled: false,
 	},
+	EgressGateway: egressGateway{
+		Enabled: false,
+	},
 	Prometheus: prometheus{
 		Enabled: true,
 		Port:    9090,
