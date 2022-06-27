@@ -138,4 +138,7 @@ type NetworkConfig struct {
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	// +optional
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly `json:"bpfSocketLBHostnsOnly,omitempty"`
+	// EgressGateway flag to be enabled or not
+	// +optional
+	EgressGateway *bool `json:"egressGateway,omitempty"`
 }

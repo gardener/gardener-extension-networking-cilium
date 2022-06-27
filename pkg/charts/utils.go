@@ -189,5 +189,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.Debug.Enabled = *config.Debug
 	}
 
+	// check if egress gateway is enabled
+	if config.EgressGateway != nil {
+		globalConfig.EgressGateway.Enabled = *config.EgressGateway
+	}
+
 	return requirementsConfig, globalConfig, nil
 }
