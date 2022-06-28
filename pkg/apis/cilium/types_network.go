@@ -138,4 +138,7 @@ type NetworkConfig struct {
 	IPv6 *IPv6
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly
+	// EgressGateway flag to be enabled or not
+	// +optional
+	EgressGateway *bool
 }

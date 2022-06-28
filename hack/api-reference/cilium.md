@@ -151,6 +151,18 @@ BPFSocketLBHostnsOnly
 <p>BPFSocketLBHostnsOnly flag to be enabled or not</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>egressGateway</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EgressGateway flag to be enabled or not</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
