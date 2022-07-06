@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/name: gardener-extension-networking-cilium
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      priorityClassName: gardener-extension-networking-cilium
+      priorityClassName: gardener-system-900
       serviceAccountName: gardener-extension-networking-cilium
       containers:
       - name: gardener-extension-networking-cilium
