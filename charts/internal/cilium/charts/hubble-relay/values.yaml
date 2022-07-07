@@ -1,5 +1,9 @@
 # Specifies the resources for the hubble-relay pods
-resources: {}
+resources:
+  requests:
+    memory: 150Mi
+  limits:
+    memory: 1Gi
 
 # Number of replicas run for the hubble-relay deployment.
 numReplicas: 1
