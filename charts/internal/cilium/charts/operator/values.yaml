@@ -2,4 +2,8 @@
 synchronizeK8sNodes: true
 
 # Specifies the resources for the operator container
-resources: {}
+resources:
+  requests:
+    memory: 150Mi
+  limits:
+    memory: 1Gi
