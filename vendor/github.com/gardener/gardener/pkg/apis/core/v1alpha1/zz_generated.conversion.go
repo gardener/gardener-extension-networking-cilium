@@ -3597,6 +3597,7 @@ func autoConvert_v1alpha1_Machine_To_core_Machine(in *Machine, out *core.Machine
 	} else {
 		out.Image = nil
 	}
+	out.Architecture = (*string)(unsafe.Pointer(in.Architecture))
 	return nil
 }
 
@@ -3616,6 +3617,7 @@ func autoConvert_core_Machine_To_v1alpha1_Machine(in *core.Machine, out *Machine
 	} else {
 		out.Image = nil
 	}
+	out.Architecture = (*string)(unsafe.Pointer(in.Architecture))
 	return nil
 }
 
@@ -3679,6 +3681,7 @@ func autoConvert_v1alpha1_MachineImageVersion_To_core_MachineImageVersion(in *Ma
 		return err
 	}
 	out.CRI = *(*[]core.CRI)(unsafe.Pointer(&in.CRI))
+	out.Architectures = *(*[]string)(unsafe.Pointer(&in.Architectures))
 	return nil
 }
 
@@ -3692,6 +3695,7 @@ func autoConvert_core_MachineImageVersion_To_v1alpha1_MachineImageVersion(in *co
 		return err
 	}
 	out.CRI = *(*[]CRI)(unsafe.Pointer(&in.CRI))
+	out.Architectures = *(*[]string)(unsafe.Pointer(&in.Architectures))
 	return nil
 }
 
@@ -3707,6 +3711,7 @@ func autoConvert_v1alpha1_MachineType_To_core_MachineType(in *MachineType, out *
 	out.Name = in.Name
 	out.Storage = (*core.MachineTypeStorage)(unsafe.Pointer(in.Storage))
 	out.Usable = (*bool)(unsafe.Pointer(in.Usable))
+	out.Architecture = (*string)(unsafe.Pointer(in.Architecture))
 	return nil
 }
 
@@ -3722,6 +3727,7 @@ func autoConvert_core_MachineType_To_v1alpha1_MachineType(in *core.MachineType, 
 	out.Name = in.Name
 	out.Storage = (*MachineTypeStorage)(unsafe.Pointer(in.Storage))
 	out.Usable = (*bool)(unsafe.Pointer(in.Usable))
+	out.Architecture = (*string)(unsafe.Pointer(in.Architecture))
 	return nil
 }
 
