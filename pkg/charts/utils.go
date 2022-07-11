@@ -59,6 +59,9 @@ var defaultGlobalConfig = globalConfig{
 	Debug: debug{
 		Enabled: false,
 	},
+	EgressGateway: egressGateway{
+		Enabled: false,
+	},
 	Prometheus: prometheus{
 		Enabled: true,
 		Port:    9090,
@@ -187,6 +190,11 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// check if debug is set
 	if config.Debug != nil {
 		globalConfig.Debug.Enabled = *config.Debug
+	}
+
+	// check if egress gateway is enabled
+	if config.EgressGateway != nil {
+		globalConfig.EgressGateway.Enabled = config.EgressGateway.Enabled
 	}
 
 	return requirementsConfig, globalConfig, nil

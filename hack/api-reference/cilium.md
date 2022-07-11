@@ -151,6 +151,20 @@ BPFSocketLBHostnsOnly
 <p>BPFSocketLBHostnsOnly flag to be enabled or not</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>egressGateway</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.EgressGateway">
+EgressGateway
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EgressGateway enablement for cilium</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
@@ -161,6 +175,35 @@ BPFSocketLBHostnsOnly
 </p>
 <p>
 <p>BPFSocketLBHostnsOnly enablement for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.EgressGateway">EgressGateway
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>EgressGateway enablement for cilium</p>
 </p>
 <table>
 <thead>

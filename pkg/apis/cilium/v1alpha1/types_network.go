@@ -89,6 +89,11 @@ type BPFSocketLBHostnsOnly struct {
 	Enabled bool `json:"enabled"`
 }
 
+// EgressGateway enablement for cilium
+type EgressGateway struct {
+	Enabled bool `json:"enabled"`
+}
+
 // Nodeport enablement for cilium
 type Nodeport struct {
 	// Enabled is used to define whether Nodeport is required or not.
@@ -138,4 +143,7 @@ type NetworkConfig struct {
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	// +optional
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly `json:"bpfSocketLBHostnsOnly,omitempty"`
+	// EgressGateway enablement for cilium
+	// +optional
+	EgressGateway *EgressGateway `json:"egressGateway,omitempty"`
 }

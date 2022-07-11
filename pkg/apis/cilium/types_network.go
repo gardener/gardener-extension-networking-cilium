@@ -99,6 +99,11 @@ type BPFSocketLBHostnsOnly struct {
 	Enabled bool
 }
 
+// EgressGateway enablement for cilium
+type EgressGateway struct {
+	Enabled bool
+}
+
 // Nodeport enablement for cilium
 type Nodeport struct {
 	// Enabled is used to define whether Nodeport is required or not.
@@ -138,4 +143,6 @@ type NetworkConfig struct {
 	IPv6 *IPv6
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly
+	// EgressGateway flag to be enabled or not
+	EgressGateway *EgressGateway
 }

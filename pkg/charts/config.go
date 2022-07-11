@@ -34,6 +34,7 @@ type globalConfig struct {
 	BPFSocketLBHostnsOnly  bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
 	LocalRedirectPolicy    localRedirectPolicy                     `json:"localRedirectPolicy"`
 	NodeLocalDNS           nodeLocalDNS                            `json:"nodeLocalDNS"`
+	EgressGateway          egressGateway                           `json:"egressGateway"`
 }
 
 // etcd related configuration for cilium
@@ -133,5 +134,9 @@ type localRedirectPolicy struct {
 }
 
 type nodeLocalDNS struct {
+	Enabled bool `json:"enabled"`
+}
+
+type egressGateway struct {
 	Enabled bool `json:"enabled"`
 }
