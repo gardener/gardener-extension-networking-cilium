@@ -40,6 +40,17 @@ The `tunnel` field describes the encapsulation mode for communication between no
 
 The `store` field describes which backend to use to store the identities. Can be either `etcd` (kvstore) or `kubernetes` (crd) (default).
 
+The `bpfSocketLBHostnsOnly.enabled` field describes wheter socket LB will be skipped for services when inside a pod namespace (default), in favor of service LB at the pod interface. Socket LB is still used when in the host namespace. This feature is required when using cilium with a service mesh like istio or linkerd.
+
+The `egressGateway.enabled` field describes wheter egress gateways are enabled or not (default). To use this feature kube-proxy must be disabled. This can be done with the following configuration in the shoot.yaml file:
+
+```
+spec:
+  kubernetes:
+    kubeProxy:
+      enabled: false
+```
+
 ## Example `Shoot` manifest
 
 Please find below an example `Shoot` manifest with cilium networking configuration:
