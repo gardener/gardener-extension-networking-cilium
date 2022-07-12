@@ -1,7 +1,23 @@
 run:
   concurrency: 4
   deadline: 10m
+  # some of the linters don't work correctly with 1.18, ref https://github.com/golangci/golangci-lint/issues/2649
+  # we are not using generics, so let's pin this to 1.17 until 1.18 is fully supported
+  go: "1.17"
 
 linters:
   disable:
     - unused
+
+issues:
+  exclude-use-default: false
+  exclude:
+  # typecheck:
+  - "undeclared name: `.*`"
+  - "\".*\" imported but not used"
+  - "could not import .*"
+  - ".* declared but not used"
+  exclude-rules:
+  - linters:
+    - staticcheck
+    text: "SA1019:" # Excludes messages where deprecated variables are used
