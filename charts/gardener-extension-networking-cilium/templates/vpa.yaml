@@ -9,9 +9,16 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: '*'
+      {{- if .Values.vpa.resourcePolicy.minAllowed }}
       minAllowed:
         cpu: {{ required ".Values.vpa.resourcePolicy.minAllowed.cpu is required" .Values.vpa.resourcePolicy.minAllowed.cpu }}
         memory: {{ required ".Values.vpa.resourcePolicy.minAllowed.memory is required" .Values.vpa.resourcePolicy.minAllowed.memory }}
+      {{- end }}
+      {{- if .Values.vpa.resourcePolicy.maxAllowed }}
+      maxAllowed:
+        cpu: {{ required ".Values.vpa.resourcePolicy.maxAllowed.cpu is required" .Values.vpa.resourcePolicy.maxAllowed.cpu }}
+        memory: {{ required ".Values.vpa.resourcePolicy.maxAllowed.memory is required" .Values.vpa.resourcePolicy.maxAllowed.memory }}
+      {{- end }}
   {{- end }}
   targetRef:
     apiVersion: apps/v1
