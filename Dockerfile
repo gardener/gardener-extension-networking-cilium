@@ -6,7 +6,8 @@ COPY . .
 RUN make install
 
 ############# gardener-extension-networking-cilium
-FROM alpine:3.13.7 AS gardener-extension-networking-cilium
+FROM gcr.io/distroless/static-debian11:nonroot AS gardener-extension-networking-cilium
+WORKDIR /
 
 COPY charts /charts
 COPY --from=builder /go/bin/gardener-extension-networking-cilium /gardener-extension-networking-cilium
