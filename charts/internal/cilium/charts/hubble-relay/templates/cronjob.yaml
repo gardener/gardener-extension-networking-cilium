@@ -27,8 +27,8 @@ spec:
               # the values used in past runs by inspecting the completed pod.
               args:
                 - "--cilium-namespace=kube-system"
-                - "--hubble-ca-generate"
-                - "--hubble-ca-reuse-secret"
+                - "--ca-generate"
+                - "--ca-reuse-secret"
                 - "--hubble-server-cert-generate"
                 - "--hubble-server-cert-common-name=*.{{ .Values.global.cluster.name }}.hubble-grpc.cilium.io"
                 - "--hubble-server-cert-validity-duration=94608000s"

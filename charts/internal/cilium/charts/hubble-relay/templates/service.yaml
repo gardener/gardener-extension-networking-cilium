@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-app: {{ .Chart.Name }}
 spec:
-  type: ClusterIP
+  type: "ClusterIP"
   selector:
     k8s-app: {{ .Chart.Name }}
   ports:

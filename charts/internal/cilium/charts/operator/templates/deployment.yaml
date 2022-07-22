@@ -37,12 +37,11 @@ spec:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
-              matchExpressions:
-              - key: io.cilium/app
-                operator: In
-                values:
-                - operator
-            topologyKey: "kubernetes.io/hostname"
+              matchLabels:
+                io.cilium/app: operator
+            topologyKey: kubernetes.io/hostname
+      nodeSelector:
+        kubernetes.io/os: linux
       containers:
       - name: cilium-operator
         command:

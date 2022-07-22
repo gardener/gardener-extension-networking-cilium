@@ -44,6 +44,7 @@ rules:
     resources:
       - secrets
     resourceNames:
+      - cilium-ca
       - hubble-ca-secret
     verbs:
       - get
