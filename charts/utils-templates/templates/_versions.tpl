@@ -42,10 +42,6 @@ apiregistration.k8s.io/v1
 networking.k8s.io/v1
 {{- end -}}
 
-{{- define "priorityclassversion" -}}
-scheduling.k8s.io/v1
-{{- end -}}
-
 {{- define "cronjobversion" -}}
 batch/v1
 {{- end -}}
