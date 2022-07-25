@@ -164,8 +164,6 @@ global:
   # nodes if worker nodes share a common L2 network segment.
   autoDirectNodeRoutes: false
 
-  bandwidthManager:
-    enabled: false
   localRedirectPolicy:
     enabled: false
 
@@ -285,6 +283,10 @@ global:
   # optimization for nodeport reverse NAT handling.
     lbExternalClusterip: "false"
 
+  # Enable socket-based LB for E/W traffic
+  bpfSocketLB:
+    enabled: false
+
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
   # Socket LB is still used when in the host namespace. Required by service mesh (e.g., Istio, Linkerd).
   bpfSocketLBHostnsOnly:
@@ -313,9 +315,12 @@ global:
     # interface: eth0
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
-  kubeProxyReplacement: "disabled"
+  kubeProxyReplacement: "probe"
   # The IP address with port for kube-proxy replacement health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable
   kubeProxyReplacementHealthzBindAddress: ""
+
+  # Enable check of service source ranges (currently, only for LoadBalancer)
+  enableSvcSrcRangeCheck: true
 
   # hostServices is the configuration for ClusterIP service handling in host namespace
   hostServices:
@@ -338,6 +343,12 @@ global:
 
     # mode is the mode of NodePort feature
     mode: "hybrid"
+
+    #  Append NodePort range to net.ipv4.ip_local_reserved_ports if it overlaps with ephemeral port range (net.ipv4.ip_local_port_range)
+    autoProtectPortRange: true
+
+    # Reject application bind(2) requests to service ports in the NodePort range
+    bindProtection: true
 
   # externalIPs is the configuration for ExternalIPs service handling
   externalIPs:
@@ -458,13 +469,10 @@ global:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchExpressions:
-              - key: k8s-app
-                operator: In
-                values:
-                  - cilium
-          topologyKey: "kubernetes.io/hostname"
+      - labelSelector:
+          matchLabels:
+            k8s-app: cilium
+        topologyKey: kubernetes.io/hostname
 
   # enables non-drop mode for installed policies. In audit mode
   # packets affected by policies will not be dropped. Policy related

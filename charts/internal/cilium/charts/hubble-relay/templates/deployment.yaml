@@ -56,9 +56,16 @@ spec:
       restartPolicy: Always
       serviceAccountName: hubble-relay
       automountServiceAccountToken: false
-      terminationGracePeriodSeconds: 0
-      tolerations:
-      - operator: Exists
+      terminationGracePeriodSeconds: 1
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                k8s-app: cilium
+            topologyKey: kubernetes.io/hostname
+      nodeSelector:
+        kubernetes.io/os: linux
       volumes:
       - name: config
         configMap:

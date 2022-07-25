@@ -32,22 +32,12 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - nodes/status
-  verbs:
-  # To annotate the k8s node with Cilium's metadata
-  - patch
-- apiGroups:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
   verbs:
-  # Deprecated for removal in v1.10
-  - create
   - list
   - watch
-  - update
   # This is used when validating policies in preflight. This will need to stay
   # until we figure out how to avoid "get" inside the preflight, and then
   # should be removed ideally.
@@ -63,19 +53,58 @@ rules:
 - apiGroups:
   - cilium.io
   resources:
-  - ciliumnetworkpolicies
-  - ciliumnetworkpolicies/status
+  - ciliumbgploadbalancerippools
+  - ciliumbgppeeringpolicies
+  - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
-  - ciliumclusterwidenetworkpolicies/status
+  - ciliumegressgatewaypolicies
+  - ciliumegressnatpolicies
   - ciliumendpoints
-  - ciliumendpoints/status
-  - ciliumnodes
-  - ciliumnodes/status
+  - ciliumendpointslices
+  - ciliumenvoyconfigs
   - ciliumidentities
   - ciliumlocalredirectpolicies
-  - ciliumlocalredirectpolicies/status
-  - ciliumlocalredirectpolicies/finalizers
-  - ciliumegressnatpolicies
-  - ciliumendpointslices
+  - ciliumnetworkpolicies
+  - ciliumnodes
   verbs:
-  - '*'
+  - list
+  - watch
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumidentities
+  - ciliumendpoints
+  - ciliumnodes
+  verbs:
+  - create
+- apiGroups:
+  - cilium.io
+  # To synchronize garbage collection of such resources
+  resources:
+  - ciliumidentities
+  verbs:
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumendpoints
+  verbs:
+  - delete
+  - get
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnodes
+  - ciliumnodes/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies/status
+  - ciliumendpoints/status
+  - ciliumendpoints
+  verbs:
+  - patch
