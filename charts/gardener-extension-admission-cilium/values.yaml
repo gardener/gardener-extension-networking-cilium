@@ -1,0 +1,47 @@
+global:
+  virtualGarden:
+    enabled: false
+    user:
+      name: ""
+  image:
+    repository: eu.gcr.io/gardener-project/gardener/extensions/admission-cilium
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  resources: {}
+  healthPort: 8081
+  vpa:
+    enabled: true
+    resourcePolicy:
+      minAllowed:
+        cpu: 50m
+        memory: 64Mi
+      maxAllowed:
+        cpu: 4
+        memory: 10G
+    updatePolicy:
+      updateMode: "Auto"
+  webhookConfig:
+    caBundle: |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+    serverPort: 10250
+    tls:
+      crt: |
+        -----BEGIN CERTIFICATE-----
+        ...
+        -----END CERTIFICATE-----
+      key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        ...
+        -----END RSA PRIVATE KEY-----
+    # Please make sure you are running `gardener@v1.42` or later before setting this to true.
+    useObjectSelector: false
+  # Kubeconfig to the target cluster. In-cluster configuration will be used if not specified.
+  kubeconfig:
+
+  serviceAccountTokenVolumeProjection:
+    enabled: false
+    expirationSeconds: 43200
+    audience: ""
