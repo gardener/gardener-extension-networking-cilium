@@ -15,6 +15,11 @@ gardener-extension-networking-cilium:
             image: 'eu.gcr.io/gardener-project/gardener/extensions/networking-cilium'
             dockerfile: 'Dockerfile'
             target: gardener-extension-networking-cilium
+          gardener-extension-admission-cilium:
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/extensions/admission-cilium'
+            dockerfile: 'Dockerfile'
+            target: gardener-extension-admission-cilium
   jobs:
     head-update:
       traits:
@@ -46,4 +51,6 @@ gardener-extension-networking-cilium:
         publish:
           dockerimages:
             gardener-extension-networking-cilium:
+              tag_as_latest: true
+            gardener-extension-admission-cilium:
               tag_as_latest: true

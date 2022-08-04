@@ -1,0 +1,29 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: gardener-extension-admission-cilium
+webhooks:
+- name: mutation.cilium.networking.extension.gardener.cloud
+  rules:
+  - apiGroups:
+    - "core.gardener.cloud"
+    apiVersions:
+    - v1alpha1
+    - v1beta1
+    operations:
+    - CREATE
+    resources:
+    - shoots
+  failurePolicy: Fail
+  # Please make sure you are running `gardener@v1.42` or later before enabling this object selector.
+  objectSelector:
+    matchLabels:
+      networking.extensions.gardener.cloud/cilium: "true"
+  namespaceSelector: {}
+  sideEffects: None
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    url: "https://localhost:9443/webhooks/mutate"
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMrekNDQWVPZ0F3SUJBZ0lSQU8xZHN5dHBkNW9Jd2N3SXo2d3hpb2t3RFFZSktvWklodmNOQVFFTEJRQXcKRnpFVk1CTUdBMVVFQXhNTVoyRnlaR1Z1WlhJdFpHVjJNQjRYRFRJeE1ERXlNVEV3TXpNeU5Wb1hEVE14TURFeQpNVEV3TXpNeU5Wb3dGekVWTUJNR0ExVUVBeE1NWjJGeVpHVnVaWEl0WkdWMk1JSUJJakFOQmdrcWhraUc5dzBCCkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXhYRzJ2bWQzUXNuOXhqRG1KcSszMndITHkxS2tlYkpYNERGYlBQU1cKbWFRd29XcStFUzJCVldYekdPZmRkWlVFV0RRL1BwSDg5MmtuY0JYRmdjY2pDbzNlMW5RdHBoZ2xuRFh4WnQxZwpZV0NWK3BsOXJXWENuRXdqOElKZU1aNXVDczl4Ynh2TUhUSk1LYTA4WktHSWMyUzFDZlRwVmtYNzJnZ3VoYlNhCnBaeWhkd0x3Mzl5M1BXUEdiQkdyQWdHUEpFVG9iUmc0QW96SXRaQTRVajVnYzl6c3I4RHBxdnhzUXM1UXQ5NTcKRWFUd2JQeXNobHdwaFg0eXVrZTcvbmdCeUlCTFFRZnEyZ2I1ZHRKL3BFbzR1TUNZSGlTcEpBZWExaG9ac3phSApqKzBJTjF2aENFeFFPekUvUkxGenRscTFBc2s5VlR5WjZIektaakpLNExMVHNRSURBUUFCbzBJd1FEQU9CZ05WCkhROEJBZjhFQkFNQ0FhWXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVZdTltMEFMSWx6Q04KNVNibGJNcWYxUW5Rdjlvd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFCSkVEdmk2STdpZ1VnUjg3TnVnLzVGaAo1TlFaZnMwbGFZQ05RK2NDNU1qMXpDeUdudjQ0ZlZRbFhleFBYWUREcmEyUHlyWGdWeWNGRE5vWmYvSDJGOWViCm9IVnYwWWhwL0FWTGVXdHVJSnh5d3IrYVFGT0tQY3oxNFROQTRGUmhoY0U0RjlqYytUN1lwZEJLMTRLK0UwZWUKbnhaQW44QlYrNkt2cUZteUJmU3pQSXROdGJjS2MxdzVnSlZ3Mk5OMWRocFFrQ0NNbHpHOTE0d2tPSExTUnVQTwpCTk5yMWtnQXVoMUpnZ2h6Yzdia2xPQ3dxQzZKeThOQkZQQ211L2hEb0d0US9mc3lEV0Jvb0J3enIzTlZ4WTlsCklaM2ZvUlFtM2MvNEM1K3dmSVdLZ2t2SXErOU1KM0tTL2JlRnRSVXpZakZhekhoUEVHY1lldlI0cjZqdTZhaz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
