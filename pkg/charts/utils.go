@@ -16,6 +16,7 @@ package charts
 
 import (
 	"fmt"
+	"net/url"
 
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
@@ -139,6 +140,15 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		if config != nil && config.KubeProxy != nil && config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {
 			globalConfig.K8sServiceHost = *config.KubeProxy.ServiceHost
 			globalConfig.K8sServicePort = *config.KubeProxy.ServicePort
+		} else {
+			k8sServiceHost, err := getK8sServiceHost(cluster)
+			if err != nil {
+				return requirementsConfig, globalConfig, err
+			}
+			globalConfig.K8sServiceHost = k8sServiceHost
+		}
+		if globalConfig.K8sServiceHost == "" {
+			return requirementsConfig, globalConfig, fmt.Errorf("required kubernetes service host missing while running without kube-proxy")
 		}
 
 		globalConfig.NodePort.Enabled = true
@@ -198,4 +208,26 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	return requirementsConfig, globalConfig, nil
+}
+
+func getK8sServiceHost(cluster *extensionscontroller.Cluster) (string, error) {
+	if cluster == nil {
+		return "", fmt.Errorf("cluster missing when retrieving kubernetes service host")
+	}
+	if cluster.Shoot == nil {
+		return "", fmt.Errorf("shoot missing when retrieving kubernetes service host")
+	}
+	if len(cluster.Shoot.Status.AdvertisedAddresses) == 0 {
+		return "", fmt.Errorf("advertised addresses missing in shoot status when retrieving kubernetes service host")
+	}
+	for _, address := range cluster.Shoot.Status.AdvertisedAddresses {
+		if address.Name == "external" {
+			url, err := url.Parse(address.URL)
+			if err != nil {
+				return "", fmt.Errorf("error while parsing external kubernetes service host: %s", err.Error())
+			}
+			return url.Hostname(), nil
+		}
+	}
+	return "", fmt.Errorf("external address not found among advertised adresses")
 }
