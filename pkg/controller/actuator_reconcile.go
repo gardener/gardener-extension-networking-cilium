@@ -21,6 +21,7 @@ import (
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
+	"github.com/go-logr/logr"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
@@ -77,7 +78,7 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 }
 
 // Reconcile implements Network.Actuator.
-func (a *actuator) Reconcile(ctx context.Context, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
+func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
 	var (
 		networkConfig *ciliumv1alpha1.NetworkConfig
 		err           error
