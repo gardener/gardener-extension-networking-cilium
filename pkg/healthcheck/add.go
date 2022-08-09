@@ -19,8 +19,8 @@ import (
 
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	networkcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
+	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck"
-	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/controller/healthcheck/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck/general"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
