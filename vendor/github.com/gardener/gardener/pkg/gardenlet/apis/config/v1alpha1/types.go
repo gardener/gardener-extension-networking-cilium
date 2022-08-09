@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	componentbaseconfigv1alpha1 "k8s.io/component-base/config/v1alpha1"
-	"k8s.io/klog"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -58,9 +57,6 @@ type GardenletConfiguration struct {
 	// LogFormat is the output format for the logs. Must be one of [text,json].
 	// +optional
 	LogFormat *string `json:"logFormat,omitempty"`
-	// KubernetesLogLevel is the log level used for Kubernetes' k8s.io/klog functions.
-	// +optional
-	KubernetesLogLevel *klog.Level `json:"kubernetesLogLevel,omitempty"`
 	// Server defines the configuration of the HTTP server.
 	// +optional
 	Server *ServerConfiguration `json:"server,omitempty"`
@@ -101,11 +97,11 @@ type GardenletConfiguration struct {
 type GardenClientConnection struct {
 	componentbaseconfigv1alpha1.ClientConnectionConfiguration `json:",inline"`
 	// GardenClusterAddress is the external address that the gardenlets can use to remotely connect to the Garden
-	// cluster. It is needed in case the gardenlet deploys itself into shooted seeds.
+	// cluster. It is needed in case the gardenlet deploys itself into ManagedSeeds.
 	// +optional
 	GardenClusterAddress *string `json:"gardenClusterAddress,omitempty"`
 	// GardenClusterCACert is the external address that the gardenlets can use to remotely connect to the Garden
-	// cluster. It is needed in case the gardenlet deploys itself into shooted seeds.
+	// cluster. It is needed in case the gardenlet deploys itself into ManagedSeeds.
 	// +optional
 	GardenClusterCACert []byte `json:"gardenClusterCACert,omitempty"`
 	// BootstrapKubeconfig is a reference to a secret that contains a data key 'kubeconfig' whose value
@@ -176,10 +172,10 @@ type GardenletControllerConfiguration struct {
 	// SeedAPIServerNetworkPolicy defines the configuration of the SeedAPIServerNetworkPolicy controller
 	// +optional
 	SeedAPIServerNetworkPolicy *SeedAPIServerNetworkPolicyControllerConfiguration `json:"seedAPIServerNetworkPolicy,omitempty"`
-	// ManagedSeedControllerConfiguration the configuration of the ManagedSeed controller.
+	// ManagedSeedControllerConfiguration defines the configuration of the ManagedSeed controller.
 	// +optional
 	ManagedSeed *ManagedSeedControllerConfiguration `json:"managedSeed,omitempty"`
-	// ShootSecretControllerConfiguration the configuration of the ShootSecret controller.
+	// ShootSecretControllerConfiguration defines the configuration of the ShootSecret controller.
 	// +optional
 	ShootSecret *ShootSecretControllerConfiguration `json:"shootSecret,omitempty"`
 }
@@ -728,20 +724,8 @@ const (
 	// DefaultDiscoveryTTL is the default ttl for the cached discovery client.
 	DefaultDiscoveryTTL = 10 * time.Second
 
-	// DefaultKubernetesLogLevel is the default Kubernetes log level.
-	DefaultKubernetesLogLevel klog.Level = 0
-
 	// DefaultControllerConcurrentSyncs is a default value for concurrent syncs for controllers.
 	DefaultControllerConcurrentSyncs = 20
-
-	// DefaultSNIIngresNamespace is the default sni ingress namespace.
-	DefaultSNIIngresNamespace = "istio-ingress"
-
-	// DefaultSNIIngresServiceName is the default sni ingress service name.
-	DefaultSNIIngresServiceName = "istio-ingressgateway"
-
-	// DefaultIngressGatewayAppLabelValue is the ingress gateway value for the app label.
-	DefaultIngressGatewayAppLabelValue = "istio-ingressgateway"
 
 	// LogLevelDebug is the debug log level, i.e. the most verbose.
 	LogLevelDebug = "debug"

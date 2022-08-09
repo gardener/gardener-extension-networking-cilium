@@ -19,9 +19,10 @@ import (
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/go-logr/logr"
 )
 
 // Restore implements Network.Actuator.
-func (a *actuator) Restore(ctx context.Context, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
-	return a.Reconcile(ctx, network, cluster)
+func (a *actuator) Restore(ctx context.Context, log logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
+	return a.Reconcile(ctx, log, network, cluster)
 }

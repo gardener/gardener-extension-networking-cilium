@@ -30,7 +30,7 @@ const (
 	// FinalizerName is the Network controller finalizer.
 	FinalizerName = "extensions.gardener.cloud/network"
 	// ControllerName is the name of the controller.
-	ControllerName = "network_controller"
+	ControllerName = "network"
 )
 
 // AddArgs are arguments for adding an Network controller to a manager.
@@ -77,7 +77,7 @@ func add(mgr manager.Manager, args AddArgs) error {
 	if args.IgnoreOperationAnnotation {
 		if err := ctrl.Watch(
 			&source.Kind{Type: &extensionsv1alpha1.Cluster{}},
-			mapper.EnqueueRequestsFrom(ClusterToNetworkMapper(predicates), mapper.UpdateWithNew),
+			mapper.EnqueueRequestsFrom(ClusterToNetworkMapper(predicates), mapper.UpdateWithNew, ctrl.GetLogger()),
 		); err != nil {
 			return err
 		}
