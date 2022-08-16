@@ -42,6 +42,14 @@ spec:
             topologyKey: kubernetes.io/hostname
       nodeSelector:
         kubernetes.io/os: linux
+      securityContext:
+        fsGroup: 1
+        supplementalGroups:
+        - 1
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
       containers:
       - name: cilium-operator
         command:
