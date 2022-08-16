@@ -160,12 +160,17 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
 
+	// disable PSPs if it's disabled in the shoot
+	if helper.IsPSPDisabled(cluster.Shoot) {
+		globalConfig.Psp.Enabled = false
+	}
+
 	if config == nil {
 		return requirementsConfig, globalConfig, nil
 	}
 
 	// check if PSPs are enabled
-	if config.PSPEnabled != nil {
+	if config.PSPEnabled != nil && globalConfig.Psp.Enabled {
 		globalConfig.Psp.Enabled = *config.PSPEnabled
 	}
 
