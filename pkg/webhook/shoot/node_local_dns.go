@@ -29,8 +29,8 @@ func (m *mutator) mutateNodeLocalDNSConfigMap(ctx context.Context, configmap *co
 
 	re1 := regexp.MustCompile(`bind.*`)
 	configmap.Data["Corefile"] = re1.ReplaceAllString(configmap.Data["Corefile"], "bind 0.0.0.0")
-	re2 := regexp.MustCompile(`health.*`)
-	configmap.Data["Corefile"] = re2.ReplaceAllString(configmap.Data["Corefile"], "health")
+	re2 := regexp.MustCompile(`health.*(:[0-9]+)`)
+	configmap.Data["Corefile"] = re2.ReplaceAllString(configmap.Data["Corefile"], "health $1")
 
 	return nil
 }
