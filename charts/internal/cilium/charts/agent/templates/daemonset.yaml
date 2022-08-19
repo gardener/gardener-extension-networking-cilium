@@ -504,7 +504,6 @@ spec:
           capabilities:
             add:
             - NET_ADMIN
-          privileged: true
 {{- else }}
       - command:
         {{- if semverCompare "< 1.17" .Capabilities.KubeVersion.GitVersion }}
