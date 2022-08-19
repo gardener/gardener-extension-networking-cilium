@@ -35,11 +35,3 @@ images:
     sourceRepository: github.com/cilium/certgen
     repository: quay.io/cilium/certgen
     tag: v0.1.8
-  - name: kube-proxy
-    sourceRepository: github.com/kubernetes/kubernetes
-    repository: k8s.gcr.io/hyperkube
-    targetVersion: "< 1.17"
-  - name: kube-proxy
-    sourceRepository: github.com/kubernetes/kubernetes
-    repository: k8s.gcr.io/kube-proxy
-    targetVersion: ">= 1.17"

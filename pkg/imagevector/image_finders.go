@@ -56,8 +56,3 @@ func CiliumHubbleUIBackendImage() string {
 func CiliumCertGenImage() string {
 	return findImage(cilium.CertGenImageName)
 }
-
-// CiliumKubeProxyImage returns the kube-proxy image.
-func CiliumKubeProxyImage(kubernetesVersion string) string {
-	return findImage(cilium.KubeProxyImageName, imagevector.RuntimeVersion(kubernetesVersion), imagevector.TargetVersion(kubernetesVersion))
-}

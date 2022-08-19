@@ -41,9 +41,6 @@ const (
 	// CertGenImageName defines certificate generation image name.
 	CertGenImageName = "certgen"
 
-	// KubeProxyImageName defines the kube-proxy image name.
-	KubeProxyImageName = "kube-proxy"
-
 	// MonitoringChartName
 	MonitoringName = "cilium-monitoring-config"
 
