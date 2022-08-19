@@ -21,6 +21,3 @@ initResources:
   requests:
     cpu: "100m"
     memory: "100Mi"
-
-# Specifies whether to use the approach documented by cilium or kube-proxy to cleanup the iptables from kube-proxy
-kubeProxyCleanup: cilium-documentation

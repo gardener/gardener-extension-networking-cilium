@@ -488,11 +488,10 @@ spec:
           {{- toYaml .Values.initResources | trim | nindent 10 }}
 {{- if eq .Values.global.kubeProxyReplacement "strict" }}
       # Clean up kube-proxy iptable rules in case cilium is running as kube-proxy replacement
-{{- if not (eq .Values.kubeProxyCleanup "kube-proxy") }}
       - command:
         - bash
         - -c
-        # Recommended way to clean up according to cilium docs (https://docs.cilium.io/en/latest/gettingstarted/kubeproxy-free/)
+        # Recommended way to clean up according to cilium docs (https://docs.cilium.io/en/v1.12/gettingstarted/kubeproxy-free/)
         #- "iptables-restore <(iptables-save | grep -v KUBE)"
         # Unfortunately, the above is not directly working due to etc/alternatives issue with cilium container image
         # Therefore, we use the equivalent below, which adds also log output
@@ -505,25 +504,6 @@ spec:
             add:
             - NET_ADMIN
           privileged: true
-{{- else }}
-      - command:
-        {{- if semverCompare "< 1.17" .Capabilities.KubeVersion.GitVersion }}
-        - /hyperkube
-        - kube-proxy
-        {{- else }}
-        - /usr/local/bin/kube-proxy
-        {{- end }}
-        - --cleanup
-        - --v=2
-        image: {{ index .Values.global.images "kube-proxy" }}
-        imagePullPolicy: {{ .Values.global.pullPolicy }}
-        name: kube-proxy-clean-up
-        securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-          privileged: true
-{{- end }}
 {{- end }}
       restartPolicy: Always
 {{- if and (eq .Release.Namespace "kube-system") (or (gt .Capabilities.KubeVersion.Minor "10") (gt .Capabilities.KubeVersion.Major "1"))}}

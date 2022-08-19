@@ -491,5 +491,3 @@ global:
     hubble-ui: "image-repository:image-tag"
     hubble-ui-backend: "image-repository:image-tag"
     certgen: "image-repository:image-tag"
-
-    kube-proxy: "image-repository:image-tag"
