@@ -528,6 +528,10 @@ spec:
 {{- if and (eq .Release.Namespace "kube-system") (or (gt .Capabilities.KubeVersion.Minor "10") (gt .Capabilities.KubeVersion.Major "1"))}}
       priorityClassName: system-node-critical
 {{- end }}
+      securityContext:
+        fsGroup: 1
+        supplementalGroups:
+        - 1
       serviceAccount: "cilium"
       serviceAccountName: "cilium"
       terminationGracePeriodSeconds: 1
