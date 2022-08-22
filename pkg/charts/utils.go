@@ -169,8 +169,8 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		return requirementsConfig, globalConfig, nil
 	}
 
-	// check if PSPs are enabled
-	if config.PSPEnabled != nil && globalConfig.Psp.Enabled {
+	// do not overwrite if it's set to false before, otherwise use the value from the config
+	if globalConfig.Psp.Enabled && config.PSPEnabled != nil {
 		globalConfig.Psp.Enabled = *config.PSPEnabled
 	}
 
