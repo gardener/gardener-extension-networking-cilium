@@ -497,9 +497,6 @@ type Loki struct {
 
 // GardenLoki contains configuration for the Loki in garden namespace.
 type GardenLoki struct {
-	// Priority is the priority value for the Loki
-	// +optional
-	Priority *int `json:"priority,omitempty" yaml:"priority,omitempty"`
 	// Storage is the disk storage capacity of the central Loki.
 	// Defaults to 100Gi.
 	// +optional
@@ -511,6 +508,13 @@ type ShootNodeLogging struct {
 	// ShootPurposes determines which shoots can have node logging by their purpose
 	// +optional
 	ShootPurposes []gardencorev1beta1.ShootPurpose `json:"shootPurposes,omitempty" yaml:"shootPurposes,omitempty"`
+}
+
+// ShootEventLogging contains configurations for the shoot event logger.
+type ShootEventLogging struct {
+	// Enabled is used to enable or disable shoot event logger.
+	// +optional
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 }
 
 // Logging contains configuration for the logging stack.
@@ -527,6 +531,9 @@ type Logging struct {
 	// ShootNodeLogging contains configurations for the shoot node logging
 	// +optional
 	ShootNodeLogging *ShootNodeLogging `json:"shootNodeLogging,omitempty" yaml:"shootNodeLogging,omitempty"`
+	// ShootEventLogging contains configurations for the shoot event logger.
+	// +optional
+	ShootEventLogging *ShootEventLogging `json:"shootEventLogging,omitempty" yaml:"shootEventLogging,omitempty"`
 }
 
 // ServerConfiguration contains details for the HTTP(S) servers.
@@ -681,6 +688,10 @@ type MonitoringConfig struct {
 
 // ShootMonitoringConfig contains settings for the shoot monitoring stack.
 type ShootMonitoringConfig struct {
+	// Enabled is used to enable or disable the shoot monitoring stack.
+	// Defaults to true.
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
 	// RemoteWrite is optional and contains remote write setting.
 	// +optional
 	RemoteWrite *RemoteWriteMonitoringConfig `json:"remoteWrite,omitempty"`
