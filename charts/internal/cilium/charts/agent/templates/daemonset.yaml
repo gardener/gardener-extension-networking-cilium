@@ -506,12 +506,7 @@ spec:
             - NET_ADMIN
 {{- else }}
       - command:
-        {{- if semverCompare "< 1.17" .Capabilities.KubeVersion.GitVersion }}
-        - /hyperkube
-        - kube-proxy
-        {{- else }}
         - /usr/local/bin/kube-proxy
-        {{- end }}
         - --cleanup
         - --v=2
         image: {{ index .Values.global.images "kube-proxy" }}
