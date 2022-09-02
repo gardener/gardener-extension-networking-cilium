@@ -37,9 +37,4 @@ images:
     tag: v0.1.8
   - name: kube-proxy
     sourceRepository: github.com/kubernetes/kubernetes
-    repository: registry.k8s.io/hyperkube
-    targetVersion: "< 1.17"
-  - name: kube-proxy
-    sourceRepository: github.com/kubernetes/kubernetes
     repository: registry.k8s.io/kube-proxy
-    targetVersion: ">= 1.17"
