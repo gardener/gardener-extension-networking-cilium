@@ -53,6 +53,10 @@ const (
 	// clusterID.
 	OriginAnnotation = "resources.gardener.cloud/origin"
 
+	// ManagedBy is a constant for a label on an object managed by a ManagedResource.
+	// It is set by the ManagedResource controller depending on its configuration. By default it is set to "gardener".
+	ManagedBy = "resources.gardener.cloud/managed-by"
+
 	// StaticTokenSkip is a constant for a label on a ServiceAccount which indicates that this ServiceAccount should not
 	// be considered by this controller.
 	StaticTokenSkip = "token-invalidator.resources.gardener.cloud/skip"
@@ -100,6 +104,10 @@ const (
 	// ProjectedTokenExpirationSeconds is a constant for an annotation on a Pod which overwrites the default token expiration
 	// seconds for the automatic mount of a projected ServiceAccount token.
 	ProjectedTokenExpirationSeconds = "projected-token-mount.resources.gardener.cloud/expiration-seconds"
+
+	// SeccompProfileSkip is a constant for a label on a Pod which indicates that this Pod should not be considered for
+	// defaulting of its seccomp profile.
+	SeccompProfileSkip = "seccompprofile.resources.gardener.cloud/skip"
 )
 
 // +kubebuilder:resource:shortName="mr"
