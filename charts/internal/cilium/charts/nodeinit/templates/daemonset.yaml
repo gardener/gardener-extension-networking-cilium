@@ -20,6 +20,11 @@ spec:
       - operator: Exists
       hostPID: true
       hostNetwork: true
+      {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      {{- end }}
       containers:
         - name: node-init
           image: {{ index .Values.global.images "cilium-nodeinit" }}
