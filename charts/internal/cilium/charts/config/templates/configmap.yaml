@@ -244,6 +244,9 @@ data:
   bpf-lb-map-max: "{{ .Values.global.bpf.lbMapMax }}"
 {{- end }}
 {{- if .Values.global.bpf.lbMode }}
+  {{- if and (eq .Values.global.bpf.lbMode "dsr") (not .Values.global.ipv4NativeRoutingCIDR)  }}
+    {{ fail "bpf-lb-mode 'dsr' requires native routing to be enabled" }}
+  {{- end }}
   # Specifies the bpf load balancing mode ("snat", "dsr", "hybrid")
   bpf-lb-mode: {{ .Values.global.bpf.lbMode }}
 {{- end }}
