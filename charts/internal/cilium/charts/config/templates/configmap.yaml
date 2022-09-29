@@ -243,6 +243,10 @@ data:
   # backend and affinity maps.
   bpf-lb-map-max: "{{ .Values.global.bpf.lbMapMax }}"
 {{- end }}
+{{- if .Values.global.bpf.lbMode }}
+  # Specifies the bpf load balancing mode ("snat", "dsr", "hybrid")
+  bpf-lb-mode: {{ .Values.global.bpf.lbMode }}
+{{- end }}
 {{- if .Values.global.bpf.lbExternalClusterip }}
   # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
   # optimization for nodeport reverse NAT handling.
@@ -414,9 +418,16 @@ data:
 {{- if .Values.global.nativeRoutingCIDR }}
   native-routing-cidr: {{ .Values.global.nativeRoutingCIDR }}
 {{- end }}
+{{- if .Values.global.ipv4NativeRoutingCIDR }}
+  ipv4-native-routing-cidr: {{ .Values.global.ipv4NativeRoutingCIDR }}
+{{- end }}
 
 {{- if .Values.global.hostFirewall }}
   enable-host-firewall: {{ .Values.global.hostFirewall | quote }}
+{{- end}}
+
+{{- if .Values.global.mtu }}
+  mtu: {{ .Values.global.mtu | quote }}
 {{- end}}
 
 {{- if .Values.global.devices }}

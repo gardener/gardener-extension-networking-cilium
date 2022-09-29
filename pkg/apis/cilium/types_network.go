@@ -41,6 +41,18 @@ const (
 	Disabled TunnelMode = "disabled"
 )
 
+// LoadBalancingMode defines what load balancing mode to use for Cilium.
+type LoadBalancingMode string
+
+const (
+	// SNAT defines the snat load balancing mode
+	SNAT LoadBalancingMode = "snat"
+	// DSR defines the dsr load balancing mode
+	DSR LoadBalancingMode = "dsr"
+	// Hybrid defines the hybrid load balancing mode
+	Hybrid LoadBalancingMode = "hybrid"
+)
+
 // KubeProxyReplacementMode defines which mode should kube-proxy run in.
 // More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
 type KubeProxyReplacementMode string
@@ -145,4 +157,12 @@ type NetworkConfig struct {
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly
 	// EgressGateway flag to be enabled or not
 	EgressGateway *EgressGateway
+	// MTU overwrites the auto-detected MTU of the underlying network
+	MTU *int
+	// Devices is the list of devices facing cluster/external network
+	Devices []string
+	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
+	LoadBalancingMode *LoadBalancingMode
+	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
+	IPv4NativeRoutingCIDREnabled *bool
 }
