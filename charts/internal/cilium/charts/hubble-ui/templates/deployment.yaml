@@ -16,12 +16,16 @@ spec:
       labels:
         k8s-app: hubble-ui
     spec:
-      {{- if .Values.securityContext.enabled }}
       securityContext:
+        {{- if .Values.securityContext.enabled }}
         fsGroup: 1001
         runAsGroup: 1001
         runAsUser: 1001
-      {{- end }}
+        {{- end }}
+        {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
       serviceAccountName: hubble-ui
       serviceAccount: hubble-ui
       containers:

@@ -45,6 +45,11 @@ spec:
             readOnly: true
       restartPolicy: Always
       serviceAccountName: hubble-relay
+      {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      {{- end }}
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 1
       affinity:
