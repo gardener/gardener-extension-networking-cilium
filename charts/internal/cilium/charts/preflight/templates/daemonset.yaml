@@ -153,3 +153,4 @@ spec:
           secretName: cilium-etcd-secrets
 {{- end }}
 {{- end }}
+
