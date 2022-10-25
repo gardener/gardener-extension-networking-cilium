@@ -4,7 +4,7 @@ gardener-extension-networking-cilium:
     repo: ~
     steps:
       verify:
-        image: 'golang:1.18.3'
+        image: 'golang:1.19.2'
     traits:
       version:
         preprocess: 'inject-commit-hash'
