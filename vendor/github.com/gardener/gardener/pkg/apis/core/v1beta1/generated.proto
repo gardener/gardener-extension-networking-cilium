@@ -389,6 +389,14 @@ message ContainerRuntime {
   optional k8s.io.apimachinery.pkg.runtime.RawExtension providerConfig = 2;
 }
 
+// ControlPlane holds information about the general settings for the control plane of a shoot.
+message ControlPlane {
+  // HighAvailability holds the configuration settings for high availability of the
+  // control plane of a shoot.
+  // +optional
+  optional HighAvailability highAvailability = 1;
+}
+
 // ControllerDeployment contains information about how this controller is deployed.
 message ControllerDeployment {
   // Standard object metadata.
@@ -539,6 +547,10 @@ message CoreDNS {
   // Autoscaling contains the settings related to autoscaling of the Core DNS components running in the data plane of the Shoot cluster.
   // +optional
   optional CoreDNSAutoscaling autoscaling = 1;
+
+  // Rewriting contains the setting related to rewriting of requests, which are obviously incorrect due to the unnecessary application of the search path.
+  // +optional
+  optional CoreDNSRewriting rewriting = 2;
 }
 
 // CoreDNSAutoscaling contains the settings related to autoscaling of the Core DNS components running in the data plane of the Shoot cluster.
@@ -546,6 +558,13 @@ message CoreDNSAutoscaling {
   // The mode of the autoscaling to be used for the Core DNS components running in the data plane of the Shoot cluster.
   // Supported values are `horizontal` and `cluster-proportional`.
   optional string mode = 1;
+}
+
+// CoreDNSRewriting contains the setting related to rewriting requests, which are obviously incorrect due to the unnecessary application of the search path.
+message CoreDNSRewriting {
+  // CommonSuffixes are expected to be the suffix of a fully qualified domain name. Each suffix should contain at least one or two dots ('.') to prevent accidental clashes.
+  // +optional
+  repeated string commonSuffixes = 1;
 }
 
 // DNS holds information about the provider, the hosted zone id and the domain.
@@ -651,6 +670,12 @@ message Extension {
   optional bool disabled = 3;
 }
 
+// FailureTolerance describes information about failure tolerance level of a highly available resource.
+message FailureTolerance {
+  // Type specifies the type of failure that the highly available resource can tolerate
+  optional string type = 1;
+}
+
 // Gardener holds the information about the Gardener version that operated a resource.
 message Gardener {
   // ID is the Docker container id of the Gardener which last acted on a resource.
@@ -690,6 +715,13 @@ message HibernationSchedule {
   // Location is the time location in which both start and and shall be evaluated.
   // +optional
   optional string location = 3;
+}
+
+// HighAvailability specifies the configuration settings for high availability for a resource. Typical
+// usages could be to configure HA for shoot control plane or for seed system components.
+message HighAvailability {
+  // FailureTolerance holds information about failure tolerance level of a highly available resource.
+  optional FailureTolerance failureTolerance = 1;
 }
 
 // HorizontalPodAutoscalerConfig contains horizontal pod autoscaler configuration settings for the kube-controller-manager.
@@ -967,6 +999,25 @@ message KubeletConfig {
   // +optional
   // Default: true
   optional bool serializeImagePulls = 18;
+
+  // RegistryPullQPS is the limit of registry pulls per second. The value must not be a negative number.
+  // Setting it to 0 means no limit.
+  // Default: 5
+  // +optional
+  optional int32 registryPullQPS = 19;
+
+  // RegistryBurst is the maximum size of bursty pulls, temporarily allows pulls to burst to this number,
+  // while still not exceeding registryPullQPS. The value must not be a negative number.
+  // Only used if registryPullQPS is greater than 0.
+  // Default: 10
+  // +optional
+  optional int32 registryBurst = 20;
+
+  // SeccompDefault enables the use of `RuntimeDefault` as the default seccomp profile for all workloads.
+  // This requires the corresponding SeccompDefault feature gate to be enabled as well.
+  // This field is only available for Kubernetes v1.25 or later.
+  // +optional
+  optional bool seccompDefault = 21;
 }
 
 // KubeletConfigEviction contains kubelet eviction thresholds supporting either a resource.Quantity or a percentage based value.
@@ -1059,7 +1110,8 @@ message KubeletConfigReserved {
 
 // Kubernetes contains the version and configuration variables for the Shoot control plane.
 message Kubernetes {
-  // AllowPrivilegedContainers indicates whether privileged containers are allowed in the Shoot (default: true).
+  // AllowPrivilegedContainers indicates whether privileged containers are allowed in the Shoot.
+  // Defaults to true for Kubernetes versions below v1.25. Unusable for Kubernetes versions v1.25 and higher.
   // +optional
   optional bool allowPrivilegedContainers = 1;
 
@@ -1158,7 +1210,7 @@ message LastOperation {
   // Status of the last operation, one of Aborted, Processing, Succeeded, Error, Failed.
   optional string state = 4;
 
-  // Type of the last operation, one of Create, Reconcile, Delete.
+  // Type of the last operation, one of Create, Reconcile, Delete, Migrate, Restore.
   optional string type = 5;
 }
 
@@ -1945,6 +1997,12 @@ message SeedSpec {
   // Ingress configures Ingress specific settings of the Seed cluster. This field is immutable.
   // +optional
   optional Ingress ingress = 9;
+
+  // HighAvailability describes the high availability configuration for seed system components. A highly available
+  // seed will need at least 3 nodes or 3 availability zones (depending on the configured FailureTolerance of `node` or `zone`),
+  // allowing spreading of system components across the configured failure domain.
+  // +optional
+  optional HighAvailability highAvailability = 10;
 }
 
 // SeedStatus is the status of a Seed.
@@ -2318,6 +2376,10 @@ message ShootSpec {
   // SystemComponents contains the settings of system components in the control or data plane of the Shoot cluster.
   // +optional
   optional SystemComponents systemComponents = 19;
+
+  // ControlPlane contains general settings for the control plane of the shoot.
+  // +optional
+  optional ControlPlane controlPlane = 20;
 }
 
 // ShootStatus holds the most recently observed status of the Shoot cluster.
