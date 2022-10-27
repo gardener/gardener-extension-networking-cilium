@@ -24,13 +24,18 @@ requirements:
 
 # global groups all configuration options that have effect on all sub-charts
 global:
-  egressGateway: 
+  egressGateway:
     enabled: false
 
   nodeLocalDNS:
     enabled: false
 
   podCIDR: ""
+
+  ipv4NativeRoutingCIDR: ""
+
+  mtu:
+
   # pullPolicy is the container image pull policy
   pullPolicy: IfNotPresent
 
@@ -271,16 +276,19 @@ global:
     # first time
     monitorFlags: "all"
 
-  # bpf-policy-map-max specifies the maximum number of entries in endpoint
-  # policy map (per endpoint)
+    # bpf-policy-map-max specifies the maximum number of entries in endpoint
+    # policy map (per endpoint)
     policyMapMax: "16384"
 
-  # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
-  # backend and affinity maps.
+    # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
+    # backend and affinity maps.
     lbMapMax: "65536"
 
-  # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
-  # optimization for nodeport reverse NAT handling.
+    # Specifies the bpf load balancing mode ("snat", "dsr", "hybrid")
+    lbMode: "snat"
+
+    # bpf-lb-bypass-fib-lookup instructs Cilium to enable the FIB lookup bypass
+    # optimization for nodeport reverse NAT handling.
     lbExternalClusterip: "false"
 
   # Enable socket-based LB for E/W traffic
@@ -445,7 +453,7 @@ global:
     # Regular expression matching compatible Istio sidecar istio-proxy
     # container image names
     sidecarImageRegex: "cilium/istio_proxy"
-  
+
   # Enables L7 proxy for L7 policy enforcement and visibility
   l7proxy:
     enabled: true

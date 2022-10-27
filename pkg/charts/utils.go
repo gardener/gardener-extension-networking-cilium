@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
@@ -101,6 +102,12 @@ var defaultGlobalConfig = globalConfig{
 	NodeLocalDNS: nodeLocalDNS{
 		Enabled: false,
 	},
+	MTU:                   0, // --> means auto detection (default)
+	Devices:               nil,
+	IPv4NativeRoutingCIDR: "",
+	BPF: bpf{
+		LoadBalancingMode: v1alpha1.SNAT,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -115,7 +122,7 @@ func newRequirementsConfig() requirementsConfig {
 func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) (*ciliumConfig, error) {
 	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster)
 	if err != nil {
-		return nil, fmt.Errorf("error when generating config values %v", err)
+		return nil, fmt.Errorf("error when generating config values %w", err)
 	}
 
 	return &ciliumConfig{
@@ -212,6 +219,31 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// check if egress gateway is enabled
 	if config.EgressGateway != nil {
 		globalConfig.EgressGateway.Enabled = config.EgressGateway.Enabled
+	}
+
+	// check if mtu is set
+	if config.MTU != nil {
+		globalConfig.MTU = *config.MTU
+	}
+
+	// check if devices are set
+	if len(config.Devices) > 0 {
+		globalConfig.Devices = config.Devices
+	}
+
+	// check if load balancing mode is set
+	if config.LoadBalancingMode != nil {
+		globalConfig.BPF = bpf{
+			LoadBalancingMode: *config.LoadBalancingMode,
+		}
+	}
+
+	// check if ipv4 native routing cidr is set
+	if config.IPv4NativeRoutingCIDREnabled != nil && *config.IPv4NativeRoutingCIDREnabled {
+		if cluster.Shoot.Spec.Networking.Nodes == nil {
+			return requirementsConfig, globalConfig, fmt.Errorf("nodes cidr required for setting ipv4 native routing cidr was not yet set")
+		}
+		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Nodes
 	}
 
 	return requirementsConfig, globalConfig, nil

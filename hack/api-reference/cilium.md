@@ -165,6 +165,56 @@ EgressGateway
 <p>EgressGateway enablement for cilium</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>mtu</code></br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTU overwrites the auto-detected MTU of the underlying network</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>devices</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Devices is the list of devices facing cluster/external network</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>loadBalancingMode</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.LoadBalancingMode">
+LoadBalancingMode
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LoadBalancingMode configuration, it should be &lsquo;snat&rsquo;, &lsquo;dsr&rsquo; or &lsquo;hybrid&rsquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipv4NativeRoutingCIDREnabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node&rsquo;s cidr if enabled.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
@@ -339,6 +389,15 @@ int32
 <p>
 <p>KubeProxyReplacementMode defines which mode should kube-proxy run in.
 More infromation here: <a href="https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/">https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/</a></p>
+</p>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.LoadBalancingMode">LoadBalancingMode
+(<code>string</code> alias)</p></h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>LoadBalancingMode defines what load balancing mode to use for Cilium.</p>
 </p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.NodePortMode">NodePortMode
 (<code>string</code> alias)</p></h3>
