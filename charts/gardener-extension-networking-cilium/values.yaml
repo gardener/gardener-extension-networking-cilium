@@ -32,6 +32,8 @@ controller:
   concurrentSyncs: 5
   healthcheck:
     concurrentSyncs: 5
+  heartbeat: 
+    renewIntervalSeconds: 30 
   ignoreOperationAnnotation: false
 
 leaderElection:

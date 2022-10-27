@@ -75,6 +75,8 @@ github.com/gardener/gardener/extensions/pkg/controller/cmd
 github.com/gardener/gardener/extensions/pkg/controller/common
 github.com/gardener/gardener/extensions/pkg/controller/healthcheck
 github.com/gardener/gardener/extensions/pkg/controller/healthcheck/general
+github.com/gardener/gardener/extensions/pkg/controller/heartbeat
+github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd
 github.com/gardener/gardener/extensions/pkg/controller/network
 github.com/gardener/gardener/extensions/pkg/predicate
 github.com/gardener/gardener/extensions/pkg/util

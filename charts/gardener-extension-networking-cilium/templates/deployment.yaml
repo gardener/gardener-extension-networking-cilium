@@ -35,6 +35,8 @@ spec:
         - --leader-election-resource-lock={{ .Values.leaderElection.resourceLock }}
         - --max-concurrent-reconciles={{ .Values.controller.concurrentSyncs }}
         - --healthcheck-max-concurrent-reconciles={{ .Values.controller.healthcheck.concurrentSyncs }}
+        - --heartbeat-namespace={{ .Release.Namespace }} 
+        - --heartbeat-renew-interval-seconds={{ .Values.controller.heartbeat.renewIntervalSeconds }} 
         - --ignore-operation-annotation={{ .Values.controller.ignoreOperationAnnotation }}
         - --config-file=/etc/{{ include "name" . }}/config/config.yaml
         - --webhook-config-namespace={{ .Release.Namespace }}
