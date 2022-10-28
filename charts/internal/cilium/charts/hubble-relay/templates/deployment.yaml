@@ -43,6 +43,7 @@ spec:
           - name: tls
             mountPath: /var/lib/hubble-relay/tls
             readOnly: true
+          terminationMessagePolicy: FallbackToLogsOnError
       restartPolicy: Always
       serviceAccountName: hubble-relay
       {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}

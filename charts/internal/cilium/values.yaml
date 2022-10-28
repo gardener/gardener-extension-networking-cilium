@@ -323,9 +323,7 @@ global:
     # interface: eth0
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
-  kubeProxyReplacement: "probe"
-  # The IP address with port for kube-proxy replacement health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable
-  kubeProxyReplacementHealthzBindAddress: ""
+  kubeProxyReplacement: "disabled"
 
   # Enable check of service source ranges (currently, only for LoadBalancer)
   enableSvcSrcRangeCheck: true

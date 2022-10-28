@@ -64,6 +64,8 @@ const (
 	Probe KubeProxyReplacementMode = "probe"
 	// Partial defines the partial kube-proxy replacement mode
 	Partial KubeProxyReplacementMode = "partial"
+	// Disabled defines the disabled kube-proxy replacement mode
+	KubeProxyReplacementDisabled KubeProxyReplacementMode = "disabled"
 )
 
 // NodePortMode defines how NodePort services are enabled.

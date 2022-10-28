@@ -48,6 +48,7 @@ spec:
             requests:
               cpu: 100m
               memory: 64Mi
+          terminationMessagePolicy: FallbackToLogsOnError
         - name: backend
           image: {{ index .Values.global.images "hubble-ui-backend" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
@@ -59,6 +60,7 @@ spec:
           ports:
             - name: grpc
               containerPort: 8090
+          terminationMessagePolicy: FallbackToLogsOnError
           resources:
             limits:
               cpu: 1000m

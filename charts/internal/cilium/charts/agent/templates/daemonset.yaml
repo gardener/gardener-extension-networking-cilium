@@ -206,6 +206,7 @@ spec:
               - SETUID
             drop:
               - ALL
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         # Unprivileged containers need to mount /proc/sys/net from the host
         # to have write access
@@ -361,6 +362,7 @@ spec:
             mountPath: /hostproc
           - name: cni-path
             mountPath: /hostbin
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
             level: 's0'
@@ -400,6 +402,7 @@ spec:
           mountPath: /hostproc
         - name: cni-path
           mountPath: /hostbin
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
             level: 's0'
@@ -428,6 +431,7 @@ spec:
         - /bin/bash
         - -c
         - --
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           privileged: true
         volumeMounts:
@@ -461,6 +465,7 @@ spec:
               optional: true
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
+        terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
             level: 's0'
