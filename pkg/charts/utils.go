@@ -47,7 +47,7 @@ var defaultCiliumConfig = requirementsConfig{
 var defaultGlobalConfig = globalConfig{
 	IdentityAllocationMode: ciliumv1alpha1.CRD,
 	Tunnel:                 ciliumv1alpha1.VXLan,
-	KubeProxyReplacement:   ciliumv1alpha1.Probe,
+	KubeProxyReplacement:   ciliumv1alpha1.KubeProxyReplacementDisabled,
 	Etcd: etcd{
 		Enabled: false,
 		Managed: false,

@@ -449,9 +449,7 @@ data:
 {{- if .Values.global.kubeProxyReplacement }}
   kube-proxy-replacement:  {{ .Values.global.kubeProxyReplacement | quote }}
 {{- end}}
-{{- if .Values.global.kubeProxyReplacementHealthzBindAddress }}
-kube-proxy-replacement-healthz-bind-address: "{{ .Values.global.kubeProxyReplacementHealthzBindAddress }}"
-{{- end}}
+
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
   enable-host-reachable-services: {{ .Values.global.hostServices.enabled | quote }}
