@@ -34,6 +34,7 @@ import (
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -89,6 +90,18 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		if err != nil {
 			return err
 		}
+	}
+
+	if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
+		if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
+			// use vxlan as default overlay network
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.VXLan)))
+		}
+		networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(false)
+	}
+	if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
+		networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.Disabled)))
+		networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(true)
 	}
 
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled && cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" {
