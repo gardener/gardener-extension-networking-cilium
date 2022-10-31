@@ -215,6 +215,20 @@ bool
 <p>IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node&rsquo;s cidr if enabled.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>overlay</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Overlay">
+Overlay
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Overlay enables the network overlay</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
@@ -443,6 +457,36 @@ NodePortMode
 </td>
 <td>
 <p>Mode is the mode of NodePort feature</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Overlay">Overlay
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>Overlay configuration for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled enables the network overlay.</p>
 </td>
 </tr>
 </tbody>

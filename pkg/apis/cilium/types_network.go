@@ -134,6 +134,12 @@ type KubeProxy struct {
 	ServicePort *int32
 }
 
+// Overlay configuration for cilium
+type Overlay struct {
+	// Enabled enables the network overlay.
+	Enabled bool
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -167,4 +173,6 @@ type NetworkConfig struct {
 	LoadBalancingMode *LoadBalancingMode
 	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
 	IPv4NativeRoutingCIDREnabled *bool
+	// Overlay enables the network overlay
+	Overlay *Overlay
 }
