@@ -39,6 +39,7 @@ type globalConfig struct {
 	MTU                    int                                     `json:"mtu"`
 	Devices                []string                                `json:"devices"`
 	BPF                    bpf                                     `json:"bpf"`
+	IPAM                   ipam                                    `json:"ipam"`
 }
 
 // etcd related configuration for cilium
@@ -147,4 +148,8 @@ type egressGateway struct {
 
 type bpf struct {
 	LoadBalancingMode ciliumv1alpha1.LoadBalancingMode `json:"lbMode"`
+}
+
+type ipam struct {
+	Mode string `json:"mode"`
 }

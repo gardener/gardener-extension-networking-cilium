@@ -336,6 +336,7 @@ data:
 
   enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
+  enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
@@ -444,7 +445,6 @@ data:
     {{ fail "kubeProxyReplacement must be set to 'strict' in order to enable egressGateway" }}
   {{- end}}
   enable-ipv4-egress-gateway: "true"
-  enable-bpf-masquerade: "true"
 {{- end}}
 {{- if .Values.global.kubeProxyReplacement }}
   kube-proxy-replacement:  {{ .Values.global.kubeProxyReplacement | quote }}
@@ -592,16 +592,25 @@ data:
   # A space separated list of iptables chains to disable when installing feeder rules.
   disable-iptables-feeder-rules: {{ .Values.disableIptablesFeederRules | join " " | quote }}
 {{- end }}
-  ipam: "cluster-pool"
-{{- if .Values.global.ipv4.enabled }}
+  ipam: {{ .Values.global.ipam.mode }}
+{{- if (eq .Values.global.ipam.mode "kubernetes" )}}
+  {{- if .Values.global.ipv4.enabled }}
+  k8s-require-ipv4-pod-cidr: "true"
+  {{- end }}
+  {{- if .Values.global.ipv6.enabled }}
+  k8s-require-ipv6-pod-cidr: "true"
+  {{- end }}
+{{- end }}
+{{- if (eq .Values.global.ipam.mode "cluster-pool") }}
+  {{- if .Values.global.ipv4.enabled }}
   cluster-pool-ipv4-cidr: {{ .Values.global.podCIDR | quote }}
   cluster-pool-ipv4-mask-size: {{ .Values.global.ipam.operator.clusterPoolIPv4MaskSize | quote }}
-{{- end }}
-{{- if .Values.global.ipv6.enabled }}
+  {{- end }}
+  {{- if .Values.global.ipv6.enabled }}
   cluster-pool-ipv6-cidr: {{ .Values.global.ipam.operator.clusterPoolIPv6PodCIDR | quote }}
   cluster-pool-ipv6-mask-size: {{ .Values.global.ipam.operator.clusterPoolIPv6MaskSize | quote }}
+  {{- end }}
 {{- end }}
-
 {{- if hasKey .Values "enableCnpStatusUpdates" }}
   disable-cnp-status-updates: {{ (not .Values.enableCnpStatusUpdates) | quote }}
 {{- else if (eq $defaultEnableCnpStatusUpdates "false") }}
