@@ -36,7 +36,11 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 func SetObjectDefaults_GardenletConfiguration(in *GardenletConfiguration) {
 	SetDefaults_GardenletConfiguration(in)
 	if in.GardenClientConnection != nil {
+		SetDefaults_GardenClientConnection(in.GardenClientConnection)
 		SetDefaults_ClientConnectionConfiguration(&in.GardenClientConnection.ClientConnectionConfiguration)
+		if in.GardenClientConnection.KubeconfigValidity != nil {
+			SetDefaults_KubeconfigValidity(in.GardenClientConnection.KubeconfigValidity)
+		}
 	}
 	if in.SeedClientConnection != nil {
 		SetDefaults_ClientConnectionConfiguration(&in.SeedClientConnection.ClientConnectionConfiguration)
@@ -70,6 +74,9 @@ func SetObjectDefaults_GardenletConfiguration(in *GardenletConfiguration) {
 		if in.Controllers.Seed != nil {
 			SetDefaults_SeedControllerConfiguration(in.Controllers.Seed)
 		}
+		if in.Controllers.SeedCare != nil {
+			SetDefaults_SeedCareControllerConfiguration(in.Controllers.SeedCare)
+		}
 		if in.Controllers.Shoot != nil {
 			SetDefaults_ShootControllerConfiguration(in.Controllers.Shoot)
 		}
@@ -78,9 +85,6 @@ func SetObjectDefaults_GardenletConfiguration(in *GardenletConfiguration) {
 			if in.Controllers.ShootCare.StaleExtensionHealthChecks != nil {
 				SetDefaults_StaleExtensionHealthChecks(in.Controllers.ShootCare.StaleExtensionHealthChecks)
 			}
-		}
-		if in.Controllers.SeedCare != nil {
-			SetDefaults_SeedCareControllerConfiguration(in.Controllers.SeedCare)
 		}
 		if in.Controllers.ShootMigration != nil {
 			SetDefaults_ShootMigrationControllerConfiguration(in.Controllers.ShootMigration)

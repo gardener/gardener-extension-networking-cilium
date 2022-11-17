@@ -31,15 +31,23 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/clock"
 	"k8s.io/utils/pointer"
 )
 
-// Now determines the current metav1.Time.
-var Now = metav1.Now
+// Clock defines the clock for the helper functions
+// Deprecated: Use ...WithClock(...) functions instead.
+var Clock clock.Clock = clock.RealClock{}
 
 // InitCondition initializes a new Condition with an Unknown status.
+// Deprecated: Use InitConditionWithClock(...) instead.
 func InitCondition(conditionType gardencorev1beta1.ConditionType) gardencorev1beta1.Condition {
-	now := Now()
+	return InitConditionWithClock(Clock, conditionType)
+}
+
+// InitConditionWithClock initializes a new Condition with an Unknown status. It allows passing a custom clock for testing.
+func InitConditionWithClock(clock clock.Clock, conditionType gardencorev1beta1.ConditionType) gardencorev1beta1.Condition {
+	now := metav1.Time{Time: clock.Now()}
 	return gardencorev1beta1.Condition{
 		Type:               conditionType,
 		Status:             gardencorev1beta1.ConditionUnknown,
@@ -64,19 +72,33 @@ func GetCondition(conditions []gardencorev1beta1.Condition, conditionType garden
 
 // GetOrInitCondition tries to retrieve the condition with the given condition type from the given conditions.
 // If the condition could not be found, it returns an initialized condition of the given type.
+// Deprecated: Use GetOrInitConditionWithClock(...) instead.
 func GetOrInitCondition(conditions []gardencorev1beta1.Condition, conditionType gardencorev1beta1.ConditionType) gardencorev1beta1.Condition {
+	return GetOrInitConditionWithClock(Clock, conditions, conditionType)
+}
+
+// GetOrInitConditionWithClock tries to retrieve the condition with the given condition type from the given conditions.
+// If the condition could not be found, it returns an initialized condition of the given type. It allows passing a custom clock for testing.
+func GetOrInitConditionWithClock(clock clock.Clock, conditions []gardencorev1beta1.Condition, conditionType gardencorev1beta1.ConditionType) gardencorev1beta1.Condition {
 	if condition := GetCondition(conditions, conditionType); condition != nil {
 		return *condition
 	}
-	return InitCondition(conditionType)
+	return InitConditionWithClock(clock, conditionType)
 }
 
 // UpdatedCondition updates the properties of one specific condition.
+// Deprecated: Use UpdatedConditionWithClock(...) instead.
 func UpdatedCondition(condition gardencorev1beta1.Condition, status gardencorev1beta1.ConditionStatus, reason, message string, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
+	return UpdatedConditionWithClock(Clock, condition, status, reason, message, codes...)
+}
+
+// UpdatedConditionWithClock updates the properties of one specific condition. It allows passing a custom clock for testing.
+func UpdatedConditionWithClock(clock clock.Clock, condition gardencorev1beta1.Condition, status gardencorev1beta1.ConditionStatus, reason, message string, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
 	builder, err := NewConditionBuilder(condition.Type)
 	utilruntime.Must(err)
 	newCondition, _ := builder.
 		WithOldCondition(condition).
+		WithClock(clock).
 		WithStatus(status).
 		WithReason(reason).
 		WithMessage(message).
@@ -87,13 +109,25 @@ func UpdatedCondition(condition gardencorev1beta1.Condition, status gardencorev1
 }
 
 // UpdatedConditionUnknownError updates the condition to 'Unknown' status and the message of the given error.
+// Deprecated: Use UpdatedConditionUnknownErrorWithClock(...) instead.
 func UpdatedConditionUnknownError(condition gardencorev1beta1.Condition, err error, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
-	return UpdatedConditionUnknownErrorMessage(condition, err.Error(), codes...)
+	return UpdatedConditionUnknownErrorWithClock(Clock, condition, err, codes...)
+}
+
+// UpdatedConditionUnknownErrorWithClock updates the condition to 'Unknown' status and the message of the given error. It allows passing a custom clock for testing.
+func UpdatedConditionUnknownErrorWithClock(clock clock.Clock, condition gardencorev1beta1.Condition, err error, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
+	return UpdatedConditionUnknownErrorMessageWithClock(clock, condition, err.Error(), codes...)
 }
 
 // UpdatedConditionUnknownErrorMessage updates the condition with 'Unknown' status and the given message.
+// Deprecated: Use UpdatedConditionUnknownErrorMessageWithClock(...) instead.
 func UpdatedConditionUnknownErrorMessage(condition gardencorev1beta1.Condition, message string, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
-	return UpdatedCondition(condition, gardencorev1beta1.ConditionUnknown, gardencorev1beta1.ConditionCheckError, message, codes...)
+	return UpdatedConditionUnknownErrorMessageWithClock(Clock, condition, message, codes...)
+}
+
+// UpdatedConditionUnknownErrorMessageWithClock updates the condition with 'Unknown' status and the given message. It allows passing a custom clock for testing.
+func UpdatedConditionUnknownErrorMessageWithClock(clock clock.Clock, condition gardencorev1beta1.Condition, message string, codes ...gardencorev1beta1.ErrorCode) gardencorev1beta1.Condition {
+	return UpdatedConditionWithClock(clock, condition, gardencorev1beta1.ConditionUnknown, gardencorev1beta1.ConditionCheckError, message, codes...)
 }
 
 // MergeConditions merges the given <oldConditions> with the <newConditions>. Existing conditions are superseded by
@@ -157,8 +191,9 @@ func IsResourceSupported(resources []gardencorev1beta1.ControllerResource, resou
 // installed.
 func IsControllerInstallationSuccessful(controllerInstallation gardencorev1beta1.ControllerInstallation) bool {
 	var (
-		installed bool
-		healthy   bool
+		installed      bool
+		healthy        bool
+		notProgressing bool
 	)
 
 	for _, condition := range controllerInstallation.Status.Conditions {
@@ -168,9 +203,12 @@ func IsControllerInstallationSuccessful(controllerInstallation gardencorev1beta1
 		if condition.Type == gardencorev1beta1.ControllerInstallationHealthy && condition.Status == gardencorev1beta1.ConditionTrue {
 			healthy = true
 		}
+		if condition.Type == gardencorev1beta1.ControllerInstallationProgressing && condition.Status == gardencorev1beta1.ConditionFalse {
+			notProgressing = true
+		}
 	}
 
-	return installed && healthy
+	return installed && healthy && notProgressing
 }
 
 // IsControllerInstallationRequired returns true if a ControllerInstallation has been marked as "required".
@@ -521,13 +559,29 @@ func SeedUsesNginxIngressController(seed *gardencorev1beta1.Seed) bool {
 // DetermineMachineImageForName finds the cloud specific machine images in the <cloudProfile> for the given <name> and
 // region. In case it does not find the machine image with the <name>, it returns false. Otherwise, true and the
 // cloud-specific machine image will be returned.
-func DetermineMachineImageForName(cloudProfile *gardencorev1beta1.CloudProfile, name string) (bool, gardencorev1beta1.MachineImage, error) {
+func DetermineMachineImageForName(cloudProfile *gardencorev1beta1.CloudProfile, name string) (bool, gardencorev1beta1.MachineImage) {
 	for _, image := range cloudProfile.Spec.MachineImages {
 		if strings.EqualFold(image.Name, name) {
-			return true, image, nil
+			return true, image
 		}
 	}
-	return false, gardencorev1beta1.MachineImage{}, nil
+	return false, gardencorev1beta1.MachineImage{}
+}
+
+// FindMachineImageVersion finds the machine image version in the <cloudProfile> for the given <name> and <version>.
+// In case no machine image version can be found with the given <name> or <version>, false is being returned.
+func FindMachineImageVersion(cloudProfile *gardencorev1beta1.CloudProfile, name, version string) (bool, gardencorev1beta1.MachineImageVersion) {
+	for _, image := range cloudProfile.Spec.MachineImages {
+		if image.Name == name {
+			for _, imageVersion := range image.Versions {
+				if imageVersion.Version == version {
+					return true, imageVersion
+				}
+			}
+		}
+	}
+
+	return false, gardencorev1beta1.MachineImageVersion{}
 }
 
 // ShootMachineImageVersionExists checks if the shoot machine image (name, version) exists in the machine image constraint and returns true if yes and the index in the versions slice
@@ -1111,6 +1165,12 @@ func IsCoreDNSAutoscalingModeUsed(systemComponents *gardencorev1beta1.SystemComp
 	return systemComponents.CoreDNS.Autoscaling.Mode == autoscalingMode
 }
 
+// IsCoreDNSRewritingEnabled indicates whether automatic query rewriting in CoreDNS is enabled or not.
+func IsCoreDNSRewritingEnabled(featureGate bool, annotations map[string]string) bool {
+	_, disabled := annotations[v1beta1constants.AnnotationCoreDNSRewritingDisabled]
+	return featureGate && !disabled
+}
+
 // IsNodeLocalDNSEnabled indicates whether the node local DNS cache is enabled or not.
 // It can be enabled via the annotation (legacy) or via the shoot specification.
 func IsNodeLocalDNSEnabled(systemComponents *gardencorev1beta1.SystemComponents, annotations map[string]string) bool {
@@ -1334,4 +1394,49 @@ func IsPSPDisabled(shoot *gardencorev1beta1.Shoot) bool {
 		}
 	}
 	return false
+}
+
+// IsFailureToleranceTypeZone returns true if failureToleranceType is zone else returns false.
+func IsFailureToleranceTypeZone(failureToleranceType *gardencorev1beta1.FailureToleranceType) bool {
+	return failureToleranceType != nil && *failureToleranceType == gardencorev1beta1.FailureToleranceTypeZone
+}
+
+// IsFailureToleranceTypeNode returns true if failureToleranceType is node else returns false.
+func IsFailureToleranceTypeNode(failureToleranceType *gardencorev1beta1.FailureToleranceType) bool {
+	return failureToleranceType != nil && *failureToleranceType == gardencorev1beta1.FailureToleranceTypeNode
+}
+
+// IsHAControlPlaneConfigured returns true if HA configuration for the shoot control plane has been set either
+// via an alpha-annotation or ControlPlane Spec.
+func IsHAControlPlaneConfigured(shoot *gardencorev1beta1.Shoot) bool {
+	return metav1.HasAnnotation(shoot.ObjectMeta, v1beta1constants.ShootAlphaControlPlaneHighAvailability) || shoot.Spec.ControlPlane != nil && shoot.Spec.ControlPlane.HighAvailability != nil
+}
+
+// IsMultiZonalShootControlPlane checks if the shoot should have a multi-zonal control plane.
+func IsMultiZonalShootControlPlane(shoot *gardencorev1beta1.Shoot) bool {
+	hasZonalAnnotation := shoot.ObjectMeta.Annotations[v1beta1constants.ShootAlphaControlPlaneHighAvailability] == v1beta1constants.ShootAlphaControlPlaneHighAvailabilityMultiZone
+	hasZoneFailureToleranceTypeSetInSpec := shoot.Spec.ControlPlane != nil && shoot.Spec.ControlPlane.HighAvailability != nil && shoot.Spec.ControlPlane.HighAvailability.FailureTolerance.Type == gardencorev1beta1.FailureToleranceTypeZone
+	return hasZonalAnnotation || hasZoneFailureToleranceTypeSetInSpec
+}
+
+// GetFailureToleranceType determines the FailureToleranceType by looking at both the alpha HA annotations and shoot spec ControlPlane.
+func GetFailureToleranceType(shoot *gardencorev1beta1.Shoot) *gardencorev1beta1.FailureToleranceType {
+	if haAnnot, ok := shoot.Annotations[v1beta1constants.ShootAlphaControlPlaneHighAvailability]; ok {
+		var failureToleranceType gardencorev1beta1.FailureToleranceType
+		if haAnnot == v1beta1constants.ShootAlphaControlPlaneHighAvailabilityMultiZone {
+			failureToleranceType = gardencorev1beta1.FailureToleranceTypeZone
+		} else {
+			failureToleranceType = gardencorev1beta1.FailureToleranceTypeNode
+		}
+		return &failureToleranceType
+	}
+	if shoot.Spec.ControlPlane != nil && shoot.Spec.ControlPlane.HighAvailability != nil {
+		return &shoot.Spec.ControlPlane.HighAvailability.FailureTolerance.Type
+	}
+	return nil
+}
+
+// SeedWantsManagedIngress returns true in case the seed cluster wants its ingress controller to be managed by Gardener.
+func SeedWantsManagedIngress(seed *gardencorev1beta1.Seed) bool {
+	return seed.Spec.DNS.Provider != nil && seed.Spec.Ingress != nil && seed.Spec.Ingress.Controller.Kind == v1beta1constants.IngressKindNginx
 }

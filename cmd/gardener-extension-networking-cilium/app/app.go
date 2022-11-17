@@ -27,6 +27,8 @@ import (
 
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
+	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
+	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -62,6 +64,12 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			MaxConcurrentReconciles: 5,
 		}
 
+		heartbeatCtrlOpts = &heartbeatcmd.Options{
+			ExtensionName:        cilium.Name,
+			RenewIntervalSeconds: 30,
+			Namespace:            os.Getenv("LEADER_ELECTION_NAMESPACE"),
+		}
+
 		configFileOpts = &ciliumcmd.ConfigOptions{}
 
 		// options for the webhook server
@@ -84,6 +92,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			mgrOpts,
 			ciliumCtrlOpts,
 			controllercmd.PrefixOption("healthcheck-", healthCheckCtrlOpts),
+			controllercmd.PrefixOption("heartbeat-", heartbeatCtrlOpts),
 			reconcileOpts,
 			configFileOpts,
 			webhookOptions,
@@ -98,6 +107,10 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("error completing options: %w", err)
 			}
 			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
+
+			if err := heartbeatCtrlOpts.Validate(); err != nil {
+				return err
+			}
 
 			completedMgrOpts := mgrOpts.Completed().Options()
 			completedMgrOpts.ClientDisableCacheFor = []client.Object{
@@ -122,6 +135,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
 			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.AddOptions.HealthCheckConfig)
 			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
+			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 
 			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr)
 			if err != nil {
@@ -135,6 +149,10 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 
 			if err := healthcheck.AddToManager(mgr); err != nil {
 				return fmt.Errorf("could not add health check controller to manager: %w", err)
+			}
+
+			if err := heartbeat.AddToManager(mgr); err != nil {
+				return fmt.Errorf("could not add heartbeat controller to manager: %w", err)
 			}
 
 			if err := mgr.Start(ctx); err != nil {

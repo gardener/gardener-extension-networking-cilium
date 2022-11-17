@@ -52,24 +52,26 @@ func SetDefaults_GardenletConfiguration(obj *GardenletConfiguration) {
 		obj.LeaderElection = &componentbaseconfigv1alpha1.LeaderElectionConfiguration{}
 	}
 
-	if obj.LogLevel == nil {
-		v := LogLevelInfo
-		obj.LogLevel = &v
+	if obj.LogLevel == "" {
+		obj.LogLevel = LogLevelInfo
 	}
 
-	if obj.LogFormat == nil {
-		v := LogFormatJSON
-		obj.LogFormat = &v
+	if obj.LogFormat == "" {
+		obj.LogFormat = LogFormatJSON
 	}
 
-	if obj.Server == nil {
-		obj.Server = &ServerConfiguration{}
+	if obj.Server.HealthProbes == nil {
+		obj.Server.HealthProbes = &Server{}
 	}
-	if len(obj.Server.HTTPS.BindAddress) == 0 {
-		obj.Server.HTTPS.BindAddress = "0.0.0.0"
+	if obj.Server.HealthProbes.Port == 0 {
+		obj.Server.HealthProbes.Port = 2728
 	}
-	if obj.Server.HTTPS.Port == 0 {
-		obj.Server.HTTPS.Port = 2720
+
+	if obj.Server.Metrics == nil {
+		obj.Server.Metrics = &Server{}
+	}
+	if obj.Server.Metrics.Port == 0 {
+		obj.Server.Metrics.Port = 2729
 	}
 
 	if obj.Logging == nil {
@@ -111,6 +113,23 @@ func SetDefaults_GardenletConfiguration(obj *GardenletConfiguration) {
 				v1beta1constants.GardenRole: v1beta1constants.GardenRoleExposureClassHandler,
 			}
 		}
+	}
+}
+
+// SetDefaults_GardenClientConnection sets defaults for the controller objects.
+func SetDefaults_GardenClientConnection(obj *GardenClientConnection) {
+	if obj.KubeconfigValidity == nil {
+		obj.KubeconfigValidity = &KubeconfigValidity{}
+	}
+}
+
+// SetDefaults_KubeconfigValidity sets defaults for the controller objects.
+func SetDefaults_KubeconfigValidity(obj *KubeconfigValidity) {
+	if obj.AutoRotationJitterPercentageMin == nil {
+		obj.AutoRotationJitterPercentageMin = pointer.Int32(70)
+	}
+	if obj.AutoRotationJitterPercentageMax == nil {
+		obj.AutoRotationJitterPercentageMax = pointer.Int32(90)
 	}
 }
 
@@ -294,11 +313,6 @@ func SetDefaults_ControllerInstallationRequiredControllerConfiguration(obj *Cont
 
 // SetDefaults_SeedControllerConfiguration sets defaults for the seed controller.
 func SetDefaults_SeedControllerConfiguration(obj *SeedControllerConfiguration) {
-	if obj.ConcurrentSyncs == nil {
-		v := DefaultControllerConcurrentSyncs
-		obj.ConcurrentSyncs = &v
-	}
-
 	if obj.SyncPeriod == nil {
 		v := DefaultControllerSyncPeriod
 		obj.SyncPeriod = &v
@@ -310,6 +324,14 @@ func SetDefaults_SeedControllerConfiguration(obj *SeedControllerConfiguration) {
 
 	if obj.LeaseResyncMissThreshold == nil {
 		obj.LeaseResyncMissThreshold = pointer.Int32(10)
+	}
+}
+
+// SetDefaults_SeedCareControllerConfiguration sets defaults for the seed care controller.
+func SetDefaults_SeedCareControllerConfiguration(obj *SeedCareControllerConfiguration) {
+	if obj.SyncPeriod == nil {
+		v := metav1.Duration{Duration: 30 * time.Second}
+		obj.SyncPeriod = &v
 	}
 }
 
@@ -363,14 +385,6 @@ func SetDefaults_ShootCareControllerConfiguration(obj *ShootCareControllerConfig
 	}
 }
 
-// SetDefaults_SeedCareControllerConfiguration sets defaults for the seed care controller.
-func SetDefaults_SeedCareControllerConfiguration(obj *SeedCareControllerConfiguration) {
-	if obj.SyncPeriod == nil {
-		v := metav1.Duration{Duration: 30 * time.Second}
-		obj.SyncPeriod = &v
-	}
-}
-
 // SetDefaults_ShootMigrationControllerConfiguration sets defaults for the shoot migration controller.
 func SetDefaults_ShootMigrationControllerConfiguration(obj *ShootMigrationControllerConfiguration) {
 	if obj.ConcurrentSyncs == nil {
@@ -416,11 +430,6 @@ func SetDefaults_ShootStateSyncControllerConfiguration(obj *ShootStateSyncContro
 		// For one seed that is already 1 * 10 extension resources = 10 workers.
 		v := 1
 		obj.ConcurrentSyncs = &v
-	}
-
-	if obj.SyncPeriod == nil {
-		v := metav1.Duration{Duration: time.Minute}
-		obj.SyncPeriod = &v
 	}
 }
 

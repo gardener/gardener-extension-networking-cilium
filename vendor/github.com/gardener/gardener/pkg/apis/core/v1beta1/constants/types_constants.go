@@ -133,8 +133,6 @@ const (
 
 	// DeploymentNameVPAAdmissionController is a constant for the name of the VPA admission controller deployment.
 	DeploymentNameVPAAdmissionController = "vpa-admission-controller"
-	// DeploymentNameVPAExporter is a constant for the name of the VPA exporter deployment.
-	DeploymentNameVPAExporter = "vpa-exporter"
 	// DeploymentNameVPARecommender is a constant for the name of the VPA recommender deployment.
 	DeploymentNameVPARecommender = "vpa-recommender"
 	// DeploymentNameVPAUpdater is a constant for the name of the VPA updater deployment.
@@ -224,6 +222,8 @@ const (
 	GardenRoleControlPlane = "controlplane"
 	// GardenRoleSystemComponent is the value of the GardenRole key indicating type 'system-component'.
 	GardenRoleSystemComponent = "system-component"
+	// GardenRoleSeedSystemComponent is the value of the GardenRole key indicating type 'seed-system-component'.
+	GardenRoleSeedSystemComponent = "seed-system-component"
 	// GardenRoleMonitoring is the value of the GardenRole key indicating type 'monitoring'.
 	GardenRoleMonitoring = "monitoring"
 	// GardenRoleOptionalAddon is the value of the GardenRole key indicating type 'optional-addon'.
@@ -256,6 +256,10 @@ const (
 	// GardenRoleExposureClassHandler is the value of the GardenRole key indicating type 'exposureclass-handler'.
 	GardenRoleExposureClassHandler = "exposureclass-handler"
 
+	// ShootControlPlaneEnforceZone is an annotation key which is used to pin or schedule all control-plane pods
+	// to the very same availability zone.
+	// Deprecated: Only kept for removal of the label.
+	ShootControlPlaneEnforceZone = "control-plane.shoot.gardener.cloud/enforce-zone"
 	// ShootUID is an annotation key for the shoot namespace in the seed cluster,
 	// which value will be the value of `shoot.status.uid`
 	ShootUID = "shoot.gardener.cloud/uid"
@@ -279,11 +283,14 @@ const (
 	// Note that this annotation is alpha and can be removed anytime without further notice. Only use it if you know
 	// what you do.
 	ShootAlphaScalingAPIServerClass = "alpha.kube-apiserver.scaling.shoot.gardener.cloud/class"
+
 	// ShootAlphaControlPlaneScaleDownDisabled is a constant for an annotation on the Shoot resource stating that the
 	// automatic scale-down shall be disabled for the etcd, kube-apiserver, kube-controller-manager.
 	// Note that this annotation is alpha and can be removed anytime without further notice. Only use it if you know
 	// what you do.
+	// TODO(shreyas-s-rao): Deprecate HA annotation with the stable release of zonal clusters feature.
 	ShootAlphaControlPlaneScaleDownDisabled = "alpha.control-plane.scaling.shoot.gardener.cloud/scale-down-disabled"
+
 	// ShootAlphaControlPlaneHighAvailability is a constant for an annotation on the Shoot resource stating that the
 	// high availability setup for the control plane should be enabled.
 	// Note that this annotation is alpha and can be removed anytime without further notice. Only use it if you know
@@ -300,8 +307,6 @@ const (
 	// plane high availability annotation, that allows gardener to spread the shoot control plane across
 	// multiple availability zones if it is possible.
 	ShootAlphaControlPlaneHighAvailabilityMultiZone = "multi-zone"
-	// LabelSeedMultiZonal is used to identify whether the seed supports multi-zonal control planes for shoots.
-	LabelSeedMultiZonal = "seed.gardener.cloud/multi-zonal"
 	// ShootExpirationTimestamp is an annotation on a Shoot resource whose value represents the time when the Shoot lifetime
 	// is expired. The lifetime can be extended, but at most by the minimal value of the 'clusterLifetimeDays' property
 	// of referenced quotas.
@@ -555,6 +560,8 @@ const (
 	AnnotationNodeLocalDNSForceTcpToClusterDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-cluster-dns"
 	// AnnotationNodeLocalDNSForceTcpToUpstreamDns enforces upgrade to tcp connections for communication between node local and upstream dns.
 	AnnotationNodeLocalDNSForceTcpToUpstreamDns = "alpha.featuregates.shoot.gardener.cloud/node-local-dns-force-tcp-to-upstream-dns"
+	// AnnotationCoreDNSRewritingDisabled disables core dns query rewriting even if the corresponding feature gate is enabled.
+	AnnotationCoreDNSRewritingDisabled = "alpha.featuregates.shoot.gardener.cloud/core-dns-rewriting-disabled"
 
 	// AnnotationShootAPIServerSNIPodInjector is the key for an annotation of a Shoot cluster whose value indicates
 	// if pod injection of 'KUBERNETES_SERVICE_HOST' environment variable should happen for clusters where APIServerSNI
@@ -749,7 +756,7 @@ const (
 	// PriorityClassNameShootControlPlane100 is the name of a PriorityClass for Shoot control plane components.
 	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
 	PriorityClassNameShootControlPlane100 = "gardener-system-100"
-	// PriorityClassNameShootControlPlane is the name of a PriorityClass for Shoot control plane components.
-	// Deprecated: this PriorityClass will be removed in a future version, use the fine-granular PriorityClasses above instead.
-	PriorityClassNameShootControlPlane = "gardener-shoot-controlplane"
+
+	// TechnicalIDPrefix is a prefix used for a shoot's technical id.
+	TechnicalIDPrefix = "shoot--"
 )

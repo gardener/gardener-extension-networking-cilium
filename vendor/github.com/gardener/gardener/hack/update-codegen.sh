@@ -272,6 +272,30 @@ gardenlet_groups() {
 }
 export -f gardenlet_groups
 
+# Componentconfig for resource-manager
+
+resourcemanager_groups() {
+  echo "Generating API groups for pkg/resourcemanager/apis/config"
+
+  bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+    deepcopy,defaulter \
+    github.com/gardener/gardener/pkg/client/componentconfig \
+    github.com/gardener/gardener/pkg/resourcemanager/apis \
+    github.com/gardener/gardener/pkg/resourcemanager/apis \
+    "config:v1alpha1" \
+    -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+
+  bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+    conversion \
+    github.com/gardener/gardener/pkg/client/componentconfig \
+    github.com/gardener/gardener/pkg/resourcemanager/apis \
+    github.com/gardener/gardener/pkg/resourcemanager/apis \
+    "config:v1alpha1" \
+    --extra-peer-dirs=github.com/gardener/gardener/pkg/resourcemanager/apis/config,github.com/gardener/gardener/pkg/resourcemanager/apis/config/v1alpha1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/conversion,k8s.io/apimachinery/pkg/runtime,k8s.io/component-base/config,k8s.io/component-base/config/v1alpha1 \
+    -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+}
+export -f resourcemanager_groups
+
 # Componentconfig for admission plugins
 
 shoottolerationrestriction_groups() {
@@ -295,6 +319,28 @@ shoottolerationrestriction_groups() {
     -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
 }
 export -f shoottolerationrestriction_groups
+
+shootdnsrewriting_groups() {
+  echo "Generating API groups for plugin/pkg/shoot/dnsrewriting/apis/shootdnsrewriting"
+
+  bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+    deepcopy,defaulter \
+    github.com/gardener/gardener/pkg/client/componentconfig \
+    github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis \
+    github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis \
+    "shootdnsrewriting:v1alpha1" \
+    -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+
+  bash "${PROJECT_ROOT}"/vendor/k8s.io/code-generator/generate-internal-groups.sh \
+    conversion \
+    github.com/gardener/gardener/pkg/client/componentconfig \
+    github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis \
+    github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis \
+    "shootdnsrewriting:v1alpha1" \
+    --extra-peer-dirs=github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis/shootdnsrewriting,github.com/gardener/gardener/plugin/pkg/shoot/dnsrewriting/apis/shootdnsrewriting/v1alpha1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/conversion,k8s.io/apimachinery/pkg/runtime,k8s.io/component-base/config,k8s.io/component-base/config/v1alpha1 \
+    -h "${PROJECT_ROOT}/hack/LICENSE_BOILERPLATE.txt"
+}
+export -f shootdnsrewriting_groups
 
 # local.provider.extensions.gardener.cloud APIs
 
@@ -381,8 +427,10 @@ if [[ $# -gt 0 && "$1" == "--parallel" ]]; then
     scheduler_groups \
     gardenlet_groups \
     shoottolerationrestriction_groups \
+    shootdnsrewriting_groups \
     provider_local_groups \
     extensions_config_groups
+    resourcemanager_groups
 else
   authentication_groups
   core_groups
@@ -395,7 +443,9 @@ else
   admissioncontroller_groups
   scheduler_groups
   gardenlet_groups
+  resourcemanager_groups
   shoottolerationrestriction_groups
+  shootdnsrewriting_groups
   provider_local_groups
   extensions_config_groups
 fi

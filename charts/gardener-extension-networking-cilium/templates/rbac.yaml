@@ -34,15 +34,17 @@ rules:
   - leases
   verbs:
   - create
+  - list 
+  - watch 
 - apiGroups:
   - coordination.k8s.io
   resources:
   - leases
   resourceNames:
   - networking-cilium-leader-election
+  - gardener-extension-heartbeat
   verbs:
   - get
-  - watch
   - update
 - apiGroups:
   - resources.gardener.cloud
