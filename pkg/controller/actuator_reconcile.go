@@ -23,7 +23,9 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/go-logr/logr"
 
+	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -92,16 +94,18 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		}
 	}
 
-	if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
-		if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
-			// use vxlan as default overlay network
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.VXLan)))
+	if networkConfig != nil {
+		if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
+			if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
+				// use vxlan as default overlay network
+				networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.VXLan)))
+			}
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(false)
 		}
-		networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(false)
-	}
-	if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-		networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.Disabled)))
-		networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(true)
+		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.Disabled)))
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(true)
+		}
 	}
 
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled && cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" {
@@ -137,7 +141,12 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster)
+	ipamMode, err := getIPAMMode(ctx, a.client, cluster)
+	if err != nil {
+		return err
+	}
+
+	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, ipamMode)
 	if err != nil {
 		return err
 	}
@@ -161,4 +170,27 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 	}
 
 	return a.updateProviderStatus(ctx, network, networkConfig)
+}
+
+func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (*corev1.ConfigMap, error) {
+	_, shootClient, err := util.NewClientForShoot(ctx, cl, cluster.ObjectMeta.Name, client.Options{}, extensionsconfig.RESTOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("could not create shoot client: %w", err)
+	}
+	configmap := &corev1.ConfigMap{}
+	_ = shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: "cilium-config"}, configmap)
+	return configmap, nil
+}
+
+func getIPAMMode(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (string, error) {
+	configmap, err := getCiliumConfigMap(ctx, cl, cluster)
+	if err != nil {
+		return "", err
+	}
+	if configmap != nil {
+		if ipamMode, ok := configmap.Data["ipam"]; ok {
+			return ipamMode, nil
+		}
+	}
+	return "kubernetes", nil
 }
