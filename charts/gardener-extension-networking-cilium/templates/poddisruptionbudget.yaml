@@ -1,0 +1,14 @@
+apiVersion: {{ include "poddisruptionbudgetversion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: gardener-extension-networking-cilium
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: gardener-extension-networking-cilium
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gardener-extension-networking-cilium
+      app.kubernetes.io/instance: {{ .Release.Name }}

@@ -6,6 +6,7 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
+    high-availability-config.resources.gardener.cloud/type: controller
 spec:
   # See docs on ServerCapabilities.LeasesResourceLock in file pkg/k8s/version/version.go
   # for more details.
