@@ -2,7 +2,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hubble-generate-certs
+  # Name was changed to successfully update previous job
+  name: hubble-generate-cert
   namespace: {{ .Release.Namespace }}
   labels:
     k8s-app: hubble-generate-certs
