@@ -41,4 +41,4 @@ images:
   - name: portmap-copier
     sourceRepository: github.com/gardener/portmap-copier
     repository: eu.gcr.io/gardener-project/gardener/portmap-copier
-    tag: v0.1.0
+    tag: v0.2.0
