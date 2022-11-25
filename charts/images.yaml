@@ -22,11 +22,11 @@ images:
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui
-    tag: v0.9.0
+    tag: v0.9.2
   - name: hubble-ui-backend
     sourceRepository: github.com/cilium/hubble-ui-backend
     repository: quay.io/cilium/hubble-ui-backend
-    tag: v0.9.0
+    tag: v0.9.2
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
