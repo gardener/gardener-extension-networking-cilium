@@ -1,6 +1,0 @@
-apiVersion: v1
-name: nodeinit
-version: 0.1.0
-description: Helm chart for node initialization
-sources:
-  - https://github.com/gardener/gardener-extension-networking-cilium

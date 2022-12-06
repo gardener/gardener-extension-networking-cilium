@@ -26,11 +26,6 @@ const (
 	CiliumOperatorImageName = "cilium-operator"
 	// CiliumETCDOperatorImageName defines cilium etcd operator image name.
 	CiliumETCDOperatorImageName = "cilium-etcd-operator"
-	// CiliumNodeInitImageName defines cilium's node init image name.
-	CiliumNodeInitImageName = "cilium-nodeinit"
-	// CiliumPreflightImageName defines the cilium preflight image name.
-	CiliumPreflightImageName = "cilium-preflight"
-
 	// HubbleRelayImageName defines the Hubble image name.
 	HubbleRelayImageName = "hubble-relay"
 	// HubbleUIImageName defines the UI image name.

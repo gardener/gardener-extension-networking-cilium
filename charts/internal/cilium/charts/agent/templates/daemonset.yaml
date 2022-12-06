@@ -459,15 +459,6 @@ spec:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
-{{- if and .Values.global.nodeinit.enabled (not (eq .Values.global.nodeinit.bootstrapFile "")) }}
-      - name: wait-for-node-init
-        command: ['sh', '-c', 'until stat {{ .Values.global.nodeinit.bootstrapFile }} > /dev/null 2>&1; do echo "Waiting on node-init to run..."; sleep 1; done']
-        image:  "{{ index .Values.global.images "cilium-agent" }}"
-        imagePullPolicy: {{ .Values.global.pullPolicy }}
-        volumeMounts:
-        - mountPath: {{ .Values.global.nodeinit.bootstrapFile }}
-          name: cilium-bootstrap-file
-{{- end }}
       - name: clean-cilium-state
         command:
         - /init-container.sh
@@ -633,12 +624,6 @@ spec:
       - name: kube-config
         hostPath:
           path: {{ .Values.global.kubeConfigPath }}
-          type: FileOrCreate
-{{- end }}
-{{- if and .Values.global.nodeinit.enabled (not (eq .Values.global.nodeinit.bootstrapFile "")) }}
-      - name: cilium-bootstrap-file
-        hostPath:
-          path: {{ .Values.global.nodeinit.bootstrapFile }}
           type: FileOrCreate
 {{- end }}
       # To mount /etc directory

@@ -22,16 +22,6 @@ func CiliumOperatorImage() string {
 	return findImage(cilium.CiliumOperatorImageName)
 }
 
-// CiliumNodeInitImage returns the Cilium Node Init image.
-func CiliumNodeInitImage() string {
-	return findImage(cilium.CiliumNodeInitImageName)
-}
-
-// CiliumPreflightImage returns the Cilium Preflight image.
-func CiliumPreflightImage() string {
-	return findImage(cilium.CiliumPreflightImageName)
-}
-
 // CiliumEtcdOperatorImage returns the Cilium-etcd-Operator image.
 func CiliumEtcdOperatorImage() string {
 	return findImage(cilium.CiliumETCDOperatorImageName)

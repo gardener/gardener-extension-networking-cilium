@@ -3,10 +3,6 @@ images:
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
     tag: v1.12.4
-  - name: cilium-preflight
-    sourceRepository: github.com/cilium/cilium
-    repository: quay.io/cilium/cilium
-    tag: v1.12.4
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
@@ -15,10 +11,6 @@ images:
     sourceRepository: github.com/cilium/cilium
     repository: docker.io/cilium/cilium-etcd-operator
     tag: v2.0.7
-  - name: cilium-nodeinit
-    sourceRepository: github.com/cilium/cilium
-    repository: docker.io/cilium/startup-script
-    tag: v3
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui

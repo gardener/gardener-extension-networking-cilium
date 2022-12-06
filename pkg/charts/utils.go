@@ -82,8 +82,6 @@ var defaultGlobalConfig = globalConfig{
 		cilium.CiliumAgentImageName:        imagevector.CiliumAgentImage(),
 		cilium.CiliumOperatorImageName:     imagevector.CiliumOperatorImage(),
 		cilium.CiliumETCDOperatorImageName: imagevector.CiliumEtcdOperatorImage(),
-		cilium.CiliumNodeInitImageName:     imagevector.CiliumNodeInitImage(),
-		cilium.CiliumPreflightImageName:    imagevector.CiliumPreflightImage(),
 
 		cilium.HubbleRelayImageName:     imagevector.CiliumHubbleRelayImage(),
 		cilium.HubbleUIImageName:        imagevector.CiliumHubbleUIImage(),

@@ -11,13 +11,6 @@ requirements:
   operator:
     enabled: true
 
-  # Include the PreFlight DaemonSet
-  preflight:
-    enabled: false
-    # Path to write the --tofqdns-pre-cache file to. When empty no file is
-    # generated.
-    tofqdnsPreCache: ""
-
   # Include the Hubble deployment
   hubble:
     enabled: false
@@ -422,14 +415,6 @@ global:
   # WARNING: Use with care!
   cleanBpfState: false
 
-  nodeinit:
-    # enabled enables inclusion of the nodeinit DaemonSet
-    enabled: false
-
-    # bootstrapFile is the location of the file where the bootstrap timestamp is
-    # written by the node-init DaemonSet
-    bootstrapFile: "/tmp/cilium-bootstrap-time"
-
   daemon:
     runPath: "/var/run/cilium"
 
@@ -493,9 +478,7 @@ global:
   images:
     cilium-agent: "image-repository:image-tag"
     cilium-etcd-operator: "image-repository:image-tag"
-    cilium-nodeinit: "image-repository:image-tag"
     cilium-operator: "image-repository:image-tag"
-    cilium-preflight: "image-repository:image-tag"
 
     hubble: "image-repository:image-tag"
     hubble-relay: "image-repository:image-tag"
