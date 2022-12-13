@@ -1,12 +1,14 @@
 apiVersion: {{ include "poddisruptionbudgetversion" . }}
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "name" . }}
+  name: cilium-operator
   namespace: {{ .Release.Namespace }}
   labels:
-{{ include "labels" . | indent 4 }}
+    io.cilium/app: operator
+    name: cilium-operator
 spec:
   maxUnavailable: 1
   selector:
     matchLabels:
-{{ include "labels" . | indent 6 }}
+      io.cilium/app: operator
+      name: cilium-operator
