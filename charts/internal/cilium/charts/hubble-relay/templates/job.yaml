@@ -2,8 +2,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  # Name was changed to successfully update previous job
-  name: hubble-generate-cert
+  annotations:
+    resources.gardener.cloud/delete-on-invalid-update: "true"
+  name: hubble-generate-certs
   namespace: {{ .Release.Namespace }}
   labels:
     k8s-app: hubble-generate-certs
