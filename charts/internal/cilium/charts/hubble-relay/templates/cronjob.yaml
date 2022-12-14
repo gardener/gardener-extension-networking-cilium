@@ -37,10 +37,8 @@ spec:
           hostNetwork: true
           serviceAccount: hubble-generate-certs
           serviceAccountName: hubble-generate-certs
-          {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
           securityContext:
             seccompProfile:
               type: RuntimeDefault
-          {{- end }}
           restartPolicy: OnFailure
       ttlSecondsAfterFinished: 1800

@@ -51,10 +51,8 @@ spec:
         capabilities:
           drop:
           - ALL
-      {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
         seccompProfile:
           type: RuntimeDefault
-      {{- end }}
       containers:
       - name: cilium-operator
         command:
