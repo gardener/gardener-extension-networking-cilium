@@ -22,10 +22,8 @@ spec:
         runAsGroup: 1001
         runAsUser: 1001
         {{- end }}
-        {{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
         seccompProfile:
           type: RuntimeDefault
-        {{- end }}
       serviceAccountName: hubble-ui
       serviceAccount: hubble-ui
       containers:
