@@ -336,7 +336,9 @@ data:
 
   enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
+{{- if not .Values.global.snatToUpstreamDNS.enabled }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
+{{- end }}
 
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}

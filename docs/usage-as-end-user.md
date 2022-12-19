@@ -51,6 +51,8 @@ spec:
       enabled: false
 ```
 
+The `snatToUpstreamDNS.enabled` field describes wheter the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
+
 ## Example `Shoot` manifest
 
 Please find below an example `Shoot` manifest with cilium networking configuration:

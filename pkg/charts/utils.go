@@ -111,6 +111,9 @@ var defaultGlobalConfig = globalConfig{
 	IPAM: ipam{
 		Mode: "kubernetes",
 	},
+	SnatToUpstreamDNS: snatToUpstreamDNS{
+		Enabled: false,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -143,6 +146,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
 	}
+
 	// Settings for Kube-Proxy disabled and using the HostService option
 	// Also need to configure KubeProxy
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
@@ -247,6 +251,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 			return requirementsConfig, globalConfig, fmt.Errorf("nodes cidr required for setting ipv4 native routing cidr was not yet set")
 		}
 		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Nodes
+	}
+
+	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {
+		globalConfig.SnatToUpstreamDNS.Enabled = config.SnatToUpstreamDNS.Enabled
 	}
 
 	globalConfig.IPAM.Mode = ipamMode

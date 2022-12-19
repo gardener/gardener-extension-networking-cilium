@@ -34,6 +34,9 @@ global:
 
   ipv4NativeRoutingCIDR: ""
 
+  snatToUpstreamDNS:
+    enabled: false
+
   mtu:
 
   # pullPolicy is the container image pull policy

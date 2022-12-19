@@ -229,6 +229,20 @@ Overlay
 <p>Overlay enables the network overlay</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>snatToUpstreamDNS</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.SnatToUpstreamDNS">
+SnatToUpstreamDNS
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
@@ -487,6 +501,35 @@ bool
 </td>
 <td>
 <p>Enabled enables the network overlay.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.SnatToUpstreamDNS">SnatToUpstreamDNS
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>SnatToUpstreamDNS  enables the masquerading of packets to the upstream dns server</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
 </td>
 </tr>
 </tbody>
