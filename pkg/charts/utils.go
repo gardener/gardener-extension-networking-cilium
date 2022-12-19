@@ -79,9 +79,8 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: true,
 	},
 	Images: map[string]string{
-		cilium.CiliumAgentImageName:        imagevector.CiliumAgentImage(),
-		cilium.CiliumOperatorImageName:     imagevector.CiliumOperatorImage(),
-		cilium.CiliumETCDOperatorImageName: imagevector.CiliumEtcdOperatorImage(),
+		cilium.CiliumAgentImageName:    imagevector.CiliumAgentImage(),
+		cilium.CiliumOperatorImageName: imagevector.CiliumOperatorImage(),
 
 		cilium.HubbleRelayImageName:     imagevector.CiliumHubbleRelayImage(),
 		cilium.HubbleUIImageName:        imagevector.CiliumHubbleUIImage(),
@@ -195,9 +194,8 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	// If ETCD enabled
 	if config.Store != nil {
-		if *config.Store == ciliumv1alpha1.ETCD {
-			globalConfig.Etcd.Enabled = true
-			globalConfig.Etcd.Managed = true
+		if *config.Store == ciliumv1alpha1.Kubernetes {
+			return requirementsConfig, globalConfig, fmt.Errorf("%s is not a supported value for field store", *config.Store)
 		}
 	}
 

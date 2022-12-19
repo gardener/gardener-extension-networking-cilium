@@ -22,11 +22,6 @@ func CiliumOperatorImage() string {
 	return findImage(cilium.CiliumOperatorImageName)
 }
 
-// CiliumEtcdOperatorImage returns the Cilium-etcd-Operator image.
-func CiliumEtcdOperatorImage() string {
-	return findImage(cilium.CiliumETCDOperatorImageName)
-}
-
 // CiliumHubbleRelayImage returns the Cilium Hubble image.
 func CiliumHubbleRelayImage() string {
 	return findImage(cilium.HubbleRelayImageName)

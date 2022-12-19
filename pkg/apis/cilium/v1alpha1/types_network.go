@@ -82,8 +82,6 @@ type Store string
 const (
 	// Kubernetes defines the kubernetes CRD store type
 	Kubernetes Store = "kubernetes"
-	// ETCD defines the ETCD store type
-	ETCD Store = "etcd"
 )
 
 // Hubble enablement for cilium

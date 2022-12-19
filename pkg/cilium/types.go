@@ -24,8 +24,7 @@ const (
 	CiliumAgentImageName = "cilium-agent"
 	// CiliumOperatorImageName defines cilium operator's image name.
 	CiliumOperatorImageName = "cilium-operator"
-	// CiliumETCDOperatorImageName defines cilium etcd operator image name.
-	CiliumETCDOperatorImageName = "cilium-etcd-operator"
+
 	// HubbleRelayImageName defines the Hubble image name.
 	HubbleRelayImageName = "hubble-relay"
 	// HubbleUIImageName defines the UI image name.

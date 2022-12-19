@@ -111,16 +111,6 @@ spec:
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
           readOnly: true
-{{- if .Values.global.etcd.enabled }}
-        - name: etcd-config-path
-          mountPath: /var/lib/etcd-config
-          readOnly: true
-{{- if or .Values.global.etcd.ssl .Values.global.etcd.managed }}
-        - name: etcd-secrets
-          mountPath: /var/lib/etcd-secrets
-          readOnly: true
-{{- end }}
-{{- end }}
 {{- if .Values.global.kubeConfigPath }}
         - name: kube-config
           mountPath: {{ .Values.global.kubeConfigPath }}
@@ -132,11 +122,6 @@ spec:
 {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
-{{- if .Values.global.etcd.managed }}
-      # In managed etcd mode, Cilium must be able to resolve the DNS name of
-      # the etcd service
-      dnsPolicy: ClusterFirstWithHostNet
-{{- end }}
       restartPolicy: Always
       priorityClassName: system-cluster-critical
       serviceAccount: cilium-operator
@@ -148,24 +133,6 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
-{{- if .Values.global.etcd.enabled }}
-      # To read the etcd config stored in config maps
-      - configMap:
-          defaultMode: 420
-          items:
-          - key: etcd-config
-            path: etcd.config
-          name: cilium-config
-        name: etcd-config-path
-{{- if or .Values.global.etcd.ssl .Values.global.etcd.managed }}
-        # To read the k8s etcd secrets in case the user might want to use TLS
-      - name: etcd-secrets
-        secret:
-          defaultMode: 420
-          optional: true
-          secretName: cilium-etcd-secrets
-{{- end }}
-{{- end }}
 {{- if .Values.global.kubeConfigPath }}
       - hostPath:
           path: {{ .Values.global.kubeConfigPath }}

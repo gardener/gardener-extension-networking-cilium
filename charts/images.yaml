@@ -7,10 +7,6 @@ images:
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
     tag: v1.12.4
-  - name: cilium-etcd-operator
-    sourceRepository: github.com/cilium/cilium
-    repository: docker.io/cilium/cilium-etcd-operator
-    tag: v2.0.7
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui

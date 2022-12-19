@@ -32,35 +32,6 @@ metadata:
   name: cilium-config
   namespace: {{ .Release.Namespace }}
 data:
-{{- if .Values.global.etcd.enabled }}
-  # The kvstore configuration is used to enable use of a kvstore for state
-  # storage. This can either be provided with an external kvstore or with the
-  # help of cilium-etcd-operator which operates an etcd cluster automatically.
-  kvstore: etcd
-{{- if .Values.global.etcd.k8sService }}
-  kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config", "etcd.operator": "true"}'
-{{- else }}
-  kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
-{{- end }}
-
-  # This etcd-config contains the etcd endpoints of your cluster. If you use
-  # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
-  etcd-config: |-
-    ---
-    endpoints:
-{{- if .Values.global.etcd.managed }}
-      - https://cilium-etcd-client.{{ .Release.Namespace }}.svc:2379
-{{- else }}
-{{- range .Values.global.etcd.endpoints }}
-      - {{ . }}
-{{- end }}
-{{- end }}
-{{- if or .Values.global.etcd.ssl .Values.global.etcd.managed }}
-    trusted-ca-file: '/var/lib/etcd-secrets/etcd-client-ca.crt'
-    key-file: '/var/lib/etcd-secrets/etcd-client.key'
-    cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
-{{- end }}
-{{- end }}
 
   # Identity allocation mode selects how identities are shared between cilium
   # nodes by setting how they are stored. The options are "crd" or "kvstore".
@@ -537,7 +508,7 @@ data:
 {{- if hasKey .Values "healthChecking" }}
   enable-health-checking: {{ .Values.healthChecking | quote }}
 {{- end }}
-{{- if or .Values.global.wellKnownIdentities.enabled .Values.global.etcd.managed }}
+{{- if .Values.global.wellKnownIdentities.enabled }}
   enable-well-known-identities: "true"
 {{- else }}
   enable-well-known-identities: "false"

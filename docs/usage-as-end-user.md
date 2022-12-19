@@ -38,8 +38,6 @@ The `psp` field describes whether `cilium-operator` and `cilium-agent` shall be 
 
 The `tunnel` field describes the encapsulation mode for communication between nodes. Possible values are `vxlan` (default), `geneve` or `disabled`.
 
-The `store` field describes which backend to use to store the identities. Can be either `etcd` (kvstore) or `kubernetes` (crd) (default).
-
 The `bpfSocketLBHostnsOnly.enabled` field describes wheter socket LB will be skipped for services when inside a pod namespace (default), in favor of service LB at the pod interface. Socket LB is still used when in the host namespace. This feature is required when using cilium with a service mesh like istio or linkerd.
 
 The `egressGateway.enabled` field describes wheter egress gateways are enabled or not (default). To use this feature kube-proxy must be disabled. This can be done with the following configuration in the shoot.yaml file:
