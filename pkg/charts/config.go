@@ -40,6 +40,7 @@ type globalConfig struct {
 	Devices                []string                                `json:"devices"`
 	BPF                    bpf                                     `json:"bpf"`
 	IPAM                   ipam                                    `json:"ipam"`
+	SnatToUpstreamDNS      snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 }
 
 // etcd related configuration for cilium
@@ -152,4 +153,9 @@ type bpf struct {
 
 type ipam struct {
 	Mode string `json:"mode"`
+}
+
+// snatToUpstreamDNS  enables the masquerading of packets to the upstream dns server
+type snatToUpstreamDNS struct {
+	Enabled bool `json:"enabled"`
 }

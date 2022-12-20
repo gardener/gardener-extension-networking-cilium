@@ -132,6 +132,11 @@ type Overlay struct {
 	Enabled bool `json:"enabled"`
 }
 
+// SnatToUpstreamDNS  enables the masquerading of packets to the upstream dns server
+type SnatToUpstreamDNS struct {
+	Enabled bool `json:"enabled"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -181,4 +186,7 @@ type NetworkConfig struct {
 	// Overlay enables the network overlay
 	// +optional
 	Overlay *Overlay `json:"overlay,omitempty"`
+	// SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server
+	// +optional
+	SnatToUpstreamDNS *SnatToUpstreamDNS `json:"snatToUpstreamDNS,omitempty"`
 }

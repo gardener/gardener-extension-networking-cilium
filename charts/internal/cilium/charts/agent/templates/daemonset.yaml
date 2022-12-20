@@ -289,6 +289,27 @@ spec:
         resources:
           {{- toYaml .Values.monitor.resources | trim | nindent 10 }}
 {{- end }}
+      # Masquerade traffic to upstream DNS server
+{{- if .Values.global.snatToUpstreamDNS.enabled }}
+      - name: add-snat-rule-to-upstream-dns
+        image: {{ index .Values.global.images "cilium-agent" }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        env:
+        - name: POD_CIDR
+          value: {{ .Values.global.podCIDR }}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        command:
+        - /bin/sh
+        - -c
+        - "while true; do sleep 15; for i in $(cat /etc/resolv.conf | grep nameserver | awk '{print $2}' ); do iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE 2>/dev/null || iptables -t nat -I CILIUM_POST_nat 1 -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE; done; sleep 45; done"
+{{- end }}
 {{- if .Values.global.etcd.managed }}
       # In managed etcd mode, Cilium must be able to resolve the DNS name of
       # the etcd service
