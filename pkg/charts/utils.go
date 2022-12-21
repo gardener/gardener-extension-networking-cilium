@@ -194,7 +194,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	// If ETCD enabled
 	if config.Store != nil {
-		if *config.Store == ciliumv1alpha1.Kubernetes {
+		if *config.Store != ciliumv1alpha1.Kubernetes {
 			return requirementsConfig, globalConfig, fmt.Errorf("%s is not a supported value for field store", *config.Store)
 		}
 	}

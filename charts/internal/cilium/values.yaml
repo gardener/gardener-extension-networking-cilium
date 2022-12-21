@@ -59,25 +59,6 @@ global:
       keyFile: /var/lib/cilium/tls/hubble/server.key
       clientCAFiles: /var/lib/cilium/tls/hubble/client-ca.crt
 
-
-  # etcd is the etcd configuration
-  etcd:
-    # enabled enables use of etcd
-    enabled: true
-    # managed turns on managed etcd mode based on the cilium-etcd-operator
-    managed: true
-    # sets cluster domain for cilium-etcd-operator
-    clusterDomain: cluster.local
-    # defines the size of the etcd cluster
-    clusterSize: 3
-    # endpoints is the list of etcd endpoints (not needed when using
-    # managed=true)
-    endpoints:
-      - https://CHANGE-ME:2379
-    # ssl enables use of TLS/SSL for connectivity to etcd. (auto-enabled if
-    # managed=true)
-    ssl: false
-
   # identityAllocationMode is the method to use for identity allocation.
   # Supported modes:
   #  crd: Kubernetes CRD backing
@@ -477,7 +458,6 @@ global:
 
   images:
     cilium-agent: "image-repository:image-tag"
-    cilium-etcd-operator: "image-repository:image-tag"
     cilium-operator: "image-repository:image-tag"
 
     hubble: "image-repository:image-tag"
