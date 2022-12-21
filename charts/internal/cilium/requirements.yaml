@@ -5,13 +5,8 @@ dependencies:
     condition: requirements.config.enabled
   - name: operator
     condition: requirements.operator.enabled
-  - name: preflight
-    condition: requirements.preflight.enabled
-  - name: nodeinit
-    condition: global.nodeinit.enabled
-  - name: managed-etcd
-    condition: global.etcd.managed
   - name: hubble-ui
     condition: requirements.hubble.enabled
   - name: hubble-relay
     condition: requirements.hubble.enabled
+

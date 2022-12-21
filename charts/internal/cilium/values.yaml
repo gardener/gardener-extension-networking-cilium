@@ -11,13 +11,6 @@ requirements:
   operator:
     enabled: true
 
-  # Include the PreFlight DaemonSet
-  preflight:
-    enabled: false
-    # Path to write the --tofqdns-pre-cache file to. When empty no file is
-    # generated.
-    tofqdnsPreCache: ""
-
   # Include the Hubble deployment
   hubble:
     enabled: false
@@ -65,25 +58,6 @@ global:
       certFile: /var/lib/cilium/tls/hubble/server.crt
       keyFile: /var/lib/cilium/tls/hubble/server.key
       clientCAFiles: /var/lib/cilium/tls/hubble/client-ca.crt
-
-
-  # etcd is the etcd configuration
-  etcd:
-    # enabled enables use of etcd
-    enabled: true
-    # managed turns on managed etcd mode based on the cilium-etcd-operator
-    managed: true
-    # sets cluster domain for cilium-etcd-operator
-    clusterDomain: cluster.local
-    # defines the size of the etcd cluster
-    clusterSize: 3
-    # endpoints is the list of etcd endpoints (not needed when using
-    # managed=true)
-    endpoints:
-      - https://CHANGE-ME:2379
-    # ssl enables use of TLS/SSL for connectivity to etcd. (auto-enabled if
-    # managed=true)
-    ssl: false
 
   # identityAllocationMode is the method to use for identity allocation.
   # Supported modes:
@@ -422,14 +396,6 @@ global:
   # WARNING: Use with care!
   cleanBpfState: false
 
-  nodeinit:
-    # enabled enables inclusion of the nodeinit DaemonSet
-    enabled: false
-
-    # bootstrapFile is the location of the file where the bootstrap timestamp is
-    # written by the node-init DaemonSet
-    bootstrapFile: "/tmp/cilium-bootstrap-time"
-
   daemon:
     runPath: "/var/run/cilium"
 
@@ -492,10 +458,7 @@ global:
 
   images:
     cilium-agent: "image-repository:image-tag"
-    cilium-etcd-operator: "image-repository:image-tag"
-    cilium-nodeinit: "image-repository:image-tag"
     cilium-operator: "image-repository:image-tag"
-    cilium-preflight: "image-repository:image-tag"
 
     hubble: "image-repository:image-tag"
     hubble-relay: "image-repository:image-tag"
