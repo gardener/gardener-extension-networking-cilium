@@ -6,6 +6,13 @@ gardener-extension-networking-cilium:
       verify:
         image: 'golang:1.19.4'
     traits:
+      component_descriptor:
+        component_labels:
+        - name: 'cloud.gardener.cnudie/responsibles'
+          value:
+          - type: 'githubTeam'
+            teamname: 'gardener/gardener-extension-networking-cilium-maintainers'
+        retention_policy: 'clean-snapshots'
       version:
         preprocess: 'inject-commit-hash'
       publish:
@@ -23,14 +30,12 @@ gardener-extension-networking-cilium:
   jobs:
     head-update:
       traits:
-        component_descriptor: ~
         draft_release: ~
         options:
           public_build_logs: true
     pull-request:
       traits:
         pull-request: ~
-        component_descriptor: ~
         options:
           public_build_logs: true
     release:
@@ -47,7 +52,6 @@ gardener-extension-networking-cilium:
             internal_scp_workspace:
               channel_name: 'C9CEBQPGE' #sap-tech-gardener
               slack_cfg_name: 'scp_workspace'
-        component_descriptor: ~
         publish:
           dockerimages:
             gardener-extension-networking-cilium:
