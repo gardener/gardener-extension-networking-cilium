@@ -2,10 +2,12 @@
 apiVersion: {{ include "deploymentversion" .}}
 kind: Deployment
 metadata:
-  name: hubble-ui
+  name: {{ .Chart.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    k8s-app: hubble-ui
+    k8s-app: {{ .Chart.Name }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/part-of: cilium
 spec:
   replicas: {{ .Values.replicas }}
   selector:
@@ -14,7 +16,9 @@ spec:
   template:
     metadata:
       labels:
-        k8s-app: hubble-ui
+        k8s-app: {{ .Chart.Name }}
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/part-of: cilium
     spec:
       securityContext:
         {{- if .Values.securityContext.enabled }}

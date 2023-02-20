@@ -9,6 +9,8 @@ metadata:
   labels:
     k8s-app: hubble-generate-certs
     gardener.cloud/role: system-component
+    app.kubernetes.io/name: hubble-generate-certs
+    app.kubernetes.io/part-of: cilium
 spec:
   template:
     metadata:

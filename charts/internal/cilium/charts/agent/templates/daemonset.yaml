@@ -7,6 +7,8 @@ metadata:
     node.gardener.cloud/critical-component: "true"
     gardener.cloud/role: system-component
     k8s-app: cilium
+    app.kubernetes.io/part-of: cilium
+    app.kubernetes.io/name: cilium-agent
 spec:
   selector:
     matchLabels:
@@ -29,6 +31,8 @@ spec:
       labels:
         node.gardener.cloud/critical-component: "true"
         k8s-app: cilium
+        app.kubernetes.io/name: cilium-agent
+        app.kubernetes.io/part-of: cilium
     spec:
       containers:
 {{- if .Values.global.sleepAfterInit }}
@@ -172,11 +176,11 @@ spec:
 {{- end }}
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             add:
               # Use to set socket permission
@@ -316,11 +320,11 @@ spec:
           mountPath: /host/etc
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             drop:
               - ALL
@@ -334,15 +338,36 @@ spec:
           mountPath: /host
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             drop:
               - ALL
 {{- end }}
+      - name: config
+        image: {{ index .Values.global.images "cilium-agent" }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - cilium
+        - build-config
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CILIUM_K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        terminationMessagePolicy: FallbackToLogsOnError
       # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
       # We use nsenter command with host's cgroup and mount namespaces enabled.
       - name: mount-cgroup
@@ -373,11 +398,11 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             drop:
               - ALL
@@ -413,11 +438,11 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             drop:
               - ALL
@@ -467,11 +492,11 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
           seLinuxOptions:
-            level: 's0'
+            level: s0
             # Running with spc_t since we have removed the privileged mode.
             # Users can change it to a different type as long as they have the
             # type available on the system.
-            type: 'spc_t'
+            type: spc_t
           capabilities:
             # Most of the capabilities here are the same ones used in the
             # cilium-agent's container because this container can be used to
@@ -565,6 +590,9 @@ spec:
       tolerations:
         - operator: Exists
       volumes:
+        # For sharing configuration between the "config" initContainer and the agent
+      - name: tmp
+        emptyDir: {}
         # To keep state between restarts / upgrades
       - name: cilium-run
         hostPath:
