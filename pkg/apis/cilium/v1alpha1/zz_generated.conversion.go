@@ -24,9 +24,10 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
-	cilium "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+
+	cilium "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 )
 
 func init() {

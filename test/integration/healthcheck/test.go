@@ -33,12 +33,12 @@ import (
 	"fmt"
 	"time"
 
-	networkcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
-	ginkgo "github.com/onsi/ginkgo/v2"
-
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/gardener/gardener/test/framework"
 	healthcheckoperation "github.com/gardener/gardener/test/testmachinery/extensions/healthcheck"
+	ginkgo "github.com/onsi/ginkgo/v2"
+
+	networkcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
 )
 
 const (

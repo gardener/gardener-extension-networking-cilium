@@ -15,10 +15,10 @@
 package install
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
-
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var (

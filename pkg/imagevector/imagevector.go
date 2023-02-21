@@ -15,9 +15,10 @@
 package imagevector
 
 import (
-	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"k8s.io/apimachinery/pkg/util/runtime"
+
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
 )
 
 var imageVector imagevector.ImageVector

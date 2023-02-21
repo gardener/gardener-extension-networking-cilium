@@ -19,12 +19,6 @@ import (
 	"fmt"
 	"os"
 
-	ciliuminstall "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/install"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
-	ciliumcmd "github.com/gardener/gardener-extension-networking-cilium/pkg/cmd"
-	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
-
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/heartbeat"
@@ -38,6 +32,12 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	ciliuminstall "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/install"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
+	ciliumcmd "github.com/gardener/gardener-extension-networking-cilium/pkg/cmd"
+	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
 )
 
 // NewControllerManagerCommand creates a new command for running a Cilium controller.

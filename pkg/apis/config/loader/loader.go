@@ -17,13 +17,13 @@ package loader
 import (
 	"io/ioutil"
 
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config/install"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/runtime/serializer/versioning"
+
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config/install"
 )
 
 var (
