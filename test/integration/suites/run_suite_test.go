@@ -20,13 +20,13 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/gardener/gardener-extension-networking-cilium/test/integration/healthcheck"
-
 	"github.com/gardener/gardener/test/framework"
 	"github.com/gardener/gardener/test/framework/config"
 	"github.com/gardener/gardener/test/framework/reporter"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	_ "github.com/gardener/gardener-extension-networking-cilium/test/integration/healthcheck"
 )
 
 var (

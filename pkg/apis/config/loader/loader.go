@@ -15,15 +15,15 @@
 package loader
 
 import (
-	"io/ioutil"
-
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config/install"
+	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/runtime/serializer/versioning"
+
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config/install"
 )
 
 var (
@@ -48,7 +48,7 @@ func init() {
 
 // LoadFromFile takes a filename and de-serializes the contents into ControllerConfiguration object.
 func LoadFromFile(filename string) (*config.ControllerConfiguration, error) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

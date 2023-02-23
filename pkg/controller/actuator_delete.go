@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionswebhookshoot "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
@@ -27,6 +26,8 @@ import (
 	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
 // Delete implements Network.Actuator.

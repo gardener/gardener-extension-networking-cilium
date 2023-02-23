@@ -15,10 +15,10 @@
 package cmd
 
 import (
-	shootwebhook "github.com/gardener/gardener-extension-networking-cilium/pkg/webhook/shoot"
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
-
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
+
+	shootwebhook "github.com/gardener/gardener-extension-networking-cilium/pkg/webhook/shoot"
 )
 
 // WebhookSwitchOptions are the webhookcmd.SwitchOptions for the cilium network extension webhooks.

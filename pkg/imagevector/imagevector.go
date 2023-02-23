@@ -15,11 +15,10 @@
 package imagevector
 
 import (
-	"strings"
-
-	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"k8s.io/apimachinery/pkg/util/runtime"
+
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
 )
 
 var imageVector imagevector.ImageVector
@@ -27,7 +26,7 @@ var imageVector imagevector.ImageVector
 func init() {
 	var err error
 
-	imageVector, err = imagevector.Read(strings.NewReader(charts.ImagesYAML))
+	imageVector, err = imagevector.Read([]byte(charts.ImagesYAML))
 	runtime.Must(err)
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)

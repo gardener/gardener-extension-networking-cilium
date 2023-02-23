@@ -18,11 +18,6 @@ import (
 	"context"
 	"fmt"
 
-	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
-	"github.com/go-logr/logr"
-
 	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
@@ -33,11 +28,16 @@ import (
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/chart"
 	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
+	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
 const (
@@ -98,14 +98,14 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
 			if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
 				// use vxlan as default overlay network
-				networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.VXLan)))
+				networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
 			}
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(false)
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
 		}
 		// enforce usage of overlay network because of https://github.com/cilium/cilium/issues/23376
 		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.StringPtr(string(ciliumv1alpha1.VXLan)))
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.BoolPtr(false)
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
 			networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: false}
 		}
 	}

@@ -52,3 +52,8 @@ gardener:
 webhookConfig:
   servicePort: 443
   serverPort: 10250
+
+## settings for metrics, e.g. scraping by seed-prometheus
+metrics:
+  enableScraping: false
+  port: 8080

@@ -15,15 +15,15 @@
 package main
 
 import (
-	"github.com/gardener/gardener-extension-networking-cilium/cmd/gardener-extension-networking-cilium/app"
-
 	"github.com/gardener/gardener/pkg/logger"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+
+	"github.com/gardener/gardener-extension-networking-cilium/cmd/gardener-extension-networking-cilium/app"
 )
 
 func main() {
-	runtimelog.SetLogger(logger.ZapLogger(false))
+	runtimelog.SetLogger(logger.MustNewZapLogger(logger.InfoLevel, logger.FormatJSON))
 	cmd := app.NewControllerManagerCommand(signals.SetupSignalHandler())
 
 	if err := cmd.Execute(); err != nil {

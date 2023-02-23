@@ -24,13 +24,14 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
-	config "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
 	apisconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	apisconfigv1alpha1 "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	componentbaseconfig "k8s.io/component-base/config"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
+
+	config "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
 )
 
 func init() {

@@ -124,6 +124,8 @@ const (
 	// DeploymentNameGrafanaUsers is a constant for the name of a Kubernetes deployment object that contains
 	// the grafana-users pod.
 	DeploymentNameGrafanaUsers = "grafana-users"
+	// DeploymentNameGrafana is a constant for the name of a Kubernetes deployment object that contains the grafana pod.
+	DeploymentNameGrafana = "grafana"
 	// DeploymentNameEventLogger is a constant for the name of a Kubernetes deployment object that contains
 	// the event-logger pod.
 	DeploymentNameEventLogger = "event-logger"
@@ -137,6 +139,11 @@ const (
 	DeploymentNameVPARecommender = "vpa-recommender"
 	// DeploymentNameVPAUpdater is a constant for the name of the VPA updater deployment.
 	DeploymentNameVPAUpdater = "vpa-updater"
+
+	// DeploymentNameKubernetesDashboard is a constant for the name of the kubernetes dashboard deployment.
+	DeploymentNameKubernetesDashboard = "kubernetes-dashboard"
+	// DeploymentNameDashboardMetricsScraper is a constant for the name of the dashboard metrics scraper deployment.
+	DeploymentNameDashboardMetricsScraper = "dashboard-metrics-scraper"
 
 	// DeploymentNameMachineControllerManager is a constant for the name of a Kubernetes deployment object that contains
 	// the machine-controller-manager pod.
@@ -200,10 +207,6 @@ const (
 	// GardenerOperationRenewKubeconfig is a constant for the value of the operation annotation to renew the gardenlet's kubeconfig secret.
 	GardenerOperationRenewKubeconfig = "renew-kubeconfig"
 
-	// DeprecatedGardenRole is the key for an annotation on a Kubernetes object indicating what it is used for.
-	//
-	// Deprecated: Use `GardenRole` instead.
-	DeprecatedGardenRole = "garden.sapcloud.io/role"
 	// GardenRole is a constant for a label that describes a role.
 	GardenRole = "gardener.cloud/role"
 	// GardenRoleExtension is a constant for a label that describes the 'extensions' role.
@@ -216,6 +219,10 @@ const (
 	GardenRoleShoot = "shoot"
 	// GardenRoleLogging is the value of the GardenRole key indicating type 'logging'.
 	GardenRoleLogging = "logging"
+	// GardenRoleIstioSystem is the value of the GardenRole key indicating type 'istio-system'.
+	GardenRoleIstioSystem = "istio-system"
+	// GardenRoleIstioIngress is the value of the GardenRole key indicating type 'istio-ingress'.
+	GardenRoleIstioIngress = "istio-ingress"
 	// GardenRoleProject is the value of GardenRole key indicating type 'project'.
 	GardenRoleProject = "project"
 	// GardenRoleControlPlane is the value of the GardenRole key indicating type 'controlplane'.
@@ -295,6 +302,7 @@ const (
 	// high availability setup for the control plane should be enabled.
 	// Note that this annotation is alpha and can be removed anytime without further notice. Only use it if you know
 	// what you do.
+	// Deprecated: This annotation is deprecated and not respected anymore. Please use `shoot.spec.controlPlane.highAvailability` instead.
 	ShootAlphaControlPlaneHighAvailability = "alpha.control-plane.shoot.gardener.cloud/high-availability"
 	// ShootAlphaControlPlaneHighAvailabilitySingleZone is a specific value that can be set for the shoot control
 	// plane high availability annotation, that allows gardener to spread the shoot control plane across
@@ -302,11 +310,19 @@ const (
 	// This enables shoot clusters having a control plane with a higher failure tolerance as well as zero downtime maintenance,
 	// especially for infrastructure providers that provide less than three zones in a region and thus a multi-zone setup
 	// is not possible there.
+	// Deprecated: This annotation value is deprecated and not respected anymore. Please use `shoot.spec.controlPlane.highAvailability.failureTolerance.type=node` instead.
 	ShootAlphaControlPlaneHighAvailabilitySingleZone = "single-zone"
 	// ShootAlphaControlPlaneHighAvailabilityMultiZone is a specific value that can be set for the shoot control
 	// plane high availability annotation, that allows gardener to spread the shoot control plane across
 	// multiple availability zones if it is possible.
+	// Deprecated: This annotation value is deprecated and not respected anymore. Please use `shoot.spec.controlPlane.highAvailability.failureTolerance.type=zone` instead.
 	ShootAlphaControlPlaneHighAvailabilityMultiZone = "multi-zone"
+	// ShootAlphaControlPlaneHAVPN is a constant for an annotation on the Shoot resource to enforce
+	// enabling/disabling the high availability setup for the VPN connection.
+	// By default, the HA setup for VPN connections is activated automatically if the control plane high availability is enabled.
+	// Note that this annotation is alpha and can be removed anytime without further notice. Only use it if you know
+	// what you do.
+	ShootAlphaControlPlaneHAVPN = "alpha.control-plane.shoot.gardener.cloud/high-availability-vpn"
 	// ShootExpirationTimestamp is an annotation on a Shoot resource whose value represents the time when the Shoot lifetime
 	// is expired. The lifetime can be extended, but at most by the minimal value of the 'clusterLifetimeDays' property
 	// of referenced quotas.
@@ -343,41 +359,41 @@ const (
 	// ShootOperationRetry is a constant for an annotation on a Shoot indicating that a failed Shoot reconciliation shall be
 	// retried.
 	ShootOperationRetry = "retry"
-	// ShootOperationRotateCredentialsStart is a constant for an annotation on a Shoot indicating that the rotation of
-	// all credentials shall be started. This includes CAs, certificates, kubeconfigs, SSH keypairs, observability
-	// credentials, and ServiceAccount signing key.
-	ShootOperationRotateCredentialsStart = "rotate-credentials-start"
-	// ShootOperationRotateCredentialsComplete is a constant for an annotation on a Shoot indicating that the rotation
-	// of the credentials shall be completed.
-	ShootOperationRotateCredentialsComplete = "rotate-credentials-complete"
-	// ShootOperationRotateKubeconfigCredentials is a constant for an annotation on a Shoot indicating that the credentials
-	// contained in the kubeconfig that is handed out to the user shall be rotated.
+	// OperationRotateCredentialsStart is a constant for an annotation indicating that the rotation of all credentials
+	// shall be started. This includes CAs, certificates, kubeconfigs, SSH keypairs, observability credentials, and
+	// ServiceAccount signing key.
+	OperationRotateCredentialsStart = "rotate-credentials-start"
+	// OperationRotateCredentialsComplete is a constant for an annotation indicating that the rotation of the
+	// credentials shall be completed.
+	OperationRotateCredentialsComplete = "rotate-credentials-complete"
+	// ShootOperationRotateKubeconfigCredentials is a constant for an annotation on a Shoot indicating that the
+	// credentialscontained in the kubeconfig that is handed out to the user shall be rotated.
 	ShootOperationRotateKubeconfigCredentials = "rotate-kubeconfig-credentials"
-	// ShootOperationRotateSSHKeypair is a constant for an annotation on a Shoot indicating that the SSH keypair for the shoot
-	// nodes shall be rotated.
+	// ShootOperationRotateSSHKeypair is a constant for an annotation on a Shoot indicating that the SSH keypair for the
+	// shoot nodes shall be rotated.
 	ShootOperationRotateSSHKeypair = "rotate-ssh-keypair"
-	// ShootOperationRotateCAStart is a constant for an annotation on a Shoot indicating that the rotation of the
-	// certificate authorities shall be started.
-	ShootOperationRotateCAStart = "rotate-ca-start"
-	// ShootOperationRotateCAComplete is a constant for an annotation on a Shoot indicating that the rotation of the
-	// certificate authorities shall be completed.
-	ShootOperationRotateCAComplete = "rotate-ca-complete"
-	// ShootOperationRotateObservabilityCredentials is a constant for an annotation on a Shoot indicating that the credentials
-	// for the observability stack secret shall be rotated. Note that this only affects the user credentials
+	// OperationRotateCAStart is a constant for an annotation indicating that the rotation of the certificate
+	// authorities shall be started.
+	OperationRotateCAStart = "rotate-ca-start"
+	// OperationRotateCAComplete is a constant for an annotation indicating that the rotation of the certificate
+	// authorities shall be completed.
+	OperationRotateCAComplete = "rotate-ca-complete"
+	// ShootOperationRotateObservabilityCredentials is a constant for an annotation on a Shoot indicating that the
+	// credentials for the observability stack secret shall be rotated. Note that this only affects the user credentials
 	// since the operator credentials are rotated automatically each `30d`.
 	ShootOperationRotateObservabilityCredentials = "rotate-observability-credentials"
-	// ShootOperationRotateServiceAccountKeyStart is a constant for an annotation on a Shoot indicating that the
+	// OperationRotateServiceAccountKeyStart is a constant for an annotation on a Shoot indicating that the
 	// rotation of the service account signing key shall be started.
-	ShootOperationRotateServiceAccountKeyStart = "rotate-serviceaccount-key-start"
-	// ShootOperationRotateServiceAccountKeyComplete is a constant for an annotation on a Shoot indicating that the
+	OperationRotateServiceAccountKeyStart = "rotate-serviceaccount-key-start"
+	// OperationRotateServiceAccountKeyComplete is a constant for an annotation on a Shoot indicating that the
 	// rotation of the service account signing key shall be completed.
-	ShootOperationRotateServiceAccountKeyComplete = "rotate-serviceaccount-key-complete"
-	// ShootOperationRotateETCDEncryptionKeyStart is a constant for an annotation on a Shoot indicating that the
+	OperationRotateServiceAccountKeyComplete = "rotate-serviceaccount-key-complete"
+	// OperationRotateETCDEncryptionKeyStart is a constant for an annotation on a Shoot indicating that the
 	// rotation of the ETCD encryption key shall be started.
-	ShootOperationRotateETCDEncryptionKeyStart = "rotate-etcd-encryption-key-start"
-	// ShootOperationRotateETCDEncryptionKeyComplete is a constant for an annotation on a Shoot indicating that the
+	OperationRotateETCDEncryptionKeyStart = "rotate-etcd-encryption-key-start"
+	// OperationRotateETCDEncryptionKeyComplete is a constant for an annotation on a Shoot indicating that the
 	// rotation of the ETCD encryption key shall be completed.
-	ShootOperationRotateETCDEncryptionKeyComplete = "rotate-etcd-encryption-key-complete"
+	OperationRotateETCDEncryptionKeyComplete = "rotate-etcd-encryption-key-complete"
 
 	// SeedResourceManagerClass is the resource-class managed by the Gardener-Resource-Manager
 	// instance in the garden namespace on the seeds.
@@ -433,7 +449,11 @@ const (
 	LabelNetworkPolicyToPublicNetworks = "networking.gardener.cloud/to-public-networks"
 	// LabelNetworkPolicyToSeedAPIServer allows Egress from pods labeled with 'networking.gardener.cloud/to-seed-apiserver=allowed' to Seed's Kubernetes
 	// API Server.
+	// Deprecated: Use LabelNetworkPolicyToRuntimeAPIServer instead.
 	LabelNetworkPolicyToSeedAPIServer = "networking.gardener.cloud/to-seed-apiserver"
+	// LabelNetworkPolicyToRuntimeAPIServer allows Egress from pods labeled with 'networking.gardener.cloud/to-runtime-apiserver=allowed' to runtime Kubernetes
+	// API Server.
+	LabelNetworkPolicyToRuntimeAPIServer = "networking.gardener.cloud/to-runtime-apiserver"
 	// LabelNetworkPolicyToShootAPIServer allows Egress from pods labeled with 'networking.gardener.cloud/to-shoot-apiserver=allowed' to talk to Shoot's
 	// Kubernetes API Server.
 	LabelNetworkPolicyToShootAPIServer = "networking.gardener.cloud/to-shoot-apiserver"
@@ -445,8 +465,6 @@ const (
 	// LabelNetworkPolicyFromShootAPIServer allows Egress from Shoot's Kubernetes API Server to talk to pods labeled with
 	// 'networking.gardener.cloud/from-shoot-apiserver=allowed'.
 	LabelNetworkPolicyFromShootAPIServer = "networking.gardener.cloud/from-shoot-apiserver"
-	// LabelNetworkPolicyToAll disables all Ingress and Egress traffic into/from this namespace when set to "disallowed".
-	LabelNetworkPolicyToAll = "networking.gardener.cloud/to-all"
 	// LabelNetworkPolicyFromPrometheus allows Ingress from Prometheus to pods labeled with 'networking.gardener.cloud/from-prometheus=allowed' and ports
 	// named 'metrics' in the PodSpecification.
 	LabelNetworkPolicyFromPrometheus = "networking.gardener.cloud/from-prometheus"
@@ -463,8 +481,6 @@ const (
 	LabelNetworkPolicyShootToKubelet = "networking.gardener.cloud/to-kubelet"
 	// LabelNetworkPolicyAllowed is a constant for allowing a network policy.
 	LabelNetworkPolicyAllowed = "allowed"
-	// LabelNetworkPolicyDisallowed is a constant for disallowing a network policy.
-	LabelNetworkPolicyDisallowed = "disallowed"
 
 	// LabelApp is a constant for a label key.
 	LabelApp = "app"
@@ -518,6 +534,8 @@ const (
 	// AnnotationShootSkipCleanup is a key for an annotation on a Shoot resource that declares that the clean up steps should be skipped when the
 	// cluster is deleted. Concretely, this will skip everything except the deletion of (load balancer) services and persistent volume resources.
 	AnnotationShootSkipCleanup = "shoot.gardener.cloud/skip-cleanup"
+	// AnnotationShootSkipReadiness is a key for an annotation on a Shoot resource that instructs the shoot flow to skip readiness steps during reconciliation.
+	AnnotationShootSkipReadiness = "shoot.gardener.cloud/skip-readiness"
 	// AnnotationShootCleanupWebhooksFinalizeGracePeriodSeconds is a key for an annotation on a Shoot resource that
 	// declares the grace period in seconds for finalizing the resources handled in the 'cleanup webhooks' step.
 	// Concretely, after the specified seconds, all the finalizers of the affected resources are forcefully removed.
@@ -552,8 +570,6 @@ const (
 	AnnotationShootCloudConfigExecutionMaxDelaySeconds = "shoot.gardener.cloud/cloud-config-execution-max-delay-seconds"
 	// AnnotationShootForceRestore is a key for an annotation on a Shoot or BackupEntry resource to trigger a forceful restoration to a different seed.
 	AnnotationShootForceRestore = "shoot.gardener.cloud/force-restore"
-	// AnnotationReversedVPN moves the vpn-server to the seed.
-	AnnotationReversedVPN = "alpha.featuregates.shoot.gardener.cloud/reversed-vpn"
 	// AnnotationNodeLocalDNS enables a per node dns cache on the shoot cluster.
 	AnnotationNodeLocalDNS = "alpha.featuregates.shoot.gardener.cloud/node-local-dns"
 	// AnnotationNodeLocalDNSForceTcpToClusterDns enforces upgrade to tcp connections for communication between node local and cluster dns.
@@ -634,6 +650,14 @@ const (
 
 	// ClusterIdentity is a constant equal to the name and data key (that stores the identity) of the cluster-identity ConfigMap
 	ClusterIdentity = "cluster-identity"
+	// ClusterIdentityOrigin is a constant equal to the data key that stores the identity origin of the cluster-identity ConfigMap
+	ClusterIdentityOrigin = "origin"
+	// ClusterIdentityOriginGardenerAPIServer defines a cluster-identity ConfigMap originated from gardener-apiserver
+	ClusterIdentityOriginGardenerAPIServer = "gardener-apiserver"
+	// ClusterIdentityOriginSeed defines a cluster-identity ConfigMap originated from seed
+	ClusterIdentityOriginSeed = "seed"
+	// ClusterIdentityOriginShoot defines a cluster-identity ConfigMap originated from shoot
+	ClusterIdentityOriginShoot = "shoot"
 
 	// SeedNginxIngressClass defines the ingress class for the seed nginx ingress controller
 	SeedNginxIngressClass = "nginx-gardener"
@@ -666,8 +690,8 @@ const (
 	// or the specified namespace was not present.
 	NamespaceCreatedByProjectController = "namespace.gardener.cloud/created-by-project-controller"
 
-	// DefaultVpnRange is the default network range for the vpn between seed and shoot cluster.
-	DefaultVpnRange = "192.168.123.0/24"
+	// DefaultVPNRange is the default network range for the VPN between seed and shoot cluster.
+	DefaultVPNRange = "192.168.123.0/24"
 
 	// BackupSecretName is the name of secret having credentials for etcd backups.
 	BackupSecretName string = "etcd-backup"
@@ -709,6 +733,25 @@ var (
 
 // constants for well-known PriorityClass names
 const (
+	// PriorityClassNameGardenSystemCritical is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystemCritical = "gardener-garden-system-critical"
+	// PriorityClassNameGardenSystem500 is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystem500 = "gardener-garden-system-500"
+	// PriorityClassNameGardenSystem400 is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystem400 = "gardener-garden-system-400"
+	// PriorityClassNameGardenSystem300 is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystem300 = "gardener-garden-system-300"
+	// PriorityClassNameGardenSystem200 is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystem200 = "gardener-garden-system-200"
+	// PriorityClassNameGardenSystem100 is the name of a PriorityClass for Garden system components.
+	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
+	PriorityClassNameGardenSystem100 = "gardener-garden-system-100"
+
 	// PriorityClassNameShootSystem900 is the name of a PriorityClass for Shoot system components.
 	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
 	PriorityClassNameShootSystem900 = "gardener-shoot-system-900"
@@ -757,6 +800,7 @@ const (
 	// Please consider the documentation in https://github.com/gardener/gardener/blob/master/docs/development/priority-classes.md
 	PriorityClassNameShootControlPlane100 = "gardener-system-100"
 
-	// TechnicalIDPrefix is a prefix used for a shoot's technical id.
-	TechnicalIDPrefix = "shoot--"
+	// TechnicalIDPrefix is a prefix used for a shoot's technical id. For historic reasons, there is only one 'dash'
+	// while nowadays we always use two dashes after "shoot".
+	TechnicalIDPrefix = "shoot-"
 )

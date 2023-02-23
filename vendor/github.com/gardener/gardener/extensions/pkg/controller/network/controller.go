@@ -15,15 +15,15 @@
 package network
 
 import (
-	extensionspredicate "github.com/gardener/gardener/extensions/pkg/predicate"
-	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	"github.com/gardener/gardener/pkg/controllerutils/mapper"
-
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	extensionspredicate "github.com/gardener/gardener/extensions/pkg/predicate"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/controllerutils/mapper"
 )
 
 const (
@@ -61,7 +61,6 @@ func DefaultPredicates(ignoreOperationAnnotation bool) []predicate.Predicate {
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager, args AddArgs) error {
 	args.ControllerOptions.Reconciler = NewReconciler(args.Actuator)
-	args.ControllerOptions.RecoverPanic = true
 	return add(mgr, args)
 }
 

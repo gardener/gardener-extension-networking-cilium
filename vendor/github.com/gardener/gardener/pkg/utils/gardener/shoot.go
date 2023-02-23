@@ -29,28 +29,33 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilsets "k8s.io/apimachinery/pkg/util/sets"
 	clientcmdlatest "k8s.io/client-go/tools/clientcmd/api/latest"
 	clientcmdv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	"k8s.io/component-base/version"
+	"k8s.io/utils/clock"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/controllerutils"
 	"github.com/gardener/gardener/pkg/utils"
+	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/secrets"
 	"github.com/gardener/gardener/pkg/utils/timewindow"
 )
 
 // RespectShootSyncPeriodOverwrite checks whether to respect the sync period overwrite of a Shoot or not.
-func RespectShootSyncPeriodOverwrite(respectSyncPeriodOverwrite bool, shoot *v1beta1.Shoot) bool {
+func RespectShootSyncPeriodOverwrite(respectSyncPeriodOverwrite bool, shoot *gardencorev1beta1.Shoot) bool {
 	return respectSyncPeriodOverwrite || shoot.Namespace == v1beta1constants.GardenNamespace
 }
 
 // ShouldIgnoreShoot determines whether a Shoot should be ignored or not.
-func ShouldIgnoreShoot(respectSyncPeriodOverwrite bool, shoot *v1beta1.Shoot) bool {
+func ShouldIgnoreShoot(respectSyncPeriodOverwrite bool, shoot *gardencorev1beta1.Shoot) bool {
 	if !RespectShootSyncPeriodOverwrite(respectSyncPeriodOverwrite, shoot) {
 		return false
 	}
@@ -64,44 +69,44 @@ func ShouldIgnoreShoot(respectSyncPeriodOverwrite bool, shoot *v1beta1.Shoot) bo
 	return ignore
 }
 
-// IsShootFailed checks if a Shoot is failed.
-func IsShootFailed(shoot *v1beta1.Shoot) bool {
+// IsShootFailedAndUpToDate checks if a Shoot is failed and the observed generation and gardener version are up-to-date.
+func IsShootFailedAndUpToDate(shoot *gardencorev1beta1.Shoot) bool {
 	lastOperation := shoot.Status.LastOperation
 
-	return lastOperation != nil && lastOperation.State == v1beta1.LastOperationStateFailed &&
+	return lastOperation != nil && lastOperation.State == gardencorev1beta1.LastOperationStateFailed &&
 		shoot.Generation == shoot.Status.ObservedGeneration &&
 		shoot.Status.Gardener.Version == version.Get().GitVersion
 }
 
 // IsNowInEffectiveShootMaintenanceTimeWindow checks if the current time is in the effective
 // maintenance time window of the Shoot.
-func IsNowInEffectiveShootMaintenanceTimeWindow(shoot *v1beta1.Shoot) bool {
-	return EffectiveShootMaintenanceTimeWindow(shoot).Contains(time.Now())
+func IsNowInEffectiveShootMaintenanceTimeWindow(shoot *gardencorev1beta1.Shoot, clock clock.Clock) bool {
+	return EffectiveShootMaintenanceTimeWindow(shoot).Contains(clock.Now())
 }
 
 // LastReconciliationDuringThisTimeWindow returns true if <now> is contained in the given effective maintenance time
 // window of the shoot and if the <lastReconciliation> did not happen longer than the longest possible duration of a
 // maintenance time window.
-func LastReconciliationDuringThisTimeWindow(shoot *v1beta1.Shoot) bool {
+func LastReconciliationDuringThisTimeWindow(shoot *gardencorev1beta1.Shoot, clock clock.Clock) bool {
 	if shoot.Status.LastOperation == nil {
 		return false
 	}
 
 	var (
 		timeWindow         = EffectiveShootMaintenanceTimeWindow(shoot)
-		now                = time.Now()
+		now                = clock.Now()
 		lastReconciliation = shoot.Status.LastOperation.LastUpdateTime.Time
 	)
 
-	return timeWindow.Contains(lastReconciliation) && now.UTC().Sub(lastReconciliation.UTC()) <= v1beta1.MaintenanceTimeWindowDurationMaximum
+	return timeWindow.Contains(lastReconciliation) && now.UTC().Sub(lastReconciliation.UTC()) <= gardencorev1beta1.MaintenanceTimeWindowDurationMaximum
 }
 
 // IsObservedAtLatestGenerationAndSucceeded checks whether the Shoot's generation has changed or if the LastOperation status
 // is Succeeded.
-func IsObservedAtLatestGenerationAndSucceeded(shoot *v1beta1.Shoot) bool {
+func IsObservedAtLatestGenerationAndSucceeded(shoot *gardencorev1beta1.Shoot) bool {
 	lastOperation := shoot.Status.LastOperation
 	return shoot.Generation == shoot.Status.ObservedGeneration &&
-		(lastOperation != nil && lastOperation.State == v1beta1.LastOperationStateSucceeded)
+		(lastOperation != nil && lastOperation.State == gardencorev1beta1.LastOperationStateSucceeded)
 }
 
 // SyncPeriodOfShoot determines the sync period of the given shoot.
@@ -109,7 +114,7 @@ func IsObservedAtLatestGenerationAndSucceeded(shoot *v1beta1.Shoot) bool {
 // If no overwrite is allowed, the defaultMinSyncPeriod is returned.
 // Otherwise, the overwrite is parsed. If an error occurs or it is smaller than the defaultMinSyncPeriod,
 // the defaultMinSyncPeriod is returned. Otherwise, the overwrite is returned.
-func SyncPeriodOfShoot(respectSyncPeriodOverwrite bool, defaultMinSyncPeriod time.Duration, shoot *v1beta1.Shoot) time.Duration {
+func SyncPeriodOfShoot(respectSyncPeriodOverwrite bool, defaultMinSyncPeriod time.Duration, shoot *gardencorev1beta1.Shoot) time.Duration {
 	if !RespectShootSyncPeriodOverwrite(respectSyncPeriodOverwrite, shoot) {
 		return defaultMinSyncPeriod
 	}
@@ -139,7 +144,7 @@ func EffectiveMaintenanceTimeWindow(timeWindow *timewindow.MaintenanceTimeWindow
 }
 
 // EffectiveShootMaintenanceTimeWindow returns the effective MaintenanceTimeWindow of the given Shoot.
-func EffectiveShootMaintenanceTimeWindow(shoot *v1beta1.Shoot) *timewindow.MaintenanceTimeWindow {
+func EffectiveShootMaintenanceTimeWindow(shoot *gardencorev1beta1.Shoot) *timewindow.MaintenanceTimeWindow {
 	maintenance := shoot.Spec.Maintenance
 	if maintenance == nil || maintenance.TimeWindow == nil {
 		return timewindow.AlwaysTimeWindow
@@ -162,6 +167,40 @@ func GetShootNameFromOwnerReferences(objectMeta metav1.Object) string {
 		}
 	}
 	return ""
+}
+
+// NodeLabelsForWorkerPool returns a combined map of all user-specified and gardener-managed node labels.
+func NodeLabelsForWorkerPool(workerPool gardencorev1beta1.Worker, nodeLocalDNSEnabled bool) map[string]string {
+	// copy worker pool labels map
+	labels := utils.MergeStringMaps(workerPool.Labels)
+	if labels == nil {
+		labels = map[string]string{}
+	}
+	labels["node.kubernetes.io/role"] = "node"
+	labels["kubernetes.io/arch"] = *workerPool.Machine.Architecture
+
+	labels[v1beta1constants.LabelNodeLocalDNS] = strconv.FormatBool(nodeLocalDNSEnabled)
+
+	if v1beta1helper.SystemComponentsAllowed(&workerPool) {
+		labels[v1beta1constants.LabelWorkerPoolSystemComponents] = "true"
+	}
+
+	// worker pool name labels
+	labels[v1beta1constants.LabelWorkerPool] = workerPool.Name
+	labels[v1beta1constants.LabelWorkerPoolDeprecated] = workerPool.Name
+
+	// add CRI labels selected by the RuntimeClass
+	if workerPool.CRI != nil {
+		labels[extensionsv1alpha1.CRINameWorkerLabel] = string(workerPool.CRI.Name)
+		if len(workerPool.CRI.ContainerRuntimes) > 0 {
+			for _, cr := range workerPool.CRI.ContainerRuntimes {
+				key := fmt.Sprintf(extensionsv1alpha1.ContainerRuntimeNameWorkerLabel, cr.Type)
+				labels[key] = "true"
+			}
+		}
+	}
+
+	return labels
 }
 
 const (
@@ -442,4 +481,36 @@ func injectGenericKubeconfig(podSpec *corev1.PodSpec, genericKubeconfigName, acc
 			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, volumeMount)
 		}
 	}
+}
+
+// GetShootSeedNames returns the spec.seedName and the status.seedName field in case the provided object is a Shoot.
+func GetShootSeedNames(obj client.Object) (*string, *string) {
+	shoot, ok := obj.(*gardencorev1beta1.Shoot)
+	if !ok {
+		return nil, nil
+	}
+	return shoot.Spec.SeedName, shoot.Status.SeedName
+}
+
+// ExtractSystemComponentsTolerations returns tolerations that are required to schedule shoot system components
+// on the given workers. Tolerations are only considered for workers which have `SystemComponents.Allow: true`.
+func ExtractSystemComponentsTolerations(workers []gardencorev1beta1.Worker) []corev1.Toleration {
+	var (
+		tolerations = utilsets.New[corev1.Toleration]()
+
+		// We need to use semantically equal tolerations, i.e. equality of underlying values of pointers,
+		// before they are added to the tolerations set.
+		comparableTolerations = &kubernetesutils.ComparableTolerations{}
+	)
+
+	for _, worker := range workers {
+		if v1beta1helper.SystemComponentsAllowed(&worker) {
+			for _, taint := range worker.Taints {
+				toleration := kubernetesutils.TolerationForTaint(taint)
+				tolerations.Insert(comparableTolerations.Transform(toleration))
+			}
+		}
+	}
+
+	return tolerations.UnsortedList()
 }

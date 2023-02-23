@@ -18,13 +18,14 @@ import (
 	"fmt"
 	"net/url"
 
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
-	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
-	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 )
 
 var defaultCiliumConfig = requirementsConfig{

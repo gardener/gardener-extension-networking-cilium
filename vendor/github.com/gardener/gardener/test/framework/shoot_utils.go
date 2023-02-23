@@ -21,12 +21,6 @@ import (
 	"io"
 	"strings"
 
-	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
-	"github.com/gardener/gardener/pkg/utils"
-	"github.com/gardener/gardener/pkg/utils/retry"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -34,6 +28,13 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
+
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	"github.com/gardener/gardener/pkg/client/kubernetes"
+	"github.com/gardener/gardener/pkg/utils"
+	"github.com/gardener/gardener/pkg/utils/retry"
+	versionutils "github.com/gardener/gardener/pkg/utils/version"
 )
 
 // ShootSeedNamespace gets the shoot namespace in the seed
@@ -260,9 +261,14 @@ func setShootGeneralSettings(shoot *gardencorev1beta1.Shoot, cfg *ShootCreationC
 		shoot.Spec.Hibernation.Enabled = &cfg.startHibernated
 	}
 
-	// allow privileged containers defaults to true
-	if cfg.allowPrivilegedContainers != nil {
-		shoot.Spec.Kubernetes.AllowPrivilegedContainers = cfg.allowPrivilegedContainers
+	// Errors are ignored here because we cannot do anything meaningful with them - variables will default to `false`.
+	k8sLessEqual125, _ := versionutils.CheckVersionMeetsConstraint(shoot.Spec.Kubernetes.Version, "< 1.25")
+	// This field should not be set for kubernetes version >= 1.25
+	if k8sLessEqual125 {
+		// allow privileged containers defaults to true
+		if cfg.allowPrivilegedContainers != nil {
+			shoot.Spec.Kubernetes.AllowPrivilegedContainers = cfg.allowPrivilegedContainers
+		}
 	}
 
 	if clearExtensions {

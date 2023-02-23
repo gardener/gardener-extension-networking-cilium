@@ -21,23 +21,23 @@ import (
 	"strings"
 	"time"
 
-	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
-	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
-	"github.com/gardener/gardener/pkg/chartrenderer"
-	"github.com/gardener/gardener/pkg/utils/chart"
-	utilerrors "github.com/gardener/gardener/pkg/utils/errors"
-	"github.com/gardener/gardener/pkg/utils/imagevector"
-	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/pkg/utils/kubernetes/health"
-	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
-	"github.com/gardener/gardener/pkg/utils/retry"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
+	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
+	"github.com/gardener/gardener/pkg/chartrenderer"
+	"github.com/gardener/gardener/pkg/utils/chart"
+	errorsutils "github.com/gardener/gardener/pkg/utils/errors"
+	"github.com/gardener/gardener/pkg/utils/imagevector"
+	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
+	"github.com/gardener/gardener/pkg/utils/kubernetes/health"
+	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	"github.com/gardener/gardener/pkg/utils/retry"
 )
 
 const (
@@ -76,8 +76,11 @@ func New(client client.Client, namespace, name, class string, keepObjects *bool,
 	return mr
 }
 
-// NewForShoot constructs a new ManagedResource object for the shoot's Gardener-Resource-Manager.
-func NewForShoot(c client.Client, namespace, name string, keepObjects bool) *builder.ManagedResource {
+// NewForShoot constructs a new ManagedResource object for the shoot's gardener-resource-manager.
+// The origin is used to identify the creator of the managed resource. Gardener acts on resources
+// with "origin=gardener" label. External callers (extension controllers or other components)
+// of this function should provide their own unique origin value.
+func NewForShoot(c client.Client, namespace, name, origin string, keepObjects bool) *builder.ManagedResource {
 	var (
 		injectedLabels = map[string]string{v1beta1constants.ShootNoCleanup: "true"}
 		labels         = map[string]string{LabelKeyOrigin: LabelValueGardener}
@@ -86,7 +89,7 @@ func NewForShoot(c client.Client, namespace, name string, keepObjects bool) *bui
 	return New(c, namespace, name, "", &keepObjects, labels, injectedLabels, nil)
 }
 
-// NewForSeed constructs a new ManagedResource object for the seed's Gardener-Resource-Manager.
+// NewForSeed constructs a new ManagedResource object for the seed's gardener-resource-manager.
 func NewForSeed(c client.Client, namespace, name string, keepObjects bool) *builder.ManagedResource {
 	var labels map[string]string
 	if !strings.HasPrefix(namespace, v1beta1constants.TechnicalIDPrefix) {
@@ -159,10 +162,13 @@ func CreateForSeed(ctx context.Context, client client.Client, namespace, name st
 }
 
 // CreateForShoot deploys a ManagedResource CR for the shoot's gardener-resource-manager.
-func CreateForShoot(ctx context.Context, client client.Client, namespace, name string, keepObjects bool, data map[string][]byte) error {
+// The origin is used to identify the creator of the managed resource. Gardener acts on resources
+// with "origin=gardener" label. External callers (extension controllers or other components)
+// of this function should provide their own unique origin value.
+func CreateForShoot(ctx context.Context, client client.Client, namespace, name, origin string, keepObjects bool, data map[string][]byte) error {
 	var (
 		secretName, secret = NewSecret(client, namespace, name, data, true)
-		managedResource    = NewForShoot(client, namespace, name, keepObjects).WithSecretRef(secretName)
+		managedResource    = NewForShoot(client, namespace, name, origin, keepObjects).WithSecretRef(secretName)
 	)
 
 	return deployManagedResource(ctx, secret, managedResource)
@@ -223,7 +229,7 @@ func WaitUntilHealthy(ctx context.Context, client client.Client, namespace, name
 	}
 
 	return retry.Until(ctx, IntervalWait, func(ctx context.Context) (done bool, err error) {
-		if err := client.Get(ctx, kutil.Key(namespace, name), obj); err != nil {
+		if err := client.Get(ctx, kubernetesutils.Key(namespace, name), obj); err != nil {
 			return retry.SevereError(err)
 		}
 
@@ -237,18 +243,18 @@ func WaitUntilHealthy(ctx context.Context, client client.Client, namespace, name
 
 // WaitUntilListDeleted waits until the given managed resources are deleted.
 func WaitUntilListDeleted(ctx context.Context, client client.Client, mrList *resourcesv1alpha1.ManagedResourceList, listOps ...client.ListOption) error {
-	allErrs := gardencorev1beta1helper.NewMultiErrorWithCodes(
-		utilerrors.NewErrorFormatFuncWithPrefix("error while waiting for all resources to be deleted: "),
+	allErrs := v1beta1helper.NewMultiErrorWithCodes(
+		errorsutils.NewErrorFormatFuncWithPrefix("error while waiting for all resources to be deleted: "),
 	)
 
-	if err := kutil.WaitUntilResourcesDeleted(ctx, client, mrList, IntervalWait, listOps...); err != nil {
+	if err := kubernetesutils.WaitUntilResourcesDeleted(ctx, client, mrList, IntervalWait, listOps...); err != nil {
 		for _, mr := range mrList.Items {
-			resourcesAppliedCondition := gardencorev1beta1helper.GetCondition(mr.Status.Conditions, resourcesv1alpha1.ResourcesApplied)
+			resourcesAppliedCondition := v1beta1helper.GetCondition(mr.Status.Conditions, resourcesv1alpha1.ResourcesApplied)
 			if resourcesAppliedCondition != nil && resourcesAppliedCondition.Status != gardencorev1beta1.ConditionTrue &&
 				(resourcesAppliedCondition.Reason == resourcesv1alpha1.ConditionDeletionFailed || resourcesAppliedCondition.Reason == resourcesv1alpha1.ConditionDeletionPending) {
 				deleteError := fmt.Errorf("%w:\n%s", err, resourcesAppliedCondition.Message)
 
-				allErrs.Append(gardencorev1beta1helper.NewErrorWithCodes(deleteError, checkConfigurationError(err)...))
+				allErrs.Append(v1beta1helper.NewErrorWithCodes(deleteError, checkConfigurationError(err)...))
 			}
 		}
 	}
@@ -264,12 +270,12 @@ func WaitUntilDeleted(ctx context.Context, client client.Client, namespace, name
 			Namespace: namespace,
 		},
 	}
-	if err := kutil.WaitUntilResourceDeleted(ctx, client, mr, IntervalWait); err != nil {
-		resourcesAppliedCondition := gardencorev1beta1helper.GetCondition(mr.Status.Conditions, resourcesv1alpha1.ResourcesApplied)
+	if err := kubernetesutils.WaitUntilResourceDeleted(ctx, client, mr, IntervalWait); err != nil {
+		resourcesAppliedCondition := v1beta1helper.GetCondition(mr.Status.Conditions, resourcesv1alpha1.ResourcesApplied)
 		if resourcesAppliedCondition != nil && resourcesAppliedCondition.Status != gardencorev1beta1.ConditionTrue &&
 			(resourcesAppliedCondition.Reason == resourcesv1alpha1.ConditionDeletionFailed || resourcesAppliedCondition.Reason == resourcesv1alpha1.ConditionDeletionPending) {
 			deleteError := fmt.Errorf("error while waiting for all resources to be deleted: %w:\n%s", err, resourcesAppliedCondition.Message)
-			return gardencorev1beta1helper.NewErrorWithCodes(deleteError, checkConfigurationError(err)...)
+			return v1beta1helper.NewErrorWithCodes(deleteError, checkConfigurationError(err)...)
 		}
 		return err
 	}
@@ -322,4 +328,20 @@ func checkConfigurationError(err error) []gardencorev1beta1.ErrorCode {
 	}
 
 	return errorCodes
+}
+
+// CheckIfManagedResourcesExist checks if some ManagedResources of the given class still exist. If yes it returns true.
+func CheckIfManagedResourcesExist(ctx context.Context, c client.Client, class *string) (bool, error) {
+	managedResourceList := &resourcesv1alpha1.ManagedResourceList{}
+	if err := c.List(ctx, managedResourceList); err != nil {
+		return false, err
+	}
+
+	for _, managedResource := range managedResourceList.Items {
+		if pointer.StringEqual(managedResource.Spec.Class, class) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
