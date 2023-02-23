@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     k8s-app: {{ .Chart.Name }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/part-of: cilium
 spec:
   replicas: {{ .Values.numReplicas }}
   selector:
@@ -14,6 +16,8 @@ spec:
     metadata:
       labels:
         k8s-app: {{ .Chart.Name }}
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/part-of: cilium
     spec:
       containers:
         - name: hubble-relay

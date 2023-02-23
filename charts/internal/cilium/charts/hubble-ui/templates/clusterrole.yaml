@@ -3,6 +3,8 @@ apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
 metadata:
   name: hubble-ui
+  labels:
+    app.kubernetes.io/part-of: cilium
 rules:
   - apiGroups:
       - networking.k8s.io

@@ -3,6 +3,8 @@ apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
 metadata:
   name: hubble-relay
+  labels:
+    app.kubernetes.io/part-of: cilium
 rules:
   - apiGroups:
       - ""
@@ -22,6 +24,8 @@ apiVersion: {{ include "rbacversion" . }}
 kind: ClusterRole
 metadata:
   name: hubble-generate-certs
+  labels:
+    app.kubernetes.io/part-of: cilium
 rules:
   - apiGroups:
       - ""

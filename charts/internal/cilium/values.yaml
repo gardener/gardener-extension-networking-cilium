@@ -69,6 +69,8 @@ global:
 
   nodesGCInterval: "5m0s"
 
+  skipCnpStatusStartupClean: "false"
+
   # Disable the usage of CiliumEndpoint CRD
   disableEndpointCrd: false
 
@@ -138,6 +140,8 @@ global:
   enableIpv4Masquerade: true
   enableIpv6Masquerade: true
   enableBPFMasquerade: true
+
+  enableIpv6BigTCP: false
 
   # ipMasqAgent enables and controls BPF ip-masq-agent
   ipMasqAgent:
