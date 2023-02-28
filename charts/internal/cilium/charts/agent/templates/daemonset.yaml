@@ -306,6 +306,29 @@ spec:
         - -c
         - "while true; do sleep 15; for i in $(cat /etc/resolv.conf | grep nameserver | awk '{print $2}' ); do iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE 2>/dev/null || iptables -t nat -I CILIUM_POST_nat 1 -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE; done; sleep 45; done"
 {{- end }}
+      # Masquerade traffic outside of pod cidr range and node cidr range
+{{- if .Values.global.snatOutOfCluster.enabled }}
+      - name: add-snat-rule-to-outside-world
+        image: {{ index .Values.global.images "cilium-agent" }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        env:
+        - name: POD_CIDR
+          value: {{ .Values.global.podCIDR }}
+        - name: NODE_CIDR
+          value: {{ .Values.global.nodeCIDR }}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        command:
+        - /bin/sh
+        - -c
+        - "while true; do sleep 15; iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d ${POD_CIDR} -j RETURN 2>/dev/null || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d ${POD_CIDR} -j RETURN; iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d ${NODE_CIDR} -j RETURN 2>/dev/null  || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d ${NODE_CIDR} -j RETURN; iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d 0.0.0.0/0 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d 0.0.0.0/0 ! -o cilium_+ -m comment --comment \"cilium masquerade non-cluster\" -j MASQUERADE; sleep 45; done"
+{{- end }}
       initContainers:
       # Disable source validation / rp_filter.
       - name: disable-rp-filter

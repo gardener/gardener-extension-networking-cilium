@@ -90,7 +90,8 @@ var defaultGlobalConfig = globalConfig{
 
 		cilium.PortmapCopierImageName: imagevector.PortmapCopierImage(),
 	},
-	PodCIDR: "",
+	PodCIDR:  "",
+	NodeCIDR: "",
 	BPFSocketLBHostnsOnly: bpfSocketLBHostnsOnly{
 		Enabled: false,
 	},
@@ -110,6 +111,9 @@ var defaultGlobalConfig = globalConfig{
 		Mode: "kubernetes",
 	},
 	SnatToUpstreamDNS: snatToUpstreamDNS{
+		Enabled: false,
+	},
+	SnatOutOfCluster: snatOutOfCluster{
 		Enabled: false,
 	},
 }
@@ -143,6 +147,9 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
+	}
+	if cluster != nil && cluster.Shoot != nil && cluster.Shoot.Spec.Networking.Nodes != nil {
+		globalConfig.NodeCIDR = *cluster.Shoot.Spec.Networking.Nodes
 	}
 
 	// Settings for Kube-Proxy disabled and using the HostService option
@@ -244,14 +251,15 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	// check if ipv4 native routing cidr is set
 	if config.IPv4NativeRoutingCIDREnabled != nil && *config.IPv4NativeRoutingCIDREnabled {
-		if cluster.Shoot.Spec.Networking.Nodes == nil {
-			return requirementsConfig, globalConfig, fmt.Errorf("nodes cidr required for setting ipv4 native routing cidr was not yet set")
-		}
-		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Nodes
+		globalConfig.IPv4NativeRoutingCIDR = "0.0.0.0/0"
 	}
 
 	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {
 		globalConfig.SnatToUpstreamDNS.Enabled = config.SnatToUpstreamDNS.Enabled
+	}
+
+	if config.SnatOutOfCluster != nil && config.SnatOutOfCluster.Enabled {
+		globalConfig.SnatOutOfCluster.Enabled = config.SnatOutOfCluster.Enabled
 	}
 
 	globalConfig.IPAM.Mode = ipamMode

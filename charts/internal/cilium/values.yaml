@@ -24,10 +24,14 @@ global:
     enabled: false
 
   podCIDR: ""
+  nodeCIDR: ""
 
   ipv4NativeRoutingCIDR: ""
 
   snatToUpstreamDNS:
+    enabled: false
+
+  snatOutOfCluster:
     enabled: false
 
   mtu:

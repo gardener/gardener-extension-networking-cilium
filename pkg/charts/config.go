@@ -31,6 +31,7 @@ type globalConfig struct {
 	K8sServicePort         int32                                   `json:"k8sServicePort"`
 	NodePort               nodePort                                `json:"nodePort"`
 	PodCIDR                string                                  `json:"podCIDR"`
+	NodeCIDR               string                                  `json:"nodeCIDR"`
 	BPFSocketLBHostnsOnly  bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
 	LocalRedirectPolicy    localRedirectPolicy                     `json:"localRedirectPolicy"`
 	NodeLocalDNS           nodeLocalDNS                            `json:"nodeLocalDNS"`
@@ -41,6 +42,7 @@ type globalConfig struct {
 	BPF                    bpf                                     `json:"bpf"`
 	IPAM                   ipam                                    `json:"ipam"`
 	SnatToUpstreamDNS      snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
+	SnatOutOfCluster       snatOutOfCluster                        `json:"snatOutOfCluster"`
 }
 
 // etcd related configuration for cilium
@@ -155,7 +157,12 @@ type ipam struct {
 	Mode string `json:"mode"`
 }
 
-// snatToUpstreamDNS  enables the masquerading of packets to the upstream dns server
+// snatToUpstreamDNS enables the masquerading of packets to the upstream dns server
 type snatToUpstreamDNS struct {
+	Enabled bool `json:"enabled"`
+}
+
+// snatOutOfCluster enables the masquerading of packets outside of the cluster
+type snatOutOfCluster struct {
 	Enabled bool `json:"enabled"`
 }

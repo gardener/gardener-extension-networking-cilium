@@ -243,6 +243,20 @@ SnatToUpstreamDNS
 <p>SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>snatOutOfCluster</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.SnatOutOfCluster">
+SnatOutOfCluster
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SnatOutOfCluster enables the masquerading of packets outside of the cluster</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BPFSocketLBHostnsOnly">BPFSocketLBHostnsOnly
@@ -505,6 +519,35 @@ bool
 </tr>
 </tbody>
 </table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.SnatOutOfCluster">SnatOutOfCluster
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>SnatOutOfCluster enables the masquerading of packets outside of the cluster</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.SnatToUpstreamDNS">SnatToUpstreamDNS
 </h3>
 <p>
@@ -512,7 +555,7 @@ bool
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
 </p>
 <p>
-<p>SnatToUpstreamDNS  enables the masquerading of packets to the upstream dns server</p>
+<p>SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server</p>
 </p>
 <table>
 <thead>
