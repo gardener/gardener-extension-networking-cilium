@@ -60,7 +60,7 @@ github.com/fsnotify/fsnotify
 # github.com/gardener/etcd-druid v0.15.3
 ## explicit; go 1.19
 github.com/gardener/etcd-druid/api/v1alpha1
-# github.com/gardener/gardener v1.64.0
+# github.com/gardener/gardener v1.65.0
 ## explicit; go 1.19
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -89,7 +89,6 @@ github.com/gardener/gardener/pkg/apis/authentication/v1alpha1
 github.com/gardener/gardener/pkg/apis/core
 github.com/gardener/gardener/pkg/apis/core/install
 github.com/gardener/gardener/pkg/apis/core/v1alpha1
-github.com/gardener/gardener/pkg/apis/core/v1alpha1/helper
 github.com/gardener/gardener/pkg/apis/core/v1beta1
 github.com/gardener/gardener/pkg/apis/core/v1beta1/constants
 github.com/gardener/gardener/pkg/apis/core/v1beta1/helper
