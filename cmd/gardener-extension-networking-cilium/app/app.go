@@ -37,7 +37,6 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	ciliumcmd "github.com/gardener/gardener-extension-networking-cilium/pkg/cmd"
 	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
 )
 
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
@@ -133,8 +132,6 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 
 			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
-			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.AddOptions.HealthCheckConfig)
-			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
 			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 
 			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr)
@@ -145,10 +142,6 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 
 			if err := ciliumcontroller.AddToManager(mgr); err != nil {
 				return fmt.Errorf("could not add controllers to manager: %w", err)
-			}
-
-			if err := healthcheck.AddToManager(mgr); err != nil {
-				return fmt.Errorf("could not add health check controller to manager: %w", err)
 			}
 
 			if err := heartbeat.AddToManager(mgr); err != nil {
