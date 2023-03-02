@@ -49,7 +49,7 @@ global:
       - flow
       - port-distribution
       - icmp
-      - http
+      - httpV2:labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
       port: 9091
     tls:
       enabled: true
