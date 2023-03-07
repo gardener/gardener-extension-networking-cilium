@@ -29,6 +29,8 @@ spec:
       labels:
         app.kubernetes.io/name: gardener-extension-networking-cilium
         app.kubernetes.io/instance: {{ .Release.Name }}
+        networking.gardener.cloud/to-runtime-apiserver: allowed
+        networking.gardener.cloud/to-dns: allowed
     spec:
       priorityClassName: gardener-system-900
       serviceAccountName: gardener-extension-networking-cilium
