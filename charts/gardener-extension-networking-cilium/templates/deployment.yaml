@@ -31,6 +31,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         networking.gardener.cloud/to-runtime-apiserver: allowed
         networking.gardener.cloud/to-dns: allowed
+        networking.resources.gardener.cloud/to-all-shoots-kube-apiserver-tcp-443: allowed
     spec:
       priorityClassName: gardener-system-900
       serviceAccountName: gardener-extension-networking-cilium
