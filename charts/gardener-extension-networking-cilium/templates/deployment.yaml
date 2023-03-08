@@ -17,10 +17,10 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
-      {{- if .Values.imageVectorOverwrite }}
       annotations:
+        {{- if .Values.imageVectorOverwrite }}
         checksum/configmap-network-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
-      {{- end }}
+        {{- end }}
         {{- if .Values.metrics.enableScraping }}
         prometheus.io/name: "{{ .Release.Name }}"
         prometheus.io/scrape: "true"
