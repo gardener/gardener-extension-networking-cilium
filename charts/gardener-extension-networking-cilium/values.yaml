@@ -54,5 +54,5 @@ webhookConfig:
 
 ## settings for metrics, e.g. scraping by seed-prometheus
 metrics:
-  enableScraping: false
+  enableScraping: true
   port: 8080
