@@ -129,6 +129,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			ctx,
 			a.client,
 			network.Namespace,
+			DefaultAddOptions.WebhookServerNamespace,
 			cilium.Name,
 			ShootWebhooksResourceName,
 			a.webhookServerPort,

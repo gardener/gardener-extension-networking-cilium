@@ -139,6 +139,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 				return errors.Wrap(err, "Could not add webhooks to manager")
 			}
 			ciliumcontroller.DefaultAddOptions.ShootWebhookConfig = shootWebhookConfig
+			ciliumcontroller.DefaultAddOptions.WebhookServerNamespace = webhookOptions.Server.Namespace
 
 			if err := ciliumcontroller.AddToManager(mgr); err != nil {
 				return fmt.Errorf("could not add controllers to manager: %w", err)
