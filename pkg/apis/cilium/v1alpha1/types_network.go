@@ -130,8 +130,13 @@ type Overlay struct {
 	Enabled bool `json:"enabled"`
 }
 
-// SnatToUpstreamDNS  enables the masquerading of packets to the upstream dns server
+// SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server
 type SnatToUpstreamDNS struct {
+	Enabled bool `json:"enabled"`
+}
+
+// SnatOutOfCluster enables the masquerading of packets outside of the cluster
+type SnatOutOfCluster struct {
 	Enabled bool `json:"enabled"`
 }
 
@@ -187,4 +192,7 @@ type NetworkConfig struct {
 	// SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server
 	// +optional
 	SnatToUpstreamDNS *SnatToUpstreamDNS `json:"snatToUpstreamDNS,omitempty"`
+	// SnatOutOfCluster enables the masquerading of packets outside of the cluster
+	// +optional
+	SnatOutOfCluster *SnatOutOfCluster `json:"snatOutOfCluster,omitempty"`
 }

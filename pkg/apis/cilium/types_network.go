@@ -143,6 +143,11 @@ type SnatToUpstreamDNS struct {
 	Enabled bool
 }
 
+// SnatOutOfCluster enables the masquerading of packets outside of the cluster
+type SnatOutOfCluster struct {
+	Enabled bool
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -180,4 +185,6 @@ type NetworkConfig struct {
 	Overlay *Overlay
 	// SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server
 	SnatToUpstreamDNS *SnatToUpstreamDNS
+	// SnatOutOfCluster enables the masquerading of packets outside of the cluster
+	SnatOutOfCluster *SnatOutOfCluster
 }

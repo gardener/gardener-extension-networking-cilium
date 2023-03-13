@@ -102,11 +102,13 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			}
 			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
 		}
-		// enforce usage of overlay network because of https://github.com/cilium/cilium/issues/23376
 		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
-			networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: false}
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
+			networkConfig.SnatOutOfCluster = &ciliumv1alpha1.SnatOutOfCluster{Enabled: true}
+			if networkConfig.SnatToUpstreamDNS == nil {
+				networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: true}
+			}
 		}
 	}
 
