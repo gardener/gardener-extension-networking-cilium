@@ -102,12 +102,13 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			}
 			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
 		}
+		// enforce overlay as there are problems with newer versions of gardenlinux and iptables
 		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
-			networkConfig.SnatOutOfCluster = &ciliumv1alpha1.SnatOutOfCluster{Enabled: true}
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
+			networkConfig.SnatOutOfCluster = &ciliumv1alpha1.SnatOutOfCluster{Enabled: false}
 			if networkConfig.SnatToUpstreamDNS == nil {
-				networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: true}
+				networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: false}
 			}
 		}
 	}
