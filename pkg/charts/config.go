@@ -16,33 +16,34 @@ type requirementsConfig struct {
 }
 
 type globalConfig struct {
-	Tunnel                 ciliumv1alpha1.TunnelMode               `json:"tunnel"`
-	IdentityAllocationMode ciliumv1alpha1.IdentityAllocationMode   `json:"identityAllocationMode"`
-	KubeProxyReplacement   ciliumv1alpha1.KubeProxyReplacementMode `json:"kubeProxyReplacement"`
-	Etcd                   etcd                                    `json:"etcd"`
-	Ipv4                   ipv4                                    `json:"ipv4"`
-	Ipv6                   ipv6                                    `json:"ipv6"`
-	Debug                  debug                                   `json:"debug"`
-	Prometheus             prometheus                              `json:"prometheus"`
-	OperatorPrometheus     operatorPrometheus                      `json:"operatorPrometheus"`
-	Psp                    psp                                     `json:"psp"`
-	Images                 map[string]string                       `json:"images"`
-	K8sServiceHost         string                                  `json:"k8sServiceHost"`
-	K8sServicePort         int32                                   `json:"k8sServicePort"`
-	NodePort               nodePort                                `json:"nodePort"`
-	PodCIDR                string                                  `json:"podCIDR"`
-	NodeCIDR               string                                  `json:"nodeCIDR"`
-	BPFSocketLBHostnsOnly  bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
-	LocalRedirectPolicy    localRedirectPolicy                     `json:"localRedirectPolicy"`
-	NodeLocalDNS           nodeLocalDNS                            `json:"nodeLocalDNS"`
-	EgressGateway          egressGateway                           `json:"egressGateway"`
-	IPv4NativeRoutingCIDR  string                                  `json:"ipv4NativeRoutingCIDR"`
-	MTU                    int                                     `json:"mtu"`
-	Devices                []string                                `json:"devices"`
-	BPF                    bpf                                     `json:"bpf"`
-	IPAM                   ipam                                    `json:"ipam"`
-	SnatToUpstreamDNS      snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
-	SnatOutOfCluster       snatOutOfCluster                        `json:"snatOutOfCluster"`
+	Tunnel                   ciliumv1alpha1.TunnelMode               `json:"tunnel"`
+	IdentityAllocationMode   ciliumv1alpha1.IdentityAllocationMode   `json:"identityAllocationMode"`
+	KubeProxyReplacement     ciliumv1alpha1.KubeProxyReplacementMode `json:"kubeProxyReplacement"`
+	Etcd                     etcd                                    `json:"etcd"`
+	Ipv4                     ipv4                                    `json:"ipv4"`
+	Ipv6                     ipv6                                    `json:"ipv6"`
+	Debug                    debug                                   `json:"debug"`
+	Prometheus               prometheus                              `json:"prometheus"`
+	OperatorHighAvailability operatorHighAvailability                `json:"operatorHighAvailability"`
+	OperatorPrometheus       operatorPrometheus                      `json:"operatorPrometheus"`
+	Psp                      psp                                     `json:"psp"`
+	Images                   map[string]string                       `json:"images"`
+	K8sServiceHost           string                                  `json:"k8sServiceHost"`
+	K8sServicePort           int32                                   `json:"k8sServicePort"`
+	NodePort                 nodePort                                `json:"nodePort"`
+	PodCIDR                  string                                  `json:"podCIDR"`
+	NodeCIDR                 string                                  `json:"nodeCIDR"`
+	BPFSocketLBHostnsOnly    bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
+	LocalRedirectPolicy      localRedirectPolicy                     `json:"localRedirectPolicy"`
+	NodeLocalDNS             nodeLocalDNS                            `json:"nodeLocalDNS"`
+	EgressGateway            egressGateway                           `json:"egressGateway"`
+	IPv4NativeRoutingCIDR    string                                  `json:"ipv4NativeRoutingCIDR"`
+	MTU                      int                                     `json:"mtu"`
+	Devices                  []string                                `json:"devices"`
+	BPF                      bpf                                     `json:"bpf"`
+	IPAM                     ipam                                    `json:"ipam"`
+	SnatToUpstreamDNS        snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
+	SnatOutOfCluster         snatOutOfCluster                        `json:"snatOutOfCluster"`
 }
 
 // etcd related configuration for cilium
@@ -62,6 +63,10 @@ type prometheus struct {
 }
 
 type serviceMonitor struct {
+	Enabled bool `json:"enabled"`
+}
+
+type operatorHighAvailability struct {
 	Enabled bool `json:"enabled"`
 }
 

@@ -8,7 +8,9 @@ metadata:
     name: cilium-operator
     app.kubernetes.io/part-of: cilium
     app.kubernetes.io/name: cilium-operator
+    {{- if .Values.global.operatorHighAvailability.enabled }}
     high-availability-config.resources.gardener.cloud/type: controller
+    {{- end }}
 spec:
   # See docs on ServerCapabilities.LeasesResourceLock in file pkg/k8s/version/version.go
   # for more details.
