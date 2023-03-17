@@ -72,6 +72,9 @@ var defaultGlobalConfig = globalConfig{
 			Enabled: false,
 		},
 	},
+	OperatorHighAvailability: operatorHighAvailability{
+		Enabled: true,
+	},
 	OperatorPrometheus: operatorPrometheus{
 		Enabled: true,
 		Port:    6942,
@@ -150,6 +153,20 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 	if cluster != nil && cluster.Shoot != nil && cluster.Shoot.Spec.Networking.Nodes != nil {
 		globalConfig.NodeCIDR = *cluster.Shoot.Spec.Networking.Nodes
+	}
+
+	//As the cilium operator can only run once per node, calculate if there can be enough nodes within the shoot to run the HA mode
+	if cluster != nil && cluster.Shoot != nil {
+		countOfApplicableWorkerNodes := 0
+
+		//Iterate over all worker groups of the targeted shoot and calculate the maximum available nodes
+		for _, k := range cluster.Shoot.Spec.Provider.Workers {
+			countOfApplicableWorkerNodes += int(k.Maximum)
+		}
+
+		if countOfApplicableWorkerNodes < 2 {
+			globalConfig.OperatorHighAvailability.Enabled = false
+		}
 	}
 
 	// Settings for Kube-Proxy disabled and using the HostService option
