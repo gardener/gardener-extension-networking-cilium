@@ -132,6 +132,7 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
+      automountServiceAccountToken: true
       tolerations:
       - operator: Exists
       volumes:

@@ -477,6 +477,9 @@ data:
 {{- if .Values.global.arpingRefreshPeriod }}
   arping-refresh-period: {{ .Values.global.arpingRefreshPeriod }}
 {{- end }}
+{{- if .Values.global.cniUninstall }}
+  cni-uninstall: {{ .Values.global.cniUninstall | quote }}
+{{- end }}
 {{- if and .Values.global.pprof .Values.global.pprof.enabled }}
   pprof: {{ .Values.global.pprof.enabled | quote }}
 {{- end }}

@@ -13,6 +13,10 @@ spec:
   selector:
     matchLabels:
       k8s-app: hubble-ui
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -30,6 +34,7 @@ spec:
           type: RuntimeDefault
       serviceAccountName: hubble-ui
       serviceAccount: hubble-ui
+      automountServiceAccountToken: true
       containers:
         - name: frontend
           image: {{ index .Values.global.images "hubble-ui" }}
