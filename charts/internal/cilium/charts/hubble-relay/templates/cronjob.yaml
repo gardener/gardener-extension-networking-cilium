@@ -39,6 +39,7 @@ spec:
           hostNetwork: true
           serviceAccount: hubble-generate-certs
           serviceAccountName: hubble-generate-certs
+          automountServiceAccountToken: true
           securityContext:
             seccompProfile:
               type: RuntimeDefault
