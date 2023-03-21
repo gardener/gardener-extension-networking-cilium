@@ -127,3 +127,7 @@ verify: check format test
 
 .PHONY: verify-extended
 verify-extended: check-generate check format test-cov test-cov-clean
+
+.PHONY: test-e2e-local
+test-e2e-local: $(KIND) $(YQ) $(GINKGO)
+	@$(REPO_ROOT)/hack/test-e2e-provider-local.sh --procs=3
