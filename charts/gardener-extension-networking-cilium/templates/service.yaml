@@ -9,11 +9,17 @@ metadata:
     networking.resources.gardener.cloud/from-policy-allowed-ports: '[{"port":{{ .Values.metrics.port }},"protocol":"TCP"}]'
     networking.resources.gardener.cloud/namespace-selectors: '[{"matchLabels":{"kubernetes.io/metadata.name":"garden"}}]'
     networking.resources.gardener.cloud/pod-label-selector-namespace-alias: extensions
-{{-  if .Values.ignoreResources }}
+    {{-  if .Values.ignoreResources }}
     resources.gardener.cloud/ignore: "true"
-{{- end }}
+    {{- end }}
+    {{- if .Values.gardener.seed.spec.settings.topologyAwareRouting.enabled }}
+    service.kubernetes.io/topology-aware-hints: "auto"
+    {{- end }}
   labels:
 {{ include "labels" . | indent 4 }}
+    {{- if .Values.gardener.seed.spec.settings.topologyAwareRouting.enabled }}
+    endpoint-slice-hints.resources.gardener.cloud/consider: "true"
+    {{- end }}
 spec:
   type: ClusterIP
   selector:

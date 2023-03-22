@@ -47,6 +47,11 @@ config:
 
 gardener:
   version: ""
+  seed:
+    spec:
+      settings:
+        topologyAwareRouting:
+          enabled: false
 
 webhookConfig:
   servicePort: 443
