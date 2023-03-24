@@ -6,7 +6,7 @@ package templates
 
 const (
 
-	// NetworkingTestDeploymentName is the name of a connectivity test deployment for cilium
-	NetworkingTestDeploymentName = "networking-test.yaml.tpl"
-	NetworkingTestNamespace      = "kube-system"
+	// NetworkingTestJobName is the name of a connectivity test job for cilium
+	NetworkingTestJobName   = "networking-test.yaml.tpl"
+	NetworkingTestNamespace = "kube-system"
 )

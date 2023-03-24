@@ -17,6 +17,10 @@ fi
 cd "$repo_root/gardener"
 git checkout 20b05ad20e6f426e65e7bd904879a77a94576b02 # g/g v1.66.1
 make kind-up
+trap '{
+  cd "$repo_root/gardener"
+  make kind-down
+}' EXIT
 export KUBECONFIG=$repo_root/gardener/example/gardener-local/kind/local/kubeconfig
 make gardener-up
 
@@ -43,3 +47,6 @@ export GOMEGA_DEFAULT_CONSISTENTLY_DURATION=5s
 export GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL=200ms
 
 GO111MODULE=on ginkgo --timeout=1h --v --progress "$@" $repo_root/test/e2e/...
+
+cd "$repo_root/gardener"
+make gardener-down
