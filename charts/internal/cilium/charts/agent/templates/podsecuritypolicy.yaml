@@ -31,10 +31,10 @@ spec:
   - 'secret'
   - 'downwardAPI'
   - 'hostPath'
-  {{- if .Values.global.prometheus.enabled }}
   hostPorts:
   - min: 4244
     max: 4244
+  {{- if .Values.global.prometheus.enabled }}
   - min: 9090
     max: 9090
   - min: 9091
