@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -18,7 +19,6 @@ import (
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	gardenerutils "github.com/gardener/gardener/pkg/utils/gardener"
 	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/test/framework"
 	"github.com/gardener/gardener/test/utils/shoots/access"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -28,23 +28,23 @@ import (
 
 var _ = Describe("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
-	f.Shoot = defaultShoot("ping-test")
+	f.Shoot = defaultShoot("con-test")
 
-	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), func() {
+	It("Create Shoot, Test Network (Cilium Connectivity), Delete Shoot", Label("good-case"), func() {
 		By("Create Shoot")
 		ctx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
 		defer cancel()
 		Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(Succeed())
 		f.Verify()
 
-		By("Test Network")
+		By("Test Networking")
 		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
 		defer cancel()
 		values := struct {
 			HelmDeployNamespace string
 			KubeVersion         string
 		}{
-			templates.NetworkTestNamespace,
+			templates.NetworkConnectivityTestNamespace,
 			f.Shoot.Spec.Kubernetes.Version,
 		}
 
@@ -76,64 +76,49 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		f.TemplatesDir = filepath.Join(resourceDir, "templates")
 
-		err = f.RenderAndDeployTemplate(ctx, f.ShootFramework.ShootClient, templates.NetworkTestName, values)
+		err = f.RenderAndDeployTemplate(ctx, f.ShootFramework.ShootClient, templates.NetworkConnectivityTestJobName, values)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		time.Sleep(30 * time.Second)
-		err = f.ShootFramework.WaitUntilDaemonSetIsRunning(
+		err = f.ShootFramework.WaitUntilPodIsRunningWithLabels(
 			ctx,
-			f.ShootFramework.ShootClient.Client(),
-			"host-network",
-			values.HelmDeployNamespace,
+			labels.SelectorFromSet(labels.Set{v1beta1constants.LabelApp: "networking-test"}),
+			templates.NetworkConnectivityTestNamespace,
+			f.ShootFramework.ShootClient,
 		)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		By("Network-test Job was deployed successfully!")
 
-		err = f.ShootFramework.WaitUntilDaemonSetIsRunning(
-			ctx,
-			f.ShootFramework.ShootClient.Client(),
-			"pod-network",
-			values.HelmDeployNamespace,
-		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		By("Check if network-test Job fails or succeeds!")
 
-		By("Network-test daemonsets were deployed successfully!")
+		job := &batchv1.Job{}
+		var succeeded bool
+		for {
+			err = f.ShootFramework.ShootClient.Client().Get(ctx, kubernetesutils.Key(values.HelmDeployNamespace, "network-test"), job)
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		By("Check if network-test fails or succeeds!")
+			if job.Status.Succeeded > 0 {
+				succeeded = true
+				break
+			}
 
-		// wait one minute until results are collected
-		time.Sleep(60 * time.Second)
-
-		podListHostNetwork, err := framework.GetPodsByLabels(ctx, labels.SelectorFromSet(map[string]string{
-			v1beta1constants.LabelApp: "host-network",
-		}), f.ShootFramework.ShootClient, values.HelmDeployNamespace)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		podListPodNetwork, err := framework.GetPodsByLabels(ctx, labels.SelectorFromSet(map[string]string{
-			v1beta1constants.LabelApp: "pod-network",
-		}), f.ShootFramework.ShootClient, values.HelmDeployNamespace)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		containerStatuses := []corev1.ContainerStatus{}
-		for _, pod := range podListHostNetwork.Items {
-			containerStatuses = append(containerStatuses, pod.Status.ContainerStatuses...)
-		}
-
-		for _, pod := range podListPodNetwork.Items {
-			containerStatuses = append(containerStatuses, pod.Status.ContainerStatuses...)
-		}
-		succeeded := true
-		for _, containerStatus := range containerStatuses {
-			if containerStatus.RestartCount > 0 {
+			if job.Status.Failed > 0 {
 				succeeded = false
 				break
 			}
+
+			time.Sleep(1 * time.Second)
 		}
+
+		By("Dump networking-test logs!")
+		err = f.ShootFramework.DumpLogsForPodsWithLabelsInNamespace(ctx, f.ShootFramework.ShootClient, values.HelmDeployNamespace, client.MatchingLabels{v1beta1constants.LabelApp: "networking-test"})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		By("Delete Shoot")
 		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
 		defer cancel()
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
-		By("Network Test (Ping) status")
+		By("Network Test (Cilium Connectivity) status")
 		gomega.Expect(succeeded).To(BeTrue())
 	})
 })

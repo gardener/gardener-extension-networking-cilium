@@ -38,7 +38,8 @@ yq -i e '(select (.providerConfig.values.image) | .providerConfig.values.image.r
 
 kubectl apply -f "$repo_root/tmp/controller-registration.yaml"
 
-echo '127.0.0.1 api.e2e-default.local.external.local.gardener.cloud' >> /etc/hosts
+echo '127.0.0.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '127.0.0.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
 
 # reduce flakiness in contended pipelines
 export GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT=5s
