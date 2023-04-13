@@ -47,8 +47,3 @@ func CiliumCertGenImage() string {
 func CiliumKubeProxyImage(kubernetesVersion string) string {
 	return findImage(cilium.KubeProxyImageName, imagevector.RuntimeVersion(kubernetesVersion), imagevector.TargetVersion(kubernetesVersion))
 }
-
-// PortmapCopierImage returns the portmap copier image.
-func PortmapCopierImage() string {
-	return findImage(cilium.PortmapCopierImageName)
-}

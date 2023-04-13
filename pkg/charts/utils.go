@@ -90,8 +90,6 @@ var defaultGlobalConfig = globalConfig{
 		cilium.HubbleUIImageName:        imagevector.CiliumHubbleUIImage(),
 		cilium.HubbleUIBackendImageName: imagevector.CiliumHubbleUIBackendImage(),
 		cilium.CertGenImageName:         imagevector.CiliumCertGenImage(),
-
-		cilium.PortmapCopierImageName: imagevector.PortmapCopierImage(),
 	},
 	PodCIDR:  "",
 	NodeCIDR: "",

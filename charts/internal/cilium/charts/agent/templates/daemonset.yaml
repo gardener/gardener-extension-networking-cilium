@@ -329,25 +329,6 @@ spec:
           capabilities:
             drop:
               - ALL
-{{- if eq .Values.global.cni.chainingMode "portmap" }}
-      # Copy portmap binary to cni folder.
-      - name: copy-portmap-binary
-        image: {{ index .Values.global.images "portmap-copier" }}
-        imagePullPolicy: IfNotPresent
-        volumeMounts:
-        - name: cni-path
-          mountPath: /host
-        securityContext:
-          seLinuxOptions:
-            level: s0
-            # Running with spc_t since we have removed the privileged mode.
-            # Users can change it to a different type as long as they have the
-            # type available on the system.
-            type: spc_t
-          capabilities:
-            drop:
-              - ALL
-{{- end }}
       - name: config
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
