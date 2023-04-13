@@ -38,9 +38,6 @@ const (
 	// KubeProxyImageName defines the kube-proxy image name.
 	KubeProxyImageName = "kube-proxy"
 
-	// PortmapCopierImageName defines the portmap-copier image name.
-	PortmapCopierImageName = "portmap-copier"
-
 	// MonitoringChartName
 	MonitoringName = "cilium-monitoring-config"
 

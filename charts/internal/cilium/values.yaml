@@ -179,7 +179,7 @@ global:
     #  - generic-veth
     #  - aws-cni
     #  - portmap
-    chainingMode: portmap
+    chainingMode: none
 
     # customConf skips writing of the CNI configuration. This can be used if
     # writing of the CNI configuration is performed by external automation.
@@ -516,5 +516,3 @@ global:
     certgen: "image-repository:image-tag"
 
     kube-proxy: "image-repository:image-tag"
-
-    portmap-copier: "image-repository:image-tag"
