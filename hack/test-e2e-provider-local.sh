@@ -15,7 +15,7 @@ if [[ ! -d "$repo_root/gardener" ]]; then
 fi
 
 cd "$repo_root/gardener"
-git checkout 20b05ad20e6f426e65e7bd904879a77a94576b02 # g/g v1.66.1
+git checkout 1a7052b51f76c8f317be3dd8d91b420afdb611f3 # g/g v1.69.1
 source "$repo_root/gardener/hack/ci-common.sh"
 make kind-up
 trap '{
