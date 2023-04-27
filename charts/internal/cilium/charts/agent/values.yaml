@@ -14,7 +14,7 @@ resources:
   requests:
     memory: 200Mi
   limits:
-    memory: 1Gi
+    memory: 10Gi
 
 # Specifies the resources for the clean-cilium-state init container
 initResources:
