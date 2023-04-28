@@ -2,7 +2,7 @@ images:
   - name: cilium-agent
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.13.1
+    tag: v1.13.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -15,7 +15,7 @@ images:
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
-    tag: v1.13.1
+    tag: v1.13.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -28,7 +28,7 @@ images:
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui
-    tag: v0.10.0
+    tag: v0.11.0
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -41,7 +41,7 @@ images:
   - name: hubble-ui-backend
     sourceRepository: github.com/cilium/hubble-ui-backend
     repository: quay.io/cilium/hubble-ui-backend
-    tag: v0.10.0
+    tag: v0.11.0
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -54,7 +54,7 @@ images:
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
-    tag: v1.13.1
+    tag: v1.13.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:

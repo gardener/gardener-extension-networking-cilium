@@ -149,10 +149,10 @@ spec:
           postStart:
             exec:
               command:
-              - "/cni-install.sh"
-              -{{- if .Values.global.debug.enabled }} "--enable-debug=true"{{- else }} "--enable-debug=false"{{- end }}
-              - "--cni-exclusive=true"
-              - "--log-file=/var/run/cilium/cilium-cni.log"
+              - "bash"
+              - "-c"
+              - |
+                /cni-install.sh {{- if .Values.global.debug.enabled }} --enable-debug=true {{- else }} --enable-debug=false {{- end }} --cni-exclusive=true --log-file=/var/run/cilium/cilium-cni.log
           preStop:
             exec:
               command:
