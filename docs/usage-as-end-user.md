@@ -38,18 +38,17 @@ The `psp` field describes whether `cilium-operator` and `cilium-agent` shall be 
 
 The `tunnel` field describes the encapsulation mode for communication between nodes. Possible values are `vxlan` (default), `geneve` or `disabled`.
 
-The `bpfSocketLBHostnsOnly.enabled` field describes wheter socket LB will be skipped for services when inside a pod namespace (default), in favor of service LB at the pod interface. Socket LB is still used when in the host namespace. This feature is required when using cilium with a service mesh like istio or linkerd.
+The `bpfSocketLBHostnsOnly.enabled` field describes whether socket LB will be skipped for services when inside a pod namespace (default), in favor of service LB at the pod interface. Socket LB is still used when in the host namespace. This feature is required when using cilium with a service mesh like istio or linkerd.
 
-The `egressGateway.enabled` field describes wheter egress gateways are enabled or not (default). To use this feature kube-proxy must be disabled. This can be done with the following configuration in the shoot.yaml file:
-
-```
+The `egressGateway.enabled` field describes whether egress gateways are enabled or not (default). To use this feature kube-proxy must be disabled. This can be done with the following configuration in the Shoot:
+```yaml
 spec:
   kubernetes:
     kubeProxy:
       enabled: false
 ```
 
-The `snatToUpstreamDNS.enabled` field describes wheter the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
+The `snatToUpstreamDNS.enabled` field describes whether the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
 
 ## Example `Shoot` manifest
 

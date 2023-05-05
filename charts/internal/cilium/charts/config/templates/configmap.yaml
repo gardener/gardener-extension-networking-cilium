@@ -464,6 +464,7 @@ data:
 {{- end }}
   node-port-bind-protection: {{ .Values.global.nodePort.bindProtection | quote }}
   enable-auto-protect-node-port-range: {{ .Values.global.nodePort.autoProtectPortRange | quote }}
+  enable-service-topology: {{ .Values.global.loadBalancer.serviceTopology | quote }}
   enable-svc-source-range-check: {{ .Values.global.enableSvcSrcRangeCheck | quote }}
 {{- end }}
 {{- if hasKey .Values "sessionAffinity" }}

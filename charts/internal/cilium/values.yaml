@@ -326,6 +326,12 @@ global:
     # protocols is the list of protocols to support
     protocols: tcp,udp
 
+  # Configure service load balancing
+  loadBalancer:
+    # serviceTopology enables K8s Topology Aware Hints -based service
+    # endpoints filtering
+    serviceTopology: true
+
   # nodePort is the configuration for NodePort service handling
   nodePort:
     # enabled enables NodePort functionality
