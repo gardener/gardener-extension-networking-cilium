@@ -1,4 +1,4 @@
-// Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -230,11 +230,11 @@ func (m *ManagerOptions) AddFlags(fs *pflag.FlagSet) {
 
 // Complete implements Completer.Complete.
 func (m *ManagerOptions) Complete() error {
-	if !sets.New[string](logger.AllLogLevels...).Has(m.LogLevel) {
+	if !sets.New(logger.AllLogLevels...).Has(m.LogLevel) {
 		return fmt.Errorf("invalid --%s: %s", LogLevelFlag, m.LogLevel)
 	}
 
-	if !sets.New[string](logger.AllLogFormats...).Has(m.LogFormat) {
+	if !sets.New(logger.AllLogFormats...).Has(m.LogFormat) {
 		return fmt.Errorf("invalid --%s: %s", LogFormatFlag, m.LogFormat)
 	}
 

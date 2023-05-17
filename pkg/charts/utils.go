@@ -149,7 +149,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
 	}
-	if cluster != nil && cluster.Shoot != nil && cluster.Shoot.Spec.Networking.Nodes != nil {
+	if cluster != nil && cluster.Shoot != nil && cluster.Shoot.Spec.Networking != nil && cluster.Shoot.Spec.Networking.Nodes != nil {
 		globalConfig.NodeCIDR = *cluster.Shoot.Spec.Networking.Nodes
 	}
 

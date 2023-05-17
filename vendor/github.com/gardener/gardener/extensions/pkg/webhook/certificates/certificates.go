@@ -1,4 +1,4 @@
-// Copyright (c) 2022 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2022 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"k8s.io/utils/pointer"
@@ -67,12 +66,11 @@ func getWebhookServerCertConfig(name, namespace, componentName, mode, url string
 		dnsNames    []string
 		ipAddresses []net.IP
 
-		serverName     = url
-		serverNameData = strings.SplitN(url, ":", 3)
+		serverName = url
 	)
 
-	if len(serverNameData) == 2 {
-		serverName = serverNameData[0]
+	if host, _, err := net.SplitHostPort(url); err == nil {
+		serverName = host
 	}
 
 	switch mode {
