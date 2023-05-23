@@ -21,7 +21,6 @@ import (
 	"github.com/gardener/gardener/test/framework"
 	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
-	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -54,15 +53,15 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			kubernetes.WithAllowedUserFields([]string{kubernetes.AuthTokenFile}),
 			kubernetes.WithDisabledCachedClient(),
 		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		shootKubeconfigSecret := &corev1.Secret{}
 		gardenClient := f.GardenClient.Client()
 		gardenClient.Get(ctx, kubernetesutils.Key(f.Shoot.Namespace, gardenerutils.ComputeShootProjectSecretName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)), shootKubeconfigSecret)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		newShootKubeconfigSecret := &corev1.Secret{ObjectMeta: v1.ObjectMeta{
 			Name:      "kubeconfig",
@@ -70,14 +69,14 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			Data: map[string][]byte{"kubeconfig": shootKubeconfigSecret.Data["kubeconfig"]},
 		}
 		err = f.ShootFramework.ShootClient.Client().Create(ctx, newShootKubeconfigSecret)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		resourceDir, err := filepath.Abs(filepath.Join(".."))
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		f.TemplatesDir = filepath.Join(resourceDir, "templates")
 
 		err = f.RenderAndDeployTemplate(ctx, f.ShootFramework.ShootClient, templates.NetworkTestName, values)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		time.Sleep(30 * time.Second)
 		err = f.ShootFramework.WaitUntilDaemonSetIsRunning(
 			ctx,
@@ -85,7 +84,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			"host-network",
 			values.HelmDeployNamespace,
 		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		err = f.ShootFramework.WaitUntilDaemonSetIsRunning(
 			ctx,
@@ -93,7 +92,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			"pod-network",
 			values.HelmDeployNamespace,
 		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		By("Network-test daemonsets were deployed successfully!")
 
@@ -105,12 +104,12 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		podListHostNetwork, err := framework.GetPodsByLabels(ctx, labels.SelectorFromSet(map[string]string{
 			v1beta1constants.LabelApp: "host-network",
 		}), f.ShootFramework.ShootClient, values.HelmDeployNamespace)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		podListPodNetwork, err := framework.GetPodsByLabels(ctx, labels.SelectorFromSet(map[string]string{
 			v1beta1constants.LabelApp: "pod-network",
 		}), f.ShootFramework.ShootClient, values.HelmDeployNamespace)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		containerStatuses := []corev1.ContainerStatus{}
 		for _, pod := range podListHostNetwork.Items {
@@ -134,6 +133,6 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
 		By("Network Test (Ping) status")
-		gomega.Expect(succeeded).To(BeTrue())
+		Expect(succeeded).To(BeTrue())
 	})
 })
