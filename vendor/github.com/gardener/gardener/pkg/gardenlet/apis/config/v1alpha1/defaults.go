@@ -1,4 +1,4 @@
-// Copyright (c) 2018 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2018 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -381,11 +381,10 @@ func SetDefaults_ShootStateSyncControllerConfiguration(obj *ShootStateSyncContro
 	}
 }
 
-// SetDefaults_NetworkPolicyControllerConfiguration sets defaults for the seed apiserver endpoints controller.
+// SetDefaults_NetworkPolicyControllerConfiguration sets defaults for the network policy controller.
 func SetDefaults_NetworkPolicyControllerConfiguration(obj *NetworkPolicyControllerConfiguration) {
 	if obj.ConcurrentSyncs == nil {
-		// only use few workers for each seed, as the API server endpoints should stay the same most of the time.
-		v := 3
+		v := 5
 		obj.ConcurrentSyncs = &v
 	}
 }
@@ -452,17 +451,17 @@ func SetDefaults_Logging(obj *Logging) {
 	if obj.Enabled == nil {
 		obj.Enabled = pointer.Bool(false)
 	}
-	if obj.Loki == nil {
-		obj.Loki = &Loki{}
+	if obj.Vali == nil {
+		obj.Vali = &Vali{}
 	}
-	if obj.Loki.Enabled == nil {
-		obj.Loki.Enabled = obj.Enabled
+	if obj.Vali.Enabled == nil {
+		obj.Vali.Enabled = obj.Enabled
 	}
-	if obj.Loki.Garden == nil {
-		obj.Loki.Garden = &GardenLoki{}
+	if obj.Vali.Garden == nil {
+		obj.Vali.Garden = &GardenVali{}
 	}
-	if obj.Loki.Garden.Storage == nil {
-		obj.Loki.Garden.Storage = &DefaultCentralLokiStorage
+	if obj.Vali.Garden.Storage == nil {
+		obj.Vali.Garden.Storage = &DefaultCentralValiStorage
 	}
 	if obj.ShootEventLogging == nil {
 		obj.ShootEventLogging = &ShootEventLogging{}

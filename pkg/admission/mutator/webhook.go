@@ -17,6 +17,7 @@ package mutator
 import (
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -59,7 +60,8 @@ func createCiliumPredicate() predicate.Funcs {
 			return false
 		}
 
-		return shoot.Spec.Networking.Type == cilium.ReleaseName
+		return shoot.Spec.Networking != nil &&
+			pointer.StringDeref(shoot.Spec.Networking.Type, "") == cilium.ReleaseName
 	}
 
 	return predicate.Funcs{

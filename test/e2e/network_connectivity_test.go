@@ -19,9 +19,8 @@ import (
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	gardenerutils "github.com/gardener/gardener/pkg/utils/gardener"
 	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/test/utils/shoots/access"
+	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
-	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -54,15 +53,15 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			kubernetes.WithAllowedUserFields([]string{kubernetes.AuthTokenFile}),
 			kubernetes.WithDisabledCachedClient(),
 		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		shootKubeconfigSecret := &corev1.Secret{}
 		gardenClient := f.GardenClient.Client()
 		gardenClient.Get(ctx, kubernetesutils.Key(f.Shoot.Namespace, gardenerutils.ComputeShootProjectSecretName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)), shootKubeconfigSecret)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		newShootKubeconfigSecret := &corev1.Secret{ObjectMeta: v1.ObjectMeta{
 			Name:      "kubeconfig",
@@ -70,14 +69,14 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			Data: map[string][]byte{"kubeconfig": shootKubeconfigSecret.Data["kubeconfig"]},
 		}
 		err = f.ShootFramework.ShootClient.Client().Create(ctx, newShootKubeconfigSecret)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		resourceDir, err := filepath.Abs(filepath.Join(".."))
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		f.TemplatesDir = filepath.Join(resourceDir, "templates")
 
 		err = f.RenderAndDeployTemplate(ctx, f.ShootFramework.ShootClient, templates.NetworkConnectivityTestJobName, values)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		time.Sleep(30 * time.Second)
 		err = f.ShootFramework.WaitUntilPodIsRunningWithLabels(
 			ctx,
@@ -85,7 +84,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			templates.NetworkConnectivityTestNamespace,
 			f.ShootFramework.ShootClient,
 		)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		By("Network-test Job was deployed successfully!")
 
 		By("Check if network-test Job fails or succeeds!")
@@ -94,7 +93,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		var succeeded bool
 		for {
 			err = f.ShootFramework.ShootClient.Client().Get(ctx, kubernetesutils.Key(values.HelmDeployNamespace, "network-test"), job)
-			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 
 			if job.Status.Succeeded > 0 {
 				succeeded = true
@@ -111,7 +110,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		By("Dump networking-test logs!")
 		err = f.ShootFramework.DumpLogsForPodsWithLabelsInNamespace(ctx, f.ShootFramework.ShootClient, values.HelmDeployNamespace, client.MatchingLabels{v1beta1constants.LabelApp: "networking-test"})
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		By("Delete Shoot")
 		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
@@ -119,6 +118,6 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
 		By("Network Test (Cilium Connectivity) status")
-		gomega.Expect(succeeded).To(BeTrue())
+		Expect(succeeded).To(BeTrue())
 	})
 })

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2022 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -80,11 +80,6 @@ var defaultControllerPredicate = predicate.Funcs{
 		// gardenlet updates the timestamp annotation). It prevents that the controller triggers itself endlessly when
 		// updating the status while the deletion timestamp is set.
 		if e.ObjectNew.GetDeletionTimestamp() != nil && statusEqual(e.ObjectOld, e.ObjectNew) {
-			return true
-		}
-
-		// If the last operation does not indicate success and the object's timestamp changes then we admit reconciliation.
-		if lastOperationNotSuccessful(e.ObjectNew) && e.ObjectOld.GetAnnotations()[v1beta1constants.GardenerTimestamp] != e.ObjectNew.GetAnnotations()[v1beta1constants.GardenerTimestamp] {
 			return true
 		}
 

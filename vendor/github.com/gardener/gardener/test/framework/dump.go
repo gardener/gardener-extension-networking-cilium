@@ -1,4 +1,4 @@
-// Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ func (f *CommonFramework) DumpLogsForPodsWithLabelsInNamespace(ctx context.Conte
 
 	var result error
 	for _, pod := range pods.Items {
-		if err := f.DumpLogsForPodInNamespace(ctx, k8sClient, namespace, pod.Name); err != nil {
+		if err := f.DumpLogsForPodInNamespace(ctx, k8sClient, namespace, pod.Name, &corev1.PodLogOptions{}); err != nil {
 			result = multierror.Append(result, err)
 		}
 	}
@@ -190,12 +190,12 @@ func (f *CommonFramework) DumpLogsForPodsWithLabelsInNamespace(ctx context.Conte
 }
 
 // DumpLogsForPodInNamespace prints the logs of the pod with the given namespace and name.
-func (f *CommonFramework) DumpLogsForPodInNamespace(ctx context.Context, k8sClient kubernetes.Interface, namespace, name string) error {
+func (f *CommonFramework) DumpLogsForPodInNamespace(ctx context.Context, k8sClient kubernetes.Interface, namespace, name string, options *corev1.PodLogOptions) error {
 	log := f.Logger.WithValues("pod", client.ObjectKey{Namespace: namespace, Name: name})
 	log.Info("Dumping logs for corev1.Pod")
 
 	podIf := k8sClient.Kubernetes().CoreV1().Pods(namespace)
-	logs, err := kubernetes.GetPodLogs(ctx, podIf, name, &corev1.PodLogOptions{})
+	logs, err := kubernetes.GetPodLogs(ctx, podIf, name, options)
 	if err != nil {
 		return err
 	}

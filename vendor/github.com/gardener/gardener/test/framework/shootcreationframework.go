@@ -1,4 +1,4 @@
-// Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -351,8 +351,8 @@ func RegisterShootCreationFrameworkFlags() *ShootCreationConfig {
 
 	// ProviderConfigs flags
 	flag.StringVar(&newCfg.infrastructureProviderConfig, "infrastructure-provider-config-filepath", "", "filepath to the provider specific infrastructure config.")
-	flag.StringVar(&newCfg.controlPlaneProviderConfig, "controlplane-provider-config-filepath", "", "filepath to the provider specific infrastructure config.")
-	flag.StringVar(&newCfg.networkingProviderConfig, "networking-provider-config-filepath", "", "filepath to the provider specific infrastructure config.")
+	flag.StringVar(&newCfg.controlPlaneProviderConfig, "controlplane-provider-config-filepath", "", "filepath to the control plane config.")
+	flag.StringVar(&newCfg.networkingProviderConfig, "networking-provider-config-filepath", "", "filepath to the network provider config.")
 	flag.StringVar(&newCfg.workersConfig, "workers-config-filepath", "", "filepath to the worker config.")
 
 	// other
