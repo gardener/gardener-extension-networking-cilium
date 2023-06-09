@@ -15,7 +15,6 @@
 package main
 
 import (
-	"github.com/gardener/gardener/pkg/logger"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
@@ -23,7 +22,6 @@ import (
 )
 
 func main() {
-	runtimelog.SetLogger(logger.MustNewZapLogger(logger.InfoLevel, logger.FormatJSON))
 	cmd := app.NewControllerManagerCommand(signals.SetupSignalHandler())
 
 	if err := cmd.Execute(); err != nil {
