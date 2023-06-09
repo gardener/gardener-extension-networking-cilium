@@ -3,7 +3,10 @@ FROM golang:1.20.4 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-extension-networking-cilium
 COPY . .
-RUN make install
+
+ARG EFFECTIVE_VERSION
+
+RUN make install EFFECTIVE_VERSION=$EFFECTIVE_VERSION
 
 ############# gardener-extension-networking-cilium
 FROM gcr.io/distroless/static-debian11:nonroot AS gardener-extension-networking-cilium
