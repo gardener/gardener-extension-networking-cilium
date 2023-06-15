@@ -45,7 +45,7 @@ import (
 )
 
 // Name is a constant for the name of this component.
-const Name = "gardener-extension-networking-calico"
+const Name = "gardener-extension-networking-cilium"
 
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
 func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
