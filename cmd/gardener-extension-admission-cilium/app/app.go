@@ -23,10 +23,13 @@ import (
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
 	"github.com/gardener/gardener/pkg/apis/core/install"
 	gardenerhealthz "github.com/gardener/gardener/pkg/healthz"
+	"github.com/gardener/gardener/pkg/logger"
 	"github.com/spf13/cobra"
 	componentbaseconfig "k8s.io/component-base/config"
+	"k8s.io/component-base/version"
+	"k8s.io/component-base/version/verflag"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	admissioncmd "github.com/gardener/gardener-extension-networking-cilium/pkg/admission/cmd"
@@ -34,7 +37,8 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
-var log = logf.Log.WithName("gardener-extension-admission-cilium")
+// Name is a constant for the name of this component.
+const Name = "gardener-extension-admission-cilium"
 
 // NewAdmissionCommand creates a new command for running a Cilium admission webhook.
 func NewAdmissionCommand(ctx context.Context) *cobra.Command {
@@ -58,6 +62,16 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 		Use: fmt.Sprintf("admission-%s", cilium.Name),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			verflag.PrintAndExitIfRequested()
+
+			log, err := logger.NewZapLogger(logger.InfoLevel, logger.FormatJSON)
+			if err != nil {
+				return fmt.Errorf("error instantiating zap logger: %w", err)
+			}
+			runtimelog.SetLogger(log)
+
+			log.Info("Starting "+Name, "version", version.Get())
+
 			if err := aggOption.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %w", err)
 			}

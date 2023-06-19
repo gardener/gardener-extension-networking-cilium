@@ -26,11 +26,15 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/util"
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	"github.com/gardener/gardener/pkg/logger"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	"k8s.io/component-base/version"
+	"k8s.io/component-base/version/verflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	ciliuminstall "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/install"
@@ -39,6 +43,9 @@ import (
 	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
 )
+
+// Name is a constant for the name of this component.
+const Name = "gardener-extension-networking-cilium"
 
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
 func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
@@ -103,6 +110,16 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		Use: fmt.Sprintf("%s-controller-manager", cilium.Name),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			verflag.PrintAndExitIfRequested()
+
+			log, err := logger.NewZapLogger(logger.InfoLevel, logger.FormatJSON)
+			if err != nil {
+				return fmt.Errorf("error instantiating zap logger: %w", err)
+			}
+			runtimelog.SetLogger(log)
+
+			log.Info("Starting "+Name, "version", version.Get())
+
 			if err := aggOption.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %w", err)
 			}
