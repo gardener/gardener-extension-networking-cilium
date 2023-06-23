@@ -49,8 +49,7 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 		opts,
 		nil,
 		[]healthcheck.ConditionTypeToHealthCheck{},
-		// TODO(shafeeqes): Remove this condition in a future release.
-		sets.New[gardencorev1beta1.ConditionType](gardencorev1beta1.ShootSystemComponentsHealthy),
+		sets.New[gardencorev1beta1.ConditionType](),
 	)
 }
 
