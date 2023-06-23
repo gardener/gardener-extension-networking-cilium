@@ -51,7 +51,6 @@ spec:
         - --config-dir=/tmp/cilium/config-map
         command:
         - cilium-agent
-{{- if semverCompare ">= 1.20" .Capabilities.KubeVersion.GitVersion }}
         startupProbe:
           httpGet:
             host: "127.0.0.1"
@@ -64,7 +63,6 @@ spec:
           failureThreshold: 105
           periodSeconds: 2
           successThreshold: 1
-{{- end }}
         livenessProbe:
 {{- if .Values.keepDeprecatedProbes }}
           exec:
@@ -83,14 +81,6 @@ spec:
               value: "true"
 {{- end }}
           failureThreshold: 10
-{{- if semverCompare "< 1.20" .Capabilities.KubeVersion.GitVersion }}
-          # The initial delay for the liveness probe is intentionally large to
-          # avoid an endless kill & restart cycle if in the event that the initial
-          # bootstrapping takes longer than expected.
-          # Starting from Kubernetes 1.20, we are using startupProbe instead
-          # of this field.
-          initialDelaySeconds: 120
-{{- end }}
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
