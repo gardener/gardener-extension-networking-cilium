@@ -24,14 +24,16 @@ import (
 	certificatesv1 "k8s.io/api/certificates/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/gardener/gardener/pkg/apis/core"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	operatorv1alpha1 "github.com/gardener/gardener/pkg/apis/operator/v1alpha1"
 	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
-	"github.com/gardener/gardener/pkg/utils/version"
 )
 
 const (
@@ -103,31 +105,6 @@ func hasExactUsages(usages, requiredUsages []certificatesv1.KeyUsage) bool {
 	return true
 }
 
-// ComputeNginxIngressClassForSeed returns the IngressClass for the Nginx Ingress controller.
-func ComputeNginxIngressClassForSeed(seed *gardencorev1beta1.Seed, kubernetesVersion *string) (string, error) {
-	if kubernetesVersion == nil {
-		return "", fmt.Errorf("kubernetes version is missing for seed %q", seed.Name)
-	}
-
-	// We need to use `versionutils.CompareVersions` because this function normalizes the seed version first.
-	// This is especially necessary if the seed cluster is a non Gardener managed cluster and thus might have some
-	// custom version suffix.
-	greaterEqual122, err := version.CompareVersions(*kubernetesVersion, ">=", "1.22")
-	if err != nil {
-		return "", err
-	}
-
-	if managed := helper.SeedWantsManagedIngress(seed); managed {
-		if greaterEqual122 {
-			return v1beta1constants.SeedNginxIngressClass122, nil
-		} else {
-			return v1beta1constants.SeedNginxIngressClass, nil
-		}
-	}
-
-	return v1beta1constants.NginxIngressClass, nil
-}
-
 // GetWildcardCertificate gets the wildcard certificate for the seed's ingress domain.
 // Nil is returned if no wildcard certificate is configured.
 func GetWildcardCertificate(ctx context.Context, c client.Client) (*corev1.Secret, error) {
@@ -161,4 +138,56 @@ func SeedIsGarden(ctx context.Context, seedClient client.Reader) (bool, error) {
 		seedIsGarden = false
 	}
 	return seedIsGarden, nil
+}
+
+// ComputeRequiredExtensionsForSeed computes the extension kind/type combinations that are required for the
+// seed reconciliation flow.
+func ComputeRequiredExtensionsForSeed(seed *gardencorev1beta1.Seed) sets.Set[string] {
+	wantedKindTypeCombinations := sets.New[string]()
+
+	if seed.Spec.DNS.Provider != nil {
+		wantedKindTypeCombinations.Insert(ExtensionsID(extensionsv1alpha1.DNSRecordResource, seed.Spec.DNS.Provider.Type))
+	}
+
+	// add extension combinations for seed provider type
+	wantedKindTypeCombinations.Insert(ExtensionsID(extensionsv1alpha1.ControlPlaneResource, seed.Spec.Provider.Type))
+	wantedKindTypeCombinations.Insert(ExtensionsID(extensionsv1alpha1.InfrastructureResource, seed.Spec.Provider.Type))
+	wantedKindTypeCombinations.Insert(ExtensionsID(extensionsv1alpha1.WorkerResource, seed.Spec.Provider.Type))
+
+	return wantedKindTypeCombinations
+}
+
+// RequiredExtensionsReady checks if all required extensions for a seed exist and are ready.
+func RequiredExtensionsReady(ctx context.Context, gardenClient client.Client, seedName string, requiredExtensions sets.Set[string]) error {
+	controllerInstallationList := &gardencorev1beta1.ControllerInstallationList{}
+	if err := gardenClient.List(ctx, controllerInstallationList, client.MatchingFields{
+		core.SeedRefName: seedName,
+	}); err != nil {
+		return err
+	}
+
+	for _, controllerInstallation := range controllerInstallationList.Items {
+		controllerRegistration := &gardencorev1beta1.ControllerRegistration{}
+		if err := gardenClient.Get(ctx, client.ObjectKey{Name: controllerInstallation.Spec.RegistrationRef.Name}, controllerRegistration); err != nil {
+			return err
+		}
+
+		for _, kindType := range requiredExtensions.UnsortedList() {
+			split := strings.Split(kindType, "/")
+			if len(split) != 2 {
+				return fmt.Errorf("unexpected required extension: %q", kindType)
+			}
+			extensionKind, extensionType := split[0], split[1]
+
+			if helper.IsResourceSupported(controllerRegistration.Spec.Resources, extensionKind, extensionType) && helper.IsControllerInstallationSuccessful(controllerInstallation) {
+				requiredExtensions.Delete(kindType)
+			}
+		}
+	}
+
+	if len(requiredExtensions) > 0 {
+		return fmt.Errorf("extension controllers missing or unready: %+v", requiredExtensions)
+	}
+
+	return nil
 }

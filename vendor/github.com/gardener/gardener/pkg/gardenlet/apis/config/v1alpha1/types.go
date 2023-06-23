@@ -73,7 +73,7 @@ type GardenletConfiguration struct {
 	// by the Gardenlet in the seed clusters.
 	// +optional
 	Logging *Logging `json:"logging,omitempty"`
-	// SNI contains an optional configuration for the APIServerSNI feature used
+	// SNI contains an optional configuration for the SNI settings used
 	// by the Gardenlet in the seed clusters.
 	// +optional
 	SNI *SNI `json:"sni,omitempty"`
@@ -186,18 +186,18 @@ type GardenletControllerConfiguration struct {
 	// ShootCare defines the configuration of the ShootCare controller.
 	// +optional
 	ShootCare *ShootCareControllerConfiguration `json:"shootCare,omitempty"`
-	// ShootStateSync defines the configuration of the ShootState controller
+	// ShootState defines the configuration of the ShootState controller.
 	// +optional
-	ShootStateSync *ShootStateSyncControllerConfiguration `json:"shootStateSync,omitempty"`
+	ShootState *ShootStateControllerConfiguration `json:"shootState,omitempty"`
 	// NetworkPolicy defines the configuration of the NetworkPolicy controller
 	// +optional
 	NetworkPolicy *NetworkPolicyControllerConfiguration `json:"networkPolicy,omitempty"`
-	// ManagedSeedControllerConfiguration defines the configuration of the ManagedSeed controller.
+	// ManagedSeed defines the configuration of the ManagedSeed controller.
 	// +optional
 	ManagedSeed *ManagedSeedControllerConfiguration `json:"managedSeed,omitempty"`
-	// ShootSecretControllerConfiguration defines the configuration of the ShootSecret controller.
+	// TokenRequestorControllerConfiguration defines the configuration of the TokenRequestor controller.
 	// +optional
-	ShootSecret *ShootSecretControllerConfiguration `json:"shootSecret,omitempty"`
+	TokenRequestor *TokenRequestorControllerConfiguration `json:"tokenRequestor,omitempty"`
 }
 
 // BackupBucketControllerConfiguration defines the configuration of the BackupBucket
@@ -355,11 +355,15 @@ type SeedCareControllerConfiguration struct {
 	ConditionThresholds []ConditionThreshold `json:"conditionThresholds,omitempty"`
 }
 
-// ShootSecretControllerConfiguration defines the configuration of the ShootSecret controller.
-type ShootSecretControllerConfiguration struct {
+// ShootStateControllerConfiguration defines the configuration of the ShootState controller.
+type ShootStateControllerConfiguration struct {
 	// ConcurrentSyncs is the number of workers used for the controller to work on events.
 	// +optional
 	ConcurrentSyncs *int `json:"concurrentSyncs,omitempty"`
+	// SyncPeriod is the duration how often the existing resources are reconciled (how
+	// often the health check of Seed clusters is performed
+	// +optional
+	SyncPeriod *metav1.Duration `json:"syncPeriod,omitempty"`
 }
 
 // StaleExtensionHealthChecks defines the configuration of the check for stale extension health checks.
@@ -380,14 +384,6 @@ type ConditionThreshold struct {
 	Type string `json:"type"`
 	// Duration is the duration how long the condition can stay in the progressing state.
 	Duration metav1.Duration `json:"duration"`
-}
-
-// ShootStateSyncControllerConfiguration defines the configuration of the ShootState Sync controller.
-type ShootStateSyncControllerConfiguration struct {
-	// ConcurrentSyncs is the number of workers used for the controller to work on
-	// events.
-	// +optional
-	ConcurrentSyncs *int `json:"concurrentSyncs,omitempty"`
 }
 
 // NetworkPolicyControllerConfiguration defines the configuration of the NetworkPolicy
@@ -423,6 +419,13 @@ type ManagedSeedControllerConfiguration struct {
 	// The applied jitterPeriod is taken from SyncJitterPeriod.
 	// +optional
 	JitterUpdates *bool `json:"jitterUpdates,omitempty"`
+}
+
+// TokenRequestorControllerConfiguration defines the configuration of the TokenRequestor controller.
+type TokenRequestorControllerConfiguration struct {
+	// ConcurrentSyncs is the number of workers used for the controller to work on events.
+	// +optional
+	ConcurrentSyncs *int `json:"concurrentSyncs,omitempty"`
 }
 
 // ResourcesConfiguration defines the total capacity for seed resources and the amount reserved for use by Gardener.
@@ -509,7 +512,7 @@ type Server struct {
 	Port int `json:"port"`
 }
 
-// SNI contains an optional configuration for the APIServerSNI feature used
+// SNI contains an optional configuration for the SNI settings used
 // by the Gardenlet in the seed clusters.
 type SNI struct {
 	// Ingress is the ingressgateway configuration.
@@ -608,7 +611,7 @@ type ExposureClassHandler struct {
 	// load balancer to apply the control plane endpoint exposure strategy.
 	LoadBalancerService LoadBalancerServiceConfig `json:"loadBalancerService"`
 	// SNI contains optional configuration for a dedicated ingressgateway belonging to
-	// an exposure class handler. This is only required in context of the APIServerSNI feature of the gardenlet.
+	// an exposure class handler.
 	// +optional
 	SNI *SNI `json:"sni,omitempty"`
 }

@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.71.0
+	github.com/gardener/gardener v1.73.1-0.20230622175055-703970e3ea77
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo/v2 v2.9.2
@@ -39,7 +39,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fluent/fluent-operator/v2 v2.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gardener/etcd-druid v0.15.3 // indirect
+	github.com/gardener/etcd-druid v0.18.1 // indirect
 	github.com/gardener/hvpa-controller/api v0.5.0 // indirect
 	github.com/gardener/machine-controller-manager v0.48.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -112,7 +112,6 @@ require (
 	istio.io/api v0.0.0-20230217221049-9d422bf48675 // indirect
 	istio.io/client-go v1.17.1 // indirect
 	k8s.io/apiextensions-apiserver v0.26.3 // indirect
-	k8s.io/apiserver v0.26.3 // indirect
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.13.0 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
@@ -129,4 +128,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.26.1
+replace k8s.io/client-go => k8s.io/client-go v0.26.3
