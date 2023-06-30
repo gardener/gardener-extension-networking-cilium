@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.73.1-0.20230622175055-703970e3ea77
+	github.com/gardener/gardener v1.74.0
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo/v2 v2.9.2
