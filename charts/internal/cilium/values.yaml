@@ -268,7 +268,7 @@ global:
 
     # bpf-policy-map-max specifies the maximum number of entries in endpoint
     # policy map (per endpoint)
-    policyMapMax: "16384"
+    policyMapMax: "65536"
 
     # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
     # backend and affinity maps.
