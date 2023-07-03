@@ -1,6 +1,12 @@
 structure:
 - name: _index.md
   source: /README.md
-- name: docs
+- name: usage
+  properties:
+    frontmatter:
+      title: Usage
+      weight: 3
+      categories:
+        - Users
   nodesSelector:
-    path: /docs
+    path: /docs/usage
