@@ -92,7 +92,6 @@ type ShootSpec struct {
 	// This field is immutable.
 	SecretBindingName *string
 	// SeedName is the name of the seed cluster that runs the control plane of the Shoot.
-	// This field is immutable when the SeedChange feature gate is disabled.
 	SeedName *string
 	// SeedSelector is an optional selector which must match a seed's labels for the shoot to be scheduled on that seed.
 	SeedSelector *SeedSelector
@@ -1051,13 +1050,17 @@ type Worker struct {
 	Name string
 	// Machine contains information about the machine type and image.
 	Machine Machine
-	// Maximum is the maximum number of VMs to create.
+	// Maximum is the maximum number of machines to create.
+	// This value is divided by the number of configured zones for a fair distribution.
 	Maximum int32
-	// Minimum is the minimum number of VMs to create.
+	// Minimum is the minimum number of machines to create.
+	// This value is divided by the number of configured zones for a fair distribution.
 	Minimum int32
-	// MaxSurge is maximum number of VMs that are created during an update.
+	// MaxSurge is maximum number of machines that are created during an update.
+	// This value is divided by the number of configured zones for a fair distribution.
 	MaxSurge *intstr.IntOrString
-	// MaxUnavailable is the maximum number of VMs that can be unavailable during an update.
+	// MaxUnavailable is the maximum number of machines that can be unavailable during an update.
+	// This value is divided by the number of configured zones for a fair distribution.
 	MaxUnavailable *intstr.IntOrString
 	// ProviderConfig is the provider-specific configuration for this worker pool.
 	ProviderConfig *runtime.RawExtension
@@ -1076,7 +1079,7 @@ type Worker struct {
 	Zones []string
 	// MachineControllerManagerSettings contains configurations for different worker-pools. Eg. MachineDrainTimeout, MachineHealthTimeout.
 	MachineControllerManagerSettings *MachineControllerManagerSettings
-	// Sysctls is a map of kernel settings to apply on all VMs in this worker pool.
+	// Sysctls is a map of kernel settings to apply on all machines in this worker pool.
 	Sysctls map[string]string
 }
 

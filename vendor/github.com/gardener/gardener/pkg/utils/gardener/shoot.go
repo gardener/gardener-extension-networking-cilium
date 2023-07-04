@@ -209,6 +209,8 @@ const (
 	ShootProjectSecretSuffixKubeconfig = "kubeconfig"
 	// ShootProjectSecretSuffixCACluster is a constant for a shoot project secret with suffix 'ca-cluster'.
 	ShootProjectSecretSuffixCACluster = "ca-cluster"
+	// ShootProjectSecretSuffixCAClient is a constant for a shoot project secret with suffix 'ca-client'.
+	ShootProjectSecretSuffixCAClient = "ca-client"
 	// ShootProjectSecretSuffixSSHKeypair is a constant for a shoot project secret with suffix 'ssh-keypair'.
 	ShootProjectSecretSuffixSSHKeypair = v1beta1constants.SecretNameSSHKeyPair
 	// ShootProjectSecretSuffixOldSSHKeypair is a constant for a shoot project secret with suffix 'ssh-keypair.old'.
@@ -228,6 +230,13 @@ func GetShootProjectSecretSuffixes() []string {
 	}
 }
 
+// GetShootProjectInternalSecretSuffixes returns the list of shoot-related project internal secret suffixes.
+func GetShootProjectInternalSecretSuffixes() []string {
+	return []string{
+		ShootProjectSecretSuffixCAClient,
+	}
+}
+
 func shootProjectSecretSuffix(suffix string) string {
 	return "." + suffix
 }
@@ -241,6 +250,18 @@ func ComputeShootProjectSecretName(shootName, suffix string) string {
 // an empty string and <false>. Otherwise, it returns the shoot name and <true>.
 func IsShootProjectSecret(secretName string) (string, bool) {
 	for _, v := range GetShootProjectSecretSuffixes() {
+		if suffix := shootProjectSecretSuffix(v); strings.HasSuffix(secretName, suffix) {
+			return strings.TrimSuffix(secretName, suffix), true
+		}
+	}
+
+	return "", false
+}
+
+// IsShootProjectInternalSecret checks if the given name matches the name of a shoot-related project internal secret.
+// If no, it returns an empty string and <false>. Otherwise, it returns the shoot name and <true>.
+func IsShootProjectInternalSecret(secretName string) (string, bool) {
+	for _, v := range GetShootProjectInternalSecretSuffixes() {
 		if suffix := shootProjectSecretSuffix(v); strings.HasSuffix(secretName, suffix) {
 			return strings.TrimSuffix(secretName, suffix), true
 		}
@@ -334,6 +355,7 @@ func (s *ShootAccessSecret) Reconcile(ctx context.Context, c client.Client) erro
 	_, err := controllerutils.GetAndCreateOrMergePatch(ctx, c, s.Secret, func() error {
 		s.Secret.Type = corev1.SecretTypeOpaque
 		metav1.SetMetaDataLabel(&s.Secret.ObjectMeta, resourcesv1alpha1.ResourceManagerPurpose, resourcesv1alpha1.LabelPurposeTokenRequest)
+		metav1.SetMetaDataLabel(&s.Secret.ObjectMeta, resourcesv1alpha1.ResourceManagerClass, resourcesv1alpha1.ResourceManagerClassShoot)
 		metav1.SetMetaDataAnnotation(&s.Secret.ObjectMeta, resourcesv1alpha1.ServiceAccountName, s.ServiceAccountName)
 		metav1.SetMetaDataAnnotation(&s.Secret.ObjectMeta, resourcesv1alpha1.ServiceAccountNamespace, metav1.NamespaceSystem)
 
@@ -379,7 +401,7 @@ func (s *ShootAccessSecret) Reconcile(ctx context.Context, c client.Client) erro
 		// The token-requestor might concurrently update the kubeconfig secret key to populate the token.
 		// Hence, we need to use optimistic locking here to ensure we don't accidentally overwrite the concurrent update.
 		// ref https://github.com/gardener/gardener/issues/6092#issuecomment-1156244514
-		client.MergeFromWithOptimisticLock{})
+		controllerutils.MergeFromOption{MergeFromOption: client.MergeFromWithOptimisticLock{}})
 	return err
 }
 
@@ -614,9 +636,9 @@ func ConstructExternalDomain(ctx context.Context, c client.Reader, shoot *garden
 	return externalDomain, nil
 }
 
-// ComputeRequiredExtensions compute the extension kind/type combinations that are required for the
-// reconciliation flow.
-func ComputeRequiredExtensions(shoot *gardencorev1beta1.Shoot, seed *gardencorev1beta1.Seed, controllerRegistrationList *gardencorev1beta1.ControllerRegistrationList, internalDomain, externalDomain *Domain) utilsets.Set[string] {
+// ComputeRequiredExtensionsForShoot computes the extension kind/type combinations that are required for the
+// shoot reconciliation flow.
+func ComputeRequiredExtensionsForShoot(shoot *gardencorev1beta1.Shoot, seed *gardencorev1beta1.Seed, controllerRegistrationList *gardencorev1beta1.ControllerRegistrationList, internalDomain, externalDomain *Domain) utilsets.Set[string] {
 	requiredExtensions := utilsets.New[string]()
 
 	if seed.Spec.Backup != nil {

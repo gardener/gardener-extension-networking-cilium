@@ -61,7 +61,7 @@ type GardenletConfiguration struct {
 	// Logging contains an optional configurations for the logging stack deployed
 	// by the Gardenlet in the seed clusters.
 	Logging *Logging
-	// SNI contains an optional configuration for the APIServerSNI feature used
+	// SNI contains an optional configuration for the SNI settings used
 	// by the Gardenlet in the seed clusters.
 	SNI *SNI
 	// ETCDConfig contains an optional configuration for the
@@ -151,14 +151,14 @@ type GardenletControllerConfiguration struct {
 	Shoot *ShootControllerConfiguration
 	// ShootCare defines the configuration of the ShootCare controller.
 	ShootCare *ShootCareControllerConfiguration
-	// ShootStateSync defines the configuration of the ShootState controller.
-	ShootStateSync *ShootStateSyncControllerConfiguration
+	// ShootState defines the configuration of the ShootState controller.
+	ShootState *ShootStateControllerConfiguration
 	// NetworkPolicy defines the configuration of the NetworkPolicy controller.
 	NetworkPolicy *NetworkPolicyControllerConfiguration
-	// ManagedSeedControllerConfiguration defines the configuration of the ManagedSeed controller.
+	// ManagedSeed defines the configuration of the ManagedSeed controller.
 	ManagedSeed *ManagedSeedControllerConfiguration
-	// ShootSecretControllerConfiguration defines the configuration of the ShootSecret controller.
-	ShootSecret *ShootSecretControllerConfiguration
+	// TokenRequestorControllerConfiguration defines the configuration of the TokenRequestor controller.
+	TokenRequestor *TokenRequestorControllerConfiguration
 }
 
 // BackupBucketControllerConfiguration defines the configuration of the BackupBucket
@@ -289,10 +289,13 @@ type SeedCareControllerConfiguration struct {
 	ConditionThresholds []ConditionThreshold
 }
 
-// ShootSecretControllerConfiguration defines the configuration of the ShootSecret controller.
-type ShootSecretControllerConfiguration struct {
+// ShootStateControllerConfiguration defines the configuration of the ShootState controller.
+type ShootStateControllerConfiguration struct {
 	// ConcurrentSyncs is the number of workers used for the controller to work on events.
 	ConcurrentSyncs *int
+	// SyncPeriod is the duration how often the existing resources are reconciled (how
+	// often the health check of Seed clusters is performed
+	SyncPeriod *metav1.Duration
 }
 
 // StaleExtensionHealthChecks defines the configuration of the check for stale extension health checks.
@@ -312,13 +315,6 @@ type ConditionThreshold struct {
 	Type string
 	// Duration is the duration how long the condition can stay in the progressing state.
 	Duration metav1.Duration
-}
-
-// ShootStateSyncControllerConfiguration defines the configuration of the ShootState Sync controller.
-type ShootStateSyncControllerConfiguration struct {
-	// ConcurrentSyncs is the number of workers used for the controller to work on
-	// events.
-	ConcurrentSyncs *int
 }
 
 // NetworkPolicyControllerConfiguration defines the configuration of the NetworkPolicy
@@ -348,6 +344,12 @@ type ManagedSeedControllerConfiguration struct {
 	// The applied jitterPeriod is taken from SyncJitterPeriod.
 	// Defaults to false.
 	JitterUpdates *bool
+}
+
+// TokenRequestorControllerConfiguration defines the configuration of the TokenRequestor controller.
+type TokenRequestorControllerConfiguration struct {
+	// ConcurrentSyncs is the number of workers used for the controller to work on events.
+	ConcurrentSyncs *int
 }
 
 // ResourcesConfiguration defines the total capacity for seed resources and the amount reserved for use by Gardener.
@@ -421,7 +423,7 @@ type Server struct {
 	Port int
 }
 
-// SNI contains an optional configuration for the APIServerSNI feature used
+// SNI contains an optional configuration for the SNI settings used
 // by the Gardenlet in the seed clusters.
 type SNI struct {
 	// Ingress is the ingressgateway configuration.
@@ -503,7 +505,7 @@ type ExposureClassHandler struct {
 	// load balancer to apply the control plane endpoint exposure strategy.
 	LoadBalancerService LoadBalancerServiceConfig
 	// SNI contains optional configuration for a dedicated ingressgateway belonging to
-	// an exposure class handler. This is only required in context of the APIServerSNI feature of the gardenlet.
+	// an exposure class handler.
 	SNI *SNI
 }
 
