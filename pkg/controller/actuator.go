@@ -15,7 +15,6 @@
 package controller
 
 import (
-	"fmt"
 	"sync/atomic"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
@@ -23,6 +22,7 @@ import (
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type actuator struct {
@@ -37,26 +37,13 @@ type actuator struct {
 }
 
 // NewActuator creates a new Actuator that updates the status of the handled Network resources.
-func NewActuator(chartRendererFactory extensionscontroller.ChartRendererFactory, shootWebhookConfig *atomic.Value, webhookServerPort int) network.Actuator {
+func NewActuator(mgr manager.Manager, chartApplier gardenerkubernetes.ChartApplier, chartRendererFactory extensionscontroller.ChartRendererFactory, shootWebhookConfig *atomic.Value, webhookServerPort int) network.Actuator {
 	return &actuator{
+		client:                   mgr.GetClient(),
+		restConfig:               mgr.GetConfig(),
+		chartApplier:             chartApplier,
 		chartRendererFactory:     chartRendererFactory,
 		atomicShootWebhookConfig: shootWebhookConfig,
 		webhookServerPort:        webhookServerPort,
 	}
-}
-
-func (a *actuator) InjectClient(client client.Client) error {
-	a.client = client
-	return nil
-}
-
-func (a *actuator) InjectConfig(config *rest.Config) error {
-	a.restConfig = config
-
-	var err error
-	a.chartApplier, err = gardenerkubernetes.NewChartApplierForConfig(config)
-	if err != nil {
-		return fmt.Errorf("could not create ChartApplier: %w", err)
-	}
-	return nil
 }

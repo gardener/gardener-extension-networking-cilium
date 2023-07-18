@@ -15,6 +15,7 @@
 package healthcheck
 
 import (
+	"context"
 	"time"
 
 	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
@@ -39,8 +40,9 @@ var (
 
 // RegisterHealthChecks adds a controller with the given Options to the manager.
 // The opts.Reconciler is being set with a newly instantiated Actuator.
-func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) error {
+func RegisterHealthChecks(ctx context.Context, mgr manager.Manager, opts healthcheck.DefaultAddArgs) error {
 	return healthcheck.DefaultRegistration(
+		ctx,
 		cilium.Type,
 		extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.NetworkResource),
 		func() client.ObjectList { return &extensionsv1alpha1.NetworkList{} },
@@ -54,6 +56,6 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 }
 
 // AddToManager adds a controller with the default Options.
-func AddToManager(mgr manager.Manager) error {
-	return RegisterHealthChecks(mgr, AddOptions)
+func AddToManager(ctx context.Context, mgr manager.Manager) error {
+	return RegisterHealthChecks(ctx, mgr, AddOptions)
 }

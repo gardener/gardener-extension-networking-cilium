@@ -161,15 +161,15 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			ciliumcontroller.DefaultAddOptions.ShootWebhookConfig = shootWebhookConfig
 			ciliumcontroller.DefaultAddOptions.WebhookServerNamespace = webhookOptions.Server.Namespace
 
-			if err := ciliumcontroller.AddToManager(mgr); err != nil {
+			if err := ciliumcontroller.AddToManager(ctx, mgr); err != nil {
 				return fmt.Errorf("could not add controllers to manager: %w", err)
 			}
 
-			if err := healthcheck.AddToManager(mgr); err != nil {
+			if err := healthcheck.AddToManager(ctx, mgr); err != nil {
 				return fmt.Errorf("could not add health check controller to manager: %w", err)
 			}
 
-			if err := heartbeat.AddToManager(mgr); err != nil {
+			if err := heartbeat.AddToManager(ctx, mgr); err != nil {
 				return fmt.Errorf("could not add heartbeat controller to manager: %w", err)
 			}
 
