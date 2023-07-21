@@ -1,0 +1,34 @@
+name: Vendor Gardener
+on:
+  push:
+    branches:
+    - dependabot/go_modules/github.com/gardener/**
+permissions: write-all
+jobs:
+  run:
+    name: Run make revendor
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version-file: go.mod
+
+    - name: Use gardener's replaced client-go version
+      run: go mod edit -replace 'k8s.io/client-go=k8s.io/client-go@'"$(go list -m -f '{{.Version}}' k8s.io/api)"
+
+    - name: Make revendor
+      run: make revendor
+    - name: Commit changes
+      run: |
+        # Exit early if there is nothing to commit. This can happen if someone pushes to the dependabot's PR (for example has to adapt to a breaking change).
+        if [[ -z $(git status --porcelain) ]]; then
+          echo "Nothing to commit, working tree clean. Exiting..."
+          exit 0
+        fi
+        
+        git config user.name gardener-robot-ci-1
+        git config user.email gardener.ci.user@gmail.com
+        git add .
+        git commit -m "[dependabot skip] make revendor"
+        git push origin
