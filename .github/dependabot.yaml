@@ -1,0 +1,15 @@
+version: 2
+updates:
+# Create PRs for github.com/gardener/gardener dependency updates
+- package-ecosystem: gomod
+  directory: /
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 5
+  allow:
+  - dependency-name: "github.com/gardener/gardener"
+# Create PRs for golang version updates
+- package-ecosystem: docker
+  directory: /
+  schedule:
+    interval: daily
