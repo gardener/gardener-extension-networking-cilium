@@ -517,6 +517,19 @@ bool
 <p>Enabled enables the network overlay.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>createPodRoutes</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CreatePodRoutes installs routes to pods on all cluster nodes.
+This will only work if the cluster nodes share a single L2 network.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.SnatOutOfCluster">SnatOutOfCluster

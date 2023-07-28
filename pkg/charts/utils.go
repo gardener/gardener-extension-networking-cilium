@@ -117,6 +117,7 @@ var defaultGlobalConfig = globalConfig{
 	SnatOutOfCluster: snatOutOfCluster{
 		Enabled: false,
 	},
+	AutoDirectNodeRoutes: false,
 }
 
 func newGlobalConfig() globalConfig {
@@ -275,6 +276,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.SnatOutOfCluster != nil && config.SnatOutOfCluster.Enabled {
 		globalConfig.SnatOutOfCluster.Enabled = config.SnatOutOfCluster.Enabled
+	}
+
+	if config.Overlay != nil && !config.Overlay.Enabled && config.Overlay.CreatePodRoutes != nil {
+		globalConfig.AutoDirectNodeRoutes = *config.Overlay.CreatePodRoutes
 	}
 
 	globalConfig.IPAM.Mode = ipamMode
