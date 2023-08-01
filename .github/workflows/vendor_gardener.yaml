@@ -14,9 +14,6 @@ jobs:
       with:
         go-version-file: go.mod
 
-    - name: Use gardener's replaced client-go version
-      run: go mod edit -replace 'k8s.io/client-go=k8s.io/client-go@'"$(go list -m -f '{{.Version}}' k8s.io/api)"
-
     - name: Make revendor
       run: make revendor
     - name: Commit changes
