@@ -44,6 +44,7 @@ type globalConfig struct {
 	IPAM                     ipam                                    `json:"ipam"`
 	SnatToUpstreamDNS        snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 	SnatOutOfCluster         snatOutOfCluster                        `json:"snatOutOfCluster"`
+	AutoDirectNodeRoutes     bool                                    `json:"autoDirectNodeRoutes"`
 }
 
 // etcd related configuration for cilium

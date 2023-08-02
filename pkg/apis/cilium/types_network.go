@@ -136,6 +136,9 @@ type KubeProxy struct {
 type Overlay struct {
 	// Enabled enables the network overlay.
 	Enabled bool
+	// CreatePodRoutes installs routes to pods on all cluster nodes.
+	// This will only work if the cluster nodes share a single L2 network.
+	CreatePodRoutes *bool
 }
 
 // SnatToUpstreamDNS  enables the masquerading of packets to the upstream dns server

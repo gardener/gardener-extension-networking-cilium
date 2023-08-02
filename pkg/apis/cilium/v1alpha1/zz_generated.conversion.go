@@ -315,6 +315,7 @@ func Convert_cilium_Nodeport_To_v1alpha1_Nodeport(in *cilium.Nodeport, out *Node
 
 func autoConvert_v1alpha1_Overlay_To_cilium_Overlay(in *Overlay, out *cilium.Overlay, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.CreatePodRoutes = (*bool)(unsafe.Pointer(in.CreatePodRoutes))
 	return nil
 }
 
@@ -325,6 +326,7 @@ func Convert_v1alpha1_Overlay_To_cilium_Overlay(in *Overlay, out *cilium.Overlay
 
 func autoConvert_cilium_Overlay_To_v1alpha1_Overlay(in *cilium.Overlay, out *Overlay, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.CreatePodRoutes = (*bool)(unsafe.Pointer(in.CreatePodRoutes))
 	return nil
 }
 
