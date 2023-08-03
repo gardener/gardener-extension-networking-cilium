@@ -36,3 +36,7 @@ disableServerTls: true
 
 # Port to use for the k8s service backed by hubble-relay pods.
 servicePort: 80
+
+gops: true
+
+gopsPort: "9893"

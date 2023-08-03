@@ -149,6 +149,7 @@ global:
   enableIpv6Masquerade: true
   enableBPFMasquerade: true
 
+  enableIpv4BigTCP : false
   enableIpv6BigTCP: false
 
   # ipMasqAgent enables and controls BPF ip-masq-agent
@@ -172,6 +173,12 @@ global:
     # install determines whether to install the CNI configuration and binary
     # files into the filesystem.
     install: true
+
+    # -- Remove the CNI configuration and binary files on agent shutdown. Enable this
+    # if you're removing Cilium from the cluster. Disable this to prevent the CNI
+    # configuration file from being removed during agent upgrade, which can cause
+    # nodes to go unmanageable.
+    uninstall: false
 
     # chainingMode enables chaining on top of other CNI plugins. Possible
     # values:
@@ -207,6 +214,16 @@ global:
     # hostConfDirMountPath is the path to where the CNI configuration directory
     # is mounted inside the  pod
     hostConfDirMountPath: /host/etc/cni/net.d
+
+    # -- Make Cilium take ownership over the `/etc/cni/net.d` directory on the
+    # node, renaming all non-Cilium CNI configurations to `*.cilium_bak`.
+    # This ensures no Pods can be scheduled using other CNI plugins during Cilium
+    # agent downtime.
+    exclusive: true
+    
+    # -- Configure the log file for CNI logging with retention policy of 7 days.
+    # Disable CNI file logging by setting this field to empty explicitly.
+    logFile: "/var/run/cilium/cilium-cni.log"
 
   # cluster is the clustermesh related configuration
   cluster:
@@ -313,7 +330,9 @@ global:
     # interface: eth0
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
-  kubeProxyReplacement: "disabled"
+  kubeProxyReplacement: "false"
+
+  kubeProxyReplacementHealthzBindAddr: ""
 
   # Enable check of service source ranges (currently, only for LoadBalancer)
   enableSvcSrcRangeCheck: true
@@ -331,6 +350,11 @@ global:
     # serviceTopology enables K8s Topology Aware Hints -based service
     # endpoints filtering
     serviceTopology: true
+
+  # hostPort is the configuration for HostPort service handling
+  hostPort:
+    # enabled enables HostPort functionality
+    enabled: false
 
   # nodePort is the configuration for NodePort service handling
   nodePort:
@@ -458,7 +482,7 @@ global:
   # Period for remote node ARP entry refresh
   arpingRefreshPeriod: "30s"
 
-  cniUninstall: true
+  enableK8SNetworkpolicy: true
 
   endpointHealthChecking:
     enabled: true
