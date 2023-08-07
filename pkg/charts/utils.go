@@ -48,7 +48,7 @@ var defaultCiliumConfig = requirementsConfig{
 var defaultGlobalConfig = globalConfig{
 	IdentityAllocationMode: ciliumv1alpha1.CRD,
 	Tunnel:                 ciliumv1alpha1.VXLan,
-	KubeProxyReplacement:   ciliumv1alpha1.KubeProxyReplacementDisabled,
+	KubeProxyReplacement:   ciliumv1alpha1.KubeProxyReplacementFalse,
 	Etcd: etcd{
 		Enabled: false,
 		Managed: false,
@@ -171,7 +171,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// Settings for Kube-Proxy disabled and using the HostService option
 	// Also need to configure KubeProxy
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
-		globalConfig.KubeProxyReplacement = ciliumv1alpha1.Strict
+		globalConfig.KubeProxyReplacement = ciliumv1alpha1.KubeProxyReplacementTrue
 		globalConfig.Images[cilium.KubeProxyImageName] = imagevector.CiliumKubeProxyImage(cluster.Shoot.Spec.Kubernetes.Version)
 
 		if config != nil && config.KubeProxy != nil && config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {

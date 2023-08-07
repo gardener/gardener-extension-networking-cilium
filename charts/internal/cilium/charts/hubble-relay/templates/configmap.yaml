@@ -9,11 +9,13 @@ data:
     cluster-name: {{ .Values.global.hubble.clusterName }}
     peer-service: {{ .Values.global.hubble.peerService }}
     listen-address: {{ .Values.listenHost }}:{{ .Values.listenPort }}
+    gops: {{ .Values.gops }}
+    gops-port: {{ .Values.gopsPort }}
     dial-timeout: {{ .Values.dialTimeout }}
     retry-timeout: {{ .Values.retryTimeout }}
     sort-buffer-len-max: {{ .Values.sortBufferLenMax }}
     sort-buffer-drain-timeout: {{ .Values.sortBufferDrainTimeout }}
-    tls-client-cert-file: {{ .Values.tlsClientCertFile }}
-    tls-client-key-file: {{ .Values.tlsClientKeyFile }}
+    tls-hubble-client-cert-file: {{ .Values.tlsClientCertFile }}
+    tls-hubble-client-key-file: {{ .Values.tlsClientKeyFile }}
     tls-hubble-server-ca-files: {{ .Values.tlsHubbleServerCAFiles }}
     disable-server-tls: {{ .Values.disableServerTls | quote }}

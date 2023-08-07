@@ -120,29 +120,10 @@ spec:
               fieldPath: metadata.namespace
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
-        - name: CILIUM_CNI_CHAINING_MODE
-          valueFrom:
-            configMapKeyRef:
-              key: cni-chaining-mode
-              name: cilium-config
-              optional: true
-        - name: CILIUM_CUSTOM_CNI_CONF
-          valueFrom:
-            configMapKeyRef:
-              key: custom-cni-conf
-              name: cilium-config
-              optional: true
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
 {{- if .Values.global.cni.install }}
         lifecycle:
-          postStart:
-            exec:
-              command:
-              - "bash"
-              - "-c"
-              - |
-                /cni-install.sh {{- if .Values.global.debug.enabled }} --enable-debug=true {{- else }} --enable-debug=false {{- end }} --cni-exclusive=true --log-file=/var/run/cilium/cilium-cni.log
           preStop:
             exec:
               command:
@@ -640,11 +621,27 @@ spec:
           type: Directory
         # To read the clustermesh configuration
       - name: clustermesh-secrets
-        secret:
-          secretName: cilium-clustermesh
+        projected:
           # note: the leading zero means this number is in octal representation: do not remove it
           defaultMode: 0400
-          optional: true
+          sources:
+          - secret:
+              name: cilium-clustermesh
+              optional: true
+              # note: items are not explicitly listed here, since the entries of this secret
+              # depend on the peers configured, and that would cause a restart of all agents
+              # at every addition/removal. Leaving the field empty makes each secret entry
+              # to be automatically projected into the volume as a file whose name is the key.
+          - secret:
+              name: clustermesh-apiserver-remote-cert
+              optional: true
+              items:
+              - key: tls.key
+                path: common-etcd-client.key
+              - key: tls.crt
+                path: common-etcd-client.crt
+              - key: ca.crt
+                path: common-etcd-client-ca.crt
         # To read the configuration from the config map
       - name: cilium-config-path
         configMap:
@@ -666,12 +663,12 @@ spec:
               name: hubble-server-certs
               optional: true
               items:
-                - key: ca.crt
-                  path: client-ca.crt
                 - key: tls.crt
                   path: server.crt
                 - key: tls.key
                   path: server.key
+                - key: ca.crt
+                  path: client-ca.crt
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
       - configMap:
           name: ip-masq-agent

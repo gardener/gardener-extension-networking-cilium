@@ -21,6 +21,8 @@ spec:
   hostPorts:
   - min: 6942
     max: 6942
+  - min: 9234
+    max: 9234
   {{- end }}
   hostNetwork: true
   hostIPC: false

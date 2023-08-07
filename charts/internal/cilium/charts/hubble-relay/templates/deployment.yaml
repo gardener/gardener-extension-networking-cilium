@@ -19,8 +19,19 @@ spec:
         app.kubernetes.io/name: {{ .Chart.Name }}
         app.kubernetes.io/part-of: cilium
     spec:
+      securityContext:
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: hubble-relay
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
           image: {{ index .Values.global.images "hubble-relay" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
           command:
@@ -50,9 +61,6 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
       restartPolicy: Always
       serviceAccountName: hubble-relay
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 1
       affinity:
@@ -79,9 +87,9 @@ spec:
           - secret:
               name: hubble-relay-client-certs
               items:
-                - key: ca.crt
-                  path: hubble-server-ca.crt
                 - key: tls.crt
                   path: client.crt
                 - key: tls.key
                   path: client.key
+                - key: ca.crt
+                  path: hubble-server-ca.crt

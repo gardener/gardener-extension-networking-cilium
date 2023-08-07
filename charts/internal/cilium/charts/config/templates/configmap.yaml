@@ -12,7 +12,7 @@
 {{- if semverCompare ">=1.8" (default "1.8" .Values.upgradeCompatibility) -}}
 {{- $defaultEnableCnpStatusUpdates = "false" -}}
 {{- $defaultBpfMapDynamicSizeRatio = 0.0025 -}}
-{{- $defaultBpfClockProbe = "true" -}}
+{{- $defaultBpfClockProbe := "false" -}}
 {{- $defaultSessionAffinity = "true" -}}
 {{- if .Values.global.ipv4.enabled }}
 {{- $defaultOperatorApiServeAddr = "127.0.0.1:9234" -}}
@@ -272,7 +272,16 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: {{ .Values.global.tunnel }}
+{{- if eq .Values.global.tunnel "disabled" }}
+  routing-mode: "native"
+{{- else if eq .Values.global.tunnel "vxlan" }}
+  routing-mode: "tunnel"
+  tunnel-protocol: "vxlan"
+{{- else if eq .Values.global.tunnel "geneve" }}
+  routing-mode: "tunnel"
+  tunnel-protocol: "geneve"
+{{- end }}
+
 
 {{- if .Values.global.eni }}
   enable-endpoint-routes: "true"
@@ -306,6 +315,7 @@ data:
   enable-l7-proxy: {{ .Values.global.l7Proxy.enabled | quote }}
 {{- end }}
 
+  enable-ipv4-big-tcp: {{ .Values.global.enableIpv4BigTCP | quote }}
   enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
   enable-ipv6-big-tcp: {{ .Values.global.enableIpv6BigTCP | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
@@ -423,7 +433,10 @@ data:
 {{- end}}
 {{- if .Values.global.kubeProxyReplacement }}
   kube-proxy-replacement:  {{ .Values.global.kubeProxyReplacement | quote }}
-{{- end}}
+{{- end }}
+{{- if ne .Values.global.kubeProxyReplacement "disabled" }}
+  kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
+{{- end }}
 
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
@@ -434,17 +447,17 @@ data:
 {{- end }}
 {{- end }}
 {{- if .Values.global.hostPort }}
-{{- if eq .Values.global.kubeProxyReplacement "partial" }}
+{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
   enable-host-port: {{ .Values.global.hostPort.enabled | quote }}
 {{- end }}
 {{- end }}
 {{- if .Values.global.externalIPs }}
-{{- if eq .Values.global.kubeProxyReplacement "partial" }}
+{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
   enable-external-ips: {{ .Values.global.externalIPs.enabled | quote }}
 {{- end }}
 {{- end }}
 {{- if .Values.global.nodePort }}
-{{- if eq .Values.global.kubeProxyReplacement "partial" }}
+{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
   enable-node-port: {{ .Values.global.nodePort.enabled | quote }}
 {{- end }}
 {{- if .Values.global.nodePort.range }}
@@ -478,8 +491,11 @@ data:
 {{- if .Values.global.arpingRefreshPeriod }}
   arping-refresh-period: {{ .Values.global.arpingRefreshPeriod }}
 {{- end }}
-{{- if .Values.global.cniUninstall }}
-  cni-uninstall: {{ .Values.global.cniUninstall | quote }}
+{{- if .Values.global.cni.uninstall }}
+  cni-uninstall: {{ .Values.global.cni.uninstall | quote }}
+{{- end }}
+{{- if .Values.global.enableK8SNetworkpolicy }}
+  enable-k8s-networkpolicy: {{ .Values.global.enableK8SNetworkpolicy | quote }}
 {{- end }}
 {{- if and .Values.global.pprof .Values.global.pprof.enabled }}
   pprof: {{ .Values.global.pprof.enabled | quote }}
@@ -496,12 +512,13 @@ data:
 {{- if and .Values.global.endpointRoutes .Values.global.endpointRoutes.enabled }}
   enable-endpoint-routes: {{ .Values.global.endpointRoutes.enabled | quote }}
 {{- end }}
-{{- if .Values.global.cni.configMap }}
-  read-cni-conf: {{ .Values.global.cni.confFileMountPath }}/{{ .Values.global.cni.configMapKey }}
   write-cni-conf-when-ready: {{ .Values.global.cni.hostConfDirMountPath }}/05-cilium.conflist
-{{- else if .Values.global.cni.readCniConf }}
+  cni-exclusive: {{ .Values.global.cni.exclusive | quote }}
+  cni-log-file: {{ .Values.global.cni.logFile }}
+{{- if .Values.global.cni.readCniConf }}
   read-cni-conf: {{ .Values.global.cni.readCniConf }}
 {{- end }}
+
 {{- if .Values.global.kubeConfigPath }}
   k8s-kubeconfig-path: {{ .Values.global.kubeConfigPath | quote }}
 {{- end }}
@@ -581,6 +598,7 @@ data:
   {{- end }}
 {{- end }}
 {{- if (eq .Values.global.ipam.mode "cluster-pool") }}
+  ipam-cilium-node-update-rate: "15s"
   {{- if .Values.global.ipv4.enabled }}
   cluster-pool-ipv4-cidr: {{ .Values.global.podCIDR | quote }}
   cluster-pool-ipv4-mask-size: {{ .Values.global.ipam.operator.clusterPoolIPv4MaskSize | quote }}
@@ -594,8 +612,10 @@ data:
   disable-cnp-status-updates: {{ (not .Values.enableCnpStatusUpdates) | quote }}
 {{- else if (eq $defaultEnableCnpStatusUpdates "false") }}
   disable-cnp-status-updates: "true"
+  cnp-node-status-gc-interval: "0s"
 {{- end }}
 
+  egress-gateway-reconciliation-trigger-interval: "1s"
   enable-vtep: "false"
   vtep-endpoint: ""
   vtep-cidr: ""
@@ -607,8 +627,11 @@ data:
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
   enable-sctp: "false"
+  k8s-client-qps: "5"
+  k8s-client-burst: "10"
   annotate-k8s-node: "true"
   remove-cilium-node-taints: "true"
+  set-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
   unmanaged-pod-watcher-interval: "15"
   tofqdns-dns-reject-response-code: "refused"
@@ -616,9 +639,19 @@ data:
   tofqdns-endpoint-max-ip-per-hostname: "50"
   tofqdns-idle-connection-grace-period: "0s"
   tofqdns-max-deferred-connection-deletes: "10000"
-  tofqdns-min-ttl: "3600"
   tofqdns-proxy-response-max-delay: "100ms"
   agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
+
+  mesh-auth-enabled: "true"
+  mesh-auth-queue-size: "1024"
+  mesh-auth-rotated-identities-queue-size: "1024"
+  mesh-auth-gc-interval: "5m0s"
+
+  proxy-connect-timeout: "2"
+  proxy-max-requests-per-connection: "0"
+  proxy-max-connection-duration-seconds: "0"
+
+  external-envoy-proxy: "false"
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.
