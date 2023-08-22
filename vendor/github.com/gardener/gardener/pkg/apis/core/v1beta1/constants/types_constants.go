@@ -567,6 +567,13 @@ const (
 
 	// DefaultSchedulerName is the name of the default scheduler.
 	DefaultSchedulerName = "default-scheduler"
+	// SchedulingPurpose is a constant for the key in a label describing the purpose of the scheduler related object.
+	SchedulingPurpose = "scheduling.gardener.cloud/purpose"
+	// SchedulingPurposeRegionConfig is a constant for a label value indicating that the object should be considered as a region config.
+	SchedulingPurposeRegionConfig = "region-config"
+	// AnnotationSchedulingCloudProfiles is a constant for an annotation key on a configmap which denotes
+	// the linked cloudprofiles containing the region distances.
+	AnnotationSchedulingCloudProfiles = "scheduling.gardener.cloud/cloudprofiles"
 
 	// AnnotationManagedSeedAPIServer is a constant for an annotation on a Shoot resource containing the API server settings for a managed seed.
 	AnnotationManagedSeedAPIServer = "shoot.gardener.cloud/managed-seed-api-server"
@@ -667,6 +674,10 @@ const (
 	LabelPodMaintenanceRestart = "maintenance.gardener.cloud/restart"
 	// LabelWorkerPool is a constant for a label that indicates the worker pool the node belongs to
 	LabelWorkerPool = "worker.gardener.cloud/pool"
+	// LabelWorkerPoolImageName is a label that indicates the name of the OS image for that worker pool
+	LabelWorkerPoolImageName = "worker.gardener.cloud/image-name"
+	// LabelWorkerPoolImageVersion is a label that indicates the version of the OS image for that worker pool
+	LabelWorkerPoolImageVersion = "worker.gardener.cloud/image-version"
 	// LabelWorkerKubernetesVersion is a constant for a label that indicates the Kubernetes version used for the worker pool nodes.
 	LabelWorkerKubernetesVersion = "worker.gardener.cloud/kubernetes-version"
 	// LabelWorkerPoolDeprecated is a deprecated constant for a label that indicates the worker pool the node belongs to
