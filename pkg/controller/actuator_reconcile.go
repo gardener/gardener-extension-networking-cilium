@@ -22,12 +22,11 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/chart"
-	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -41,25 +40,11 @@ import (
 )
 
 const (
-	// CiliumConfigSecretName is the name of the secret used for the managed resource of networking cilium
-	CiliumConfigSecretName = "extension-networking-cilium-config"
+	// CiliumConfigManagedResourceName is the name of the managed resource of networking cilium
+	CiliumConfigManagedResourceName = "extension-networking-cilium-config"
 	// ShootWebhooksResourceName is the name of the managed resource for the gardener networking extension cilium webhooks
 	ShootWebhooksResourceName = "extension-cilium-shoot-webhooks"
 )
-
-func withLocalObjectRefs(refs ...string) []corev1.LocalObjectReference {
-	var localObjectRefs []corev1.LocalObjectReference
-	for _, ref := range refs {
-		localObjectRefs = append(localObjectRefs, corev1.LocalObjectReference{Name: ref})
-	}
-	return localObjectRefs
-}
-
-func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*builder.Secret, []corev1.LocalObjectReference) {
-	return builder.NewSecret(cl).
-		WithKeyValues(map[string][]byte{charts.CiliumConfigKey: ciliumConfig}).
-		WithNamespacedName(namespace, CiliumConfigSecretName), withLocalObjectRefs(CiliumConfigSecretName)
-}
 
 func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
@@ -156,17 +141,8 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return err
 	}
 
-	secret, secretRefs := ciliumSecret(a.client, ciliumChart, network.Namespace)
-	if err := secret.Reconcile(ctx); err != nil {
-		return err
-	}
-
-	if err := builder.
-		NewManagedResource(a.client).
-		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
-		WithSecretRefs(secretRefs).
-		WithInjectedLabels(map[string]string{constants.ShootNoCleanup: "true"}).
-		Reconcile(ctx); err != nil {
+	data := map[string][]byte{charts.CiliumConfigKey: ciliumChart}
+	if err := managedresources.CreateForShoot(ctx, a.client, network.Namespace, CiliumConfigManagedResourceName, "extension-networking-cilium", false, data); err != nil {
 		return err
 	}
 
