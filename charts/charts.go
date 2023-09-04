@@ -1,4 +1,4 @@
-// Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// Copyright (c) 2023 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
 
 package charts
 
-import _ "embed"
+import (
+	"embed"
+	_ "embed"
+)
 
-// ImagesYAML contains the contents of the images.yaml file.
-//go:embed images.yaml
-var ImagesYAML string
+// InternalChart embeds the internal charts in embed.FS
+//
+//go:embed internal
+var InternalChart embed.FS
+
+// InternalChartsPath is the path to the internal charts
+const InternalChartsPath = "internal"

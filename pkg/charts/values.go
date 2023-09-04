@@ -20,6 +20,7 @@ import (
 	"github.com/gardener/gardener/pkg/chartrenderer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
@@ -34,7 +35,7 @@ func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.
 		return nil, err
 	}
 
-	release, err := renderer.Render(cilium.ChartPath, cilium.ReleaseName, metav1.NamespaceSystem, values)
+	release, err := renderer.RenderEmbeddedFS(charts.InternalChart, cilium.CiliumChartPath, cilium.ReleaseName, metav1.NamespaceSystem, values)
 	if err != nil {
 		return nil, err
 	}

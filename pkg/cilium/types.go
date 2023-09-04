@@ -14,7 +14,11 @@
 
 package cilium
 
-import "path/filepath"
+import (
+	"path/filepath"
+
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
+)
 
 const (
 	// Name defines the extension name.
@@ -48,12 +52,10 @@ const (
 var (
 	// ChartsPath is the path to the charts
 	ChartsPath = filepath.Join("charts")
-	// InternalChartsPath is the path to the internal charts
-	InternalChartsPath = filepath.Join(ChartsPath, "internal")
 
-	// ChartPath path for internal Cilium Chart
-	ChartPath = filepath.Join(InternalChartsPath, "cilium")
+	// CiliumChartPath is the path for internal Cilium Chart
+	CiliumChartPath = filepath.Join(charts.InternalChartsPath, "cilium")
 
 	// CiliumMonitoringChartPath  path for internal Cilium monitoring chart
-	CiliumMonitoringChartPath = filepath.Join(InternalChartsPath, "cilium-monitoring")
+	CiliumMonitoringChartPath = filepath.Join(ChartsPath, charts.InternalChartsPath, "cilium-monitoring")
 )

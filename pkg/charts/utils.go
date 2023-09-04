@@ -22,10 +22,9 @@ import (
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+	"github.com/gardener/gardener-extension-networking-cilium/imagevector"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
 )
 
 var defaultCiliumConfig = requirementsConfig{
@@ -109,7 +108,7 @@ var defaultGlobalConfig = globalConfig{
 	Devices:               nil,
 	IPv4NativeRoutingCIDR: "",
 	BPF: bpf{
-		LoadBalancingMode: v1alpha1.SNAT,
+		LoadBalancingMode: ciliumv1alpha1.SNAT,
 	},
 	IPAM: ipam{
 		Mode: "kubernetes",
