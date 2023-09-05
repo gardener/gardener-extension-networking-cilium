@@ -1,4 +1,4 @@
-apiVersion: {{ include "daemonsetversion" . }}
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: cilium

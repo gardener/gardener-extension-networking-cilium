@@ -21,7 +21,3 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- printf "%s:%s" .repository .tag }}
   {{- end }}
 {{- end }}
-
-{{- define "deploymentversion" -}}
-apps/v1
-{{- end -}}
