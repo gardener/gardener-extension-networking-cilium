@@ -40,6 +40,8 @@ The `tunnel` field describes the encapsulation mode for communication between no
 
 The `bpfSocketLBHostnsOnly.enabled` field describes whether socket LB will be skipped for services when inside a pod namespace (default), in favor of service LB at the pod interface. Socket LB is still used when in the host namespace. This feature is required when using cilium with a service mesh like istio or linkerd.
 
+Setting the field `cni.exclusive` to `false` might be useful when additional plugins, such as Istio or Linkerd, wish to chain after Cilium. This action disables the default behavior of Cilium, which is to overwrite changes to the CNI configuration file.
+
 The `egressGateway.enabled` field describes whether egress gateways are enabled or not (default). To use this feature kube-proxy must be disabled. This can be done with the following configuration in the Shoot:
 ```yaml
 spec:

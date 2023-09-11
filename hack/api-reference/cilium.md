@@ -153,6 +153,20 @@ BPFSocketLBHostnsOnly
 </tr>
 <tr>
 <td>
+<code>cni</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.CNI">
+CNI
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CNI configuration for cilium</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>egressGateway</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.EgressGateway">
@@ -284,6 +298,36 @@ bool
 </em>
 </td>
 <td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.CNI">CNI
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>CNI configuration for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>exclusive</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>false indicates that cilium will not overwrite its CNI configuration.</p>
 </td>
 </tr>
 </tbody>

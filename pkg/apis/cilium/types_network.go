@@ -115,6 +115,11 @@ type BPFSocketLBHostnsOnly struct {
 	Enabled bool
 }
 
+// CNI configuration for cilium
+type CNI struct {
+	Exclusive bool
+}
+
 // EgressGateway enablement for cilium
 type EgressGateway struct {
 	Enabled bool
@@ -178,6 +183,8 @@ type NetworkConfig struct {
 	IPv6 *IPv6
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly
+	// CNI configuration
+	CNI *CNI
 	// EgressGateway flag to be enabled or not
 	EgressGateway *EgressGateway
 	// MTU overwrites the auto-detected MTU of the underlying network
