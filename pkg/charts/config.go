@@ -34,6 +34,7 @@ type globalConfig struct {
 	PodCIDR                  string                                  `json:"podCIDR"`
 	NodeCIDR                 string                                  `json:"nodeCIDR"`
 	BPFSocketLBHostnsOnly    bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
+	CNI                      cni                                     `json:"cni"`
 	LocalRedirectPolicy      localRedirectPolicy                     `json:"localRedirectPolicy"`
 	NodeLocalDNS             nodeLocalDNS                            `json:"nodeLocalDNS"`
 	EgressGateway            egressGateway                           `json:"egressGateway"`
@@ -143,6 +144,9 @@ type bpfSocketLBHostnsOnly struct {
 	Enabled bool `json:"enabled"`
 }
 
+type cni struct {
+	Exclusive bool `json:"exclusive"`
+}
 type localRedirectPolicy struct {
 	Enabled bool `json:"enabled"`
 }

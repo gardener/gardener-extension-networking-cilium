@@ -96,6 +96,9 @@ var defaultGlobalConfig = globalConfig{
 	BPFSocketLBHostnsOnly: bpfSocketLBHostnsOnly{
 		Enabled: false,
 	},
+	CNI: cni{
+		Exclusive: true,
+	},
 	LocalRedirectPolicy: localRedirectPolicy{
 		Enabled: false,
 	},
@@ -231,6 +234,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// check if BPFSocketLBHostnsOnly is enabled
 	if config.BPFSocketLBHostnsOnly != nil {
 		globalConfig.BPFSocketLBHostnsOnly.Enabled = config.BPFSocketLBHostnsOnly.Enabled
+	}
+
+	if config.CNI != nil {
+		globalConfig.CNI.Exclusive = config.CNI.Exclusive
 	}
 
 	// check if tunnel mode is set

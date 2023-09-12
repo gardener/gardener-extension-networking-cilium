@@ -105,6 +105,12 @@ type BPFSocketLBHostnsOnly struct {
 	Enabled bool `json:"enabled"`
 }
 
+// CNI configuration for cilium
+type CNI struct {
+	// false indicates that cilium will not overwrite its CNI configuration.
+	Exclusive bool `json:"exclusive"`
+}
+
 // EgressGateway enablement for cilium
 type EgressGateway struct {
 	Enabled bool `json:"enabled"`
@@ -179,6 +185,9 @@ type NetworkConfig struct {
 	// BPFSocketLBHostnsOnly flag to be enabled or not
 	// +optional
 	BPFSocketLBHostnsOnly *BPFSocketLBHostnsOnly `json:"bpfSocketLBHostnsOnly,omitempty"`
+	// CNI configuration for cilium
+	// +optional
+	CNI *CNI `json:"cni,omitempty"`
 	// EgressGateway enablement for cilium
 	// +optional
 	EgressGateway *EgressGateway `json:"egressGateway,omitempty"`
