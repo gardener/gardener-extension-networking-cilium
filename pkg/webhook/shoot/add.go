@@ -17,8 +17,10 @@ package shoot
 import (
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	"github.com/gardener/gardener/extensions/pkg/webhook/shoot"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -36,13 +38,20 @@ var logger = log.Log.WithName("shoot-webhook")
 // AddToManagerWithOptions creates a webhook with the given options and adds it to the manager.
 func AddToManagerWithOptions(mgr manager.Manager, opts AddOptions) (*extensionswebhook.Webhook, error) {
 	logger.Info("Adding webhook to manager")
-	return shoot.New(mgr, shoot.Args{
+	failurePolicyFail := admissionregistrationv1.Fail
+	webhook, err := shoot.New(mgr, shoot.Args{
 		Types: []extensionswebhook.Type{
 			{Obj: &corev1.ConfigMap{}},
 			{Obj: &appsv1.DaemonSet{}},
 		},
-		Mutator: NewMutator(),
+		Mutator:       NewMutator(),
+		FailurePolicy: &failurePolicyFail,
 	})
+	if err != nil {
+		return nil, err
+	}
+	webhook.ObjectSelector = &metav1.LabelSelector{MatchLabels: map[string]string{"k8s-app": "node-local-dns"}}
+	return webhook, nil
 }
 
 // AddToManager creates a webhook with the default options and adds it to the manager.
