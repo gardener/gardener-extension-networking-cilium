@@ -1,6 +1,0 @@
-apiVersion: v1
-name: config
-version: 0.1.0
-description: Helm chart for Cilium configuration
-sources:
-  - https://github.com/gardener/gardener-extension-networking-cilium

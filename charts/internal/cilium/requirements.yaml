@@ -1,8 +1,6 @@
 dependencies:
   - name: agent
     condition: requirements.agent.enabled
-  - name: config
-    condition: requirements.config.enabled
   - name: operator
     condition: requirements.operator.enabled
   - name: hubble-ui
