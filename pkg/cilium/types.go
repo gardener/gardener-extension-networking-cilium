@@ -50,12 +50,9 @@ const (
 )
 
 var (
-	// ChartsPath is the path to the charts
-	ChartsPath = filepath.Join("charts")
-
 	// CiliumChartPath is the path for internal Cilium Chart
 	CiliumChartPath = filepath.Join(charts.InternalChartsPath, "cilium")
 
 	// CiliumMonitoringChartPath  path for internal Cilium monitoring chart
-	CiliumMonitoringChartPath = filepath.Join(ChartsPath, charts.InternalChartsPath, "cilium-monitoring")
+	CiliumMonitoringChartPath = filepath.Join(charts.InternalChartsPath, "cilium-monitoring")
 )

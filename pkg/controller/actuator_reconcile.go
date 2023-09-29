@@ -34,8 +34,9 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
+	chartspkg "github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
@@ -48,8 +49,9 @@ const (
 
 func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
-		Name: cilium.MonitoringName,
-		Path: cilium.CiliumMonitoringChartPath,
+		Name:       cilium.MonitoringName,
+		EmbeddedFS: &charts.InternalChart,
+		Path:       cilium.CiliumMonitoringChartPath,
 		Objects: []*chart.Object{
 			{
 				Type: &corev1.ConfigMap{},
@@ -138,12 +140,12 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return err
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, ipamMode)
+	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, ipamMode)
 	if err != nil {
 		return err
 	}
 
-	data := map[string][]byte{charts.CiliumConfigKey: ciliumChart}
+	data := map[string][]byte{chartspkg.CiliumConfigKey: ciliumChart}
 	if err := managedresources.CreateForShoot(ctx, a.client, network.Namespace, CiliumConfigManagedResourceName, "extension-networking-cilium", false, data); err != nil {
 		return err
 	}
