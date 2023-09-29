@@ -41,7 +41,6 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - /gardener-extension-networking-cilium
-        - --leader-election-resource-lock={{ .Values.leaderElection.resourceLock }}
         - --max-concurrent-reconciles={{ .Values.controller.concurrentSyncs }}
         - --healthcheck-max-concurrent-reconciles={{ .Values.controller.healthcheck.concurrentSyncs }}
         - --heartbeat-namespace={{ .Release.Namespace }} 

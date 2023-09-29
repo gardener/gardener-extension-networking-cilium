@@ -26,6 +26,7 @@ import (
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
@@ -60,8 +61,14 @@ func AddToManagerWithOptions(ctx context.Context, mgr manager.Manager, opts AddO
 		return fmt.Errorf("could not create ChartApplier: %w", err)
 	}
 
+	webhookServer := mgr.GetWebhookServer()
+	defaultServer, ok := mgr.GetWebhookServer().(*webhook.DefaultServer)
+	if !ok {
+		return fmt.Errorf("expected *webhook.DefaultServer, got %T", webhookServer)
+	}
+
 	return network.Add(ctx, mgr, network.AddArgs{
-		Actuator:          NewActuator(mgr, chartApplier, extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot), opts.ShootWebhookConfig, mgr.GetWebhookServer().Port),
+		Actuator:          NewActuator(mgr, chartApplier, extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot), opts.ShootWebhookConfig, defaultServer.Options.Port),
 		ControllerOptions: opts.Controller,
 		Predicates:        network.DefaultPredicates(ctx, mgr, opts.IgnoreOperationAnnotation),
 		Type:              cilium.Type,
