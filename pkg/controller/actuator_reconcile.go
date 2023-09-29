@@ -22,7 +22,7 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
-	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/chart"
@@ -97,10 +97,12 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		}
 	}
 
-	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled && cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" {
-		if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
-			return field.Forbidden(field.NewPath("spec", "kubernetes", "kubeProxy", "mode"), "Running kube-proxy with IPVS mode is forbidden in conjunction with node local dns enabled")
-		}
+	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil &&
+		pointer.BoolDeref(cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled, false) &&
+		cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil &&
+		*cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" &&
+		v1beta1helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents) {
+		return field.Forbidden(field.NewPath("spec", "kubernetes", "kubeProxy", "mode"), "Running kube-proxy with IPVS mode is forbidden in conjunction with node local dns enabled")
 	}
 
 	if a.atomicShootWebhookConfig != nil {

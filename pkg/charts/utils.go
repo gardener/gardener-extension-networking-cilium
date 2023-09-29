@@ -194,7 +194,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	// If node local dns feature is enabled, enable local redirect policy
-	if helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents, cluster.Shoot.Annotations) {
+	if helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents) {
 		globalConfig.NodeLocalDNS.Enabled = true
 		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
