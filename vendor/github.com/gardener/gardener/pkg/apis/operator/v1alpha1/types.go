@@ -35,6 +35,7 @@ import (
 // +kubebuilder:printcolumn:name="Runtime",type=string,JSONPath=`.status.conditions[?(@.type=="RuntimeComponentsHealthy")].status`,description="Indicates whether the components related to the runtime cluster are healthy."
 // +kubebuilder:printcolumn:name="Virtual",type=string,JSONPath=`.status.conditions[?(@.type=="VirtualComponentsHealthy")].status`,description="Indicates whether the components related to the virtual cluster are healthy."
 // +kubebuilder:printcolumn:name="API Server",type=string,JSONPath=`.status.conditions[?(@.type=="VirtualGardenAPIServerAvailable")].status`,description="Indicates whether the API server of the virtual cluster is available."
+// +kubebuilder:printcolumn:name="Observability",type=string,JSONPath=`.status.conditions[?(@.type=="ObservabilityComponentsHealthy")].status`,description="Indicates whether the observability components related to the runtime cluster are healthy."
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`,description="creation timestamp"
 
 // Garden describes a list of gardens.
@@ -177,12 +178,9 @@ type VirtualCluster struct {
 
 // DNS holds information about DNS settings.
 type DNS struct {
-	// Deprecated: This field is deprecated and will be removed soon. Please use `Domains` instead.
-	// TODO(timuthy): Drop this after v1.74 has been released.
-	// +optional
-	Domain *string `json:"domain,omitempty"`
 	// Domains are the external domains of the virtual garden cluster.
 	// The first given domain in this list is immutable.
+	// +kubebuilder:validation:MinItems=1
 	// +optional
 	Domains []string `json:"domains,omitempty"`
 }
@@ -235,7 +233,7 @@ type Backup struct {
 	BucketName string `json:"bucketName"`
 	// SecretRef is a reference to a Secret object containing the cloud provider credentials for the object store where
 	// backups should be stored. It should have enough privileges to manipulate the objects as well as buckets.
-	SecretRef corev1.SecretReference `json:"secretRef"`
+	SecretRef corev1.LocalObjectReference `json:"secretRef"`
 }
 
 // Maintenance contains information about the time window for maintenance operations.
@@ -279,9 +277,6 @@ type KubeAPIServerConfig struct {
 	// Authentication contains settings related to authentication.
 	// +optional
 	Authentication *Authentication `json:"authentication,omitempty"`
-	// Authorization contains settings related to authorization.
-	// +optional
-	Authorization *Authorization `json:"authorization,omitempty"`
 	// ResourcesToStoreInETCDEvents contains a list of resources which should be stored in etcd-events instead of
 	// etcd-main. The 'events' resource is always stored in etcd-events. Note that adding or removing resources from
 	// this list will not migrate them automatically from the etcd-main to etcd-events or vice versa.
@@ -329,35 +324,6 @@ type AuthenticationWebhook struct {
 	// Version is the API version to send and expect from the webhook.
 	// +kubebuilder:default=v1beta1
 	// +kubebuilder:validation:Enum=v1alpha1;v1beta1;v1
-	// +optional
-	Version *string `json:"version,omitempty"`
-}
-
-// Authorization contains settings related to authorization.
-type Authorization struct {
-	// Webhook contains settings related to an authorization webhook configuration.
-	// +optional
-	Webhook *AuthorizationWebhook `json:"webhook,omitempty"`
-}
-
-// AuthorizationWebhook contains settings related to an authorization webhook configuration.
-type AuthorizationWebhook struct {
-	// CacheAuthorizedTTL is the duration to cache 'authorized' responses from the webhook authorizer.
-	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h))+$"
-	// +optional
-	CacheAuthorizedTTL *metav1.Duration `json:"cacheAuthorizedTTL,omitempty"`
-	// CacheUnauthorizedTTL is the duration to cache 'unauthorized' responses from the webhook authorizer.
-	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h))+$"
-	// +optional
-	CacheUnauthorizedTTL *metav1.Duration `json:"cacheUnauthorizedTTL,omitempty"`
-	// KubeconfigSecretName specifies the name of a secret containing the kubeconfig for this webhook.
-	// +kubebuilder:validation:MinLength=1
-	KubeconfigSecretName string `json:"kubeconfigSecretName"`
-	// Version is the API version to send and expect from the webhook.
-	// +kubebuilder:default=v1beta1
-	// +kubebuilder:validation:Enum=v1beta1;v1
 	// +optional
 	Version *string `json:"version,omitempty"`
 }
@@ -437,6 +403,9 @@ type GardenerAPIServerConfig struct {
 	// AuditConfig contains configuration settings for the audit of the kube-apiserver.
 	// +optional
 	AuditConfig *gardencorev1beta1.AuditConfig `json:"auditConfig,omitempty"`
+	// AuditWebhook contains settings related to an audit webhook configuration.
+	// +optional
+	AuditWebhook *AuditWebhook `json:"auditWebhook,omitempty"`
 	// Logging contains configuration for the log level and HTTP access logs.
 	// +optional
 	Logging *gardencorev1beta1.APIServerLogging `json:"logging,omitempty"`
@@ -568,6 +537,9 @@ type CredentialsRotation struct {
 	// ETCDEncryptionKey contains information about the ETCD encryption key credential rotation.
 	// +optional
 	ETCDEncryptionKey *gardencorev1beta1.ETCDEncryptionKeyRotation `json:"etcdEncryptionKey,omitempty"`
+	// Observability contains information about the observability credential rotation.
+	// +optional
+	Observability *gardencorev1beta1.ObservabilityRotation `json:"observability,omitempty"`
 }
 
 const (
@@ -577,6 +549,8 @@ const (
 	VirtualComponentsHealthy gardencorev1beta1.ConditionType = "VirtualComponentsHealthy"
 	// VirtualGardenAPIServerAvailable is a constant for a condition type indicating that the virtual garden's API server is available.
 	VirtualGardenAPIServerAvailable gardencorev1beta1.ConditionType = "VirtualGardenAPIServerAvailable"
+	// ObservabilityComponentsHealthy is a constant for a condition type indicating the health of observability components.
+	ObservabilityComponentsHealthy gardencorev1beta1.ConditionType = "ObservabilityComponentsHealthy"
 )
 
 // AvailableOperationAnnotations is the set of available operation annotations for Garden resources.
@@ -588,6 +562,10 @@ var AvailableOperationAnnotations = sets.New(
 	v1beta1constants.OperationRotateServiceAccountKeyComplete,
 	v1beta1constants.OperationRotateETCDEncryptionKeyStart,
 	v1beta1constants.OperationRotateETCDEncryptionKeyComplete,
+	v1beta1constants.OperationRotateObservabilityCredentials,
 	v1beta1constants.OperationRotateCredentialsStart,
 	v1beta1constants.OperationRotateCredentialsComplete,
 )
+
+// FinalizerName is the name of the finalizer used by gardener-operator.
+const FinalizerName = "gardener.cloud/operator"

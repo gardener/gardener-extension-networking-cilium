@@ -256,6 +256,15 @@ var IntervalWait = 2 * time.Second
 
 // WaitUntilHealthy waits until the given managed resource is healthy.
 func WaitUntilHealthy(ctx context.Context, client client.Client, namespace, name string) error {
+	return waitUntilHealthy(ctx, client, namespace, name, false)
+}
+
+// WaitUntilHealthyAndNotProgressing waits until the given managed resource is healthy and not progressing.
+func WaitUntilHealthyAndNotProgressing(ctx context.Context, client client.Client, namespace, name string) error {
+	return waitUntilHealthy(ctx, client, namespace, name, true)
+}
+
+func waitUntilHealthy(ctx context.Context, client client.Client, namespace, name string, andNotProgressing bool) error {
 	obj := &resourcesv1alpha1.ManagedResource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -270,6 +279,12 @@ func WaitUntilHealthy(ctx context.Context, client client.Client, namespace, name
 
 		if err := health.CheckManagedResource(obj); err != nil {
 			return retry.MinorError(fmt.Errorf("managed resource %s/%s is not healthy", namespace, name))
+		}
+
+		if andNotProgressing {
+			if err := health.CheckManagedResourceProgressing(obj); err != nil {
+				return retry.MinorError(fmt.Errorf("managed resource %s/%s is still progressing", namespace, name))
+			}
 		}
 
 		return retry.Ok()
@@ -352,13 +367,12 @@ func RenderChartAndCreate(ctx context.Context, namespace string, name string, se
 	return Create(ctx, client, namespace, name, nil, secretNameWithPrefix, "", map[string][]byte{chartName: data}, pointer.Bool(false), injectedLabels, &forceOverwriteAnnotations)
 }
 
-func checkConfigurationError(err error) []gardencorev1beta1.ErrorCode {
-	var (
-		errorCodes                 []gardencorev1beta1.ErrorCode
-		configurationProblemRegexp = regexp.MustCompile(`(?i)(error during apply of object .* is invalid:)`)
-	)
+// configurationProblemRegex is used to check if an error is caused by a bad managed resource configuration.
+var configurationProblemRegex = regexp.MustCompile(`(?i)(error during apply of object .* is invalid:)`)
 
-	if configurationProblemRegexp.MatchString(err.Error()) {
+func checkConfigurationError(err error) []gardencorev1beta1.ErrorCode {
+	var errorCodes []gardencorev1beta1.ErrorCode
+	if configurationProblemRegex.MatchString(err.Error()) {
 		errorCodes = append(errorCodes, gardencorev1beta1.ErrorConfigurationProblem)
 	}
 
