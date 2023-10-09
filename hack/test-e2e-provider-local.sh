@@ -15,7 +15,7 @@ if [[ ! -d "$repo_root/gardener" ]]; then
 fi
 
 cd "$repo_root/gardener"
-git checkout 1eb54ec0eff68e26c2c969d5960530cf5594a63b # g/g v1.80.2
+git checkout 947bf65936c9726a4d9fad5d36ebf82a11a6d3a8 # g/g v1.81.0
 source "$repo_root/gardener/hack/ci-common.sh"
 make kind-up
 trap '{
@@ -42,6 +42,7 @@ kubectl apply -f "$repo_root/tmp/controller-registration.yaml"
 
 echo '127.0.0.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
 echo '127.0.0.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '127.0.0.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
 
 # reduce flakiness in contended pipelines
 export GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT=5s
