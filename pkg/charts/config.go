@@ -46,6 +46,7 @@ type globalConfig struct {
 	SnatToUpstreamDNS        snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 	SnatOutOfCluster         snatOutOfCluster                        `json:"snatOutOfCluster"`
 	AutoDirectNodeRoutes     bool                                    `json:"autoDirectNodeRoutes"`
+	ConfigMapHash            string                                  `json:"configMapHash"`
 }
 
 // etcd related configuration for cilium

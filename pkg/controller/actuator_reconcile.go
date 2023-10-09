@@ -25,6 +25,7 @@ import (
 	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
+	"github.com/gardener/gardener/pkg/utils"
 	"github.com/gardener/gardener/pkg/utils/chart"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
@@ -135,12 +136,12 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	ipamMode, err := getIPAMMode(ctx, a.client, cluster)
+	configMap, err := getCiliumConfigMap(ctx, a.client, cluster)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting cilium configMap: %w", err)
 	}
 
-	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, ipamMode)
+	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap))
 	if err != nil {
 		return err
 	}
@@ -167,15 +168,18 @@ func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensio
 	return configmap, nil
 }
 
-func getIPAMMode(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (string, error) {
-	configmap, err := getCiliumConfigMap(ctx, cl, cluster)
-	if err != nil {
-		return "", err
-	}
-	if configmap != nil {
-		if ipamMode, ok := configmap.Data["ipam"]; ok {
-			return ipamMode, nil
+func getIPAMMode(configMap *corev1.ConfigMap) string {
+	if configMap != nil {
+		if ipamMode, ok := configMap.Data["ipam"]; ok {
+			return ipamMode
 		}
 	}
-	return "kubernetes", nil
+	return "kubernetes"
+}
+
+func getConfigMapHash(configMap *corev1.ConfigMap) string {
+	if configMap != nil {
+		return utils.ComputeConfigMapChecksum(configMap.Data)
+	}
+	return ""
 }

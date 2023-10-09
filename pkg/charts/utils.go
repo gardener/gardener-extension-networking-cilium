@@ -120,6 +120,7 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: false,
 	},
 	AutoDirectNodeRoutes: false,
+	ConfigMapHash:        "",
 }
 
 func newGlobalConfig() globalConfig {
@@ -131,8 +132,8 @@ func newRequirementsConfig() requirementsConfig {
 }
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
-func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode string) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster, ipamMode)
+func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) (*ciliumConfig, error) {
+	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster, ipamMode, configMapHash)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %w", err)
 	}
@@ -143,11 +144,13 @@ func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *ext
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode string) (requirementsConfig, globalConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
 	)
+
+	globalConfig.ConfigMapHash = configMapHash
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR

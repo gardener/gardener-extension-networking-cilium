@@ -15,9 +15,14 @@
 package charts
 
 import (
+	"fmt"
+
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
+	"github.com/gardener/gardener/pkg/utils"
+	"gopkg.in/yaml.v2"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/gardener/gardener-extension-networking-cilium/charts"
@@ -29,16 +34,51 @@ import (
 const CiliumConfigKey = "config.yaml"
 
 // RenderCiliumChart renders the cilium chart with the given values.
-func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode string) ([]byte, error) {
-	values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode)
+func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) ([]byte, error) {
+	var release *chartrenderer.RenderedChart
+
+	values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, configMapHash)
 	if err != nil {
 		return nil, err
 	}
 
-	release, err := renderer.RenderEmbeddedFS(charts.InternalChart, cilium.CiliumChartPath, cilium.ReleaseName, metav1.NamespaceSystem, values)
+	release, err = renderer.RenderEmbeddedFS(charts.InternalChart, cilium.CiliumChartPath, cilium.ReleaseName, metav1.NamespaceSystem, values)
 	if err != nil {
 		return nil, err
+	}
+
+	newConfigMapHash, err := getConfigMapHash(release)
+	if err != nil {
+		return nil, err
+	}
+
+	if newConfigMapHash != configMapHash {
+		// Render the charts with the new configMap hash.
+		values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, newConfigMapHash)
+		if err != nil {
+			return nil, err
+		}
+
+		release, err = renderer.RenderEmbeddedFS(charts.InternalChart, cilium.CiliumChartPath, cilium.ReleaseName, metav1.NamespaceSystem, values)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return release.Manifest(), nil
+}
+
+func getConfigMapHash(release *chartrenderer.RenderedChart) (string, error) {
+	configMap := &corev1.ConfigMap{}
+	configMapPath := "cilium/charts/config/templates/configmap.yaml"
+	configMapFile, ok := release.Files()[configMapPath]
+	if !ok {
+		return "", fmt.Errorf("configmap not found in the given path: %s", configMapPath)
+	}
+
+	if err := yaml.Unmarshal([]byte(configMapFile), &configMap); err != nil {
+		return "", fmt.Errorf("error unmarshalling configMap: %w, %s", err, configMapFile)
+	}
+
+	return utils.ComputeConfigMapChecksum(configMap.Data), nil
 }
