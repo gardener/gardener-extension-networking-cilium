@@ -122,7 +122,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			DefaultAddOptions.WebhookServerNamespace,
 			cilium.Name,
 			ShootWebhooksResourceName,
-			a.webhookServerPort,
+			int32(a.webhookServerPort),
 			webhookConfig,
 			cluster,
 		); err != nil {
