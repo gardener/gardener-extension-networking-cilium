@@ -62,3 +62,8 @@ func (a *actuator) Delete(ctx context.Context, _ logr.Logger, network *extension
 	defer cancel()
 	return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigManagedResourceName)
 }
+
+// ForceDelete implements Network.Actuator.
+func (a *actuator) ForceDelete(ctx context.Context, log logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
+	return a.Delete(ctx, log, network, cluster)
+}
