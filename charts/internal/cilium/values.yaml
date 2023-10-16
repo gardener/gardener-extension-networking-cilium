@@ -3,10 +3,6 @@ requirements:
   agent:
     enabled: true
 
-  # Include the cilium-config ConfigMap
-  config:
-    enabled: true
-
   # Include the cilium-operator Deployment
   operator:
     enabled: true
@@ -17,6 +13,8 @@ requirements:
 
 # global groups all configuration options that have effect on all sub-charts
 global:
+  configMapHash: ""
+
   egressGateway:
     enabled: false
 

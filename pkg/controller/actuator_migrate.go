@@ -26,7 +26,7 @@ import (
 // Migrate implements Network.Actuator.
 func (a *actuator) Migrate(ctx context.Context, log logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
 	// Keep objects for shoot managed resources so that they are not deleted from the shoot during the migration
-	if err := managedresources.SetKeepObjects(ctx, a.client, network.Namespace, CiliumConfigSecretName, true); err != nil {
+	if err := managedresources.SetKeepObjects(ctx, a.client, network.Namespace, CiliumConfigManagedResourceName, true); err != nil {
 		return err
 	}
 

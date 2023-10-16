@@ -22,12 +22,12 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
-	"github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
+	"github.com/gardener/gardener/pkg/utils"
 	"github.com/gardener/gardener/pkg/utils/chart"
-	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
+	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -35,36 +35,24 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
+	chartspkg "github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
 const (
-	// CiliumConfigSecretName is the name of the secret used for the managed resource of networking cilium
-	CiliumConfigSecretName = "extension-networking-cilium-config"
+	// CiliumConfigManagedResourceName is the name of the managed resource of networking cilium
+	CiliumConfigManagedResourceName = "extension-networking-cilium-config"
 	// ShootWebhooksResourceName is the name of the managed resource for the gardener networking extension cilium webhooks
 	ShootWebhooksResourceName = "extension-cilium-shoot-webhooks"
 )
 
-func withLocalObjectRefs(refs ...string) []corev1.LocalObjectReference {
-	var localObjectRefs []corev1.LocalObjectReference
-	for _, ref := range refs {
-		localObjectRefs = append(localObjectRefs, corev1.LocalObjectReference{Name: ref})
-	}
-	return localObjectRefs
-}
-
-func ciliumSecret(cl client.Client, ciliumConfig []byte, namespace string) (*builder.Secret, []corev1.LocalObjectReference) {
-	return builder.NewSecret(cl).
-		WithKeyValues(map[string][]byte{charts.CiliumConfigKey: ciliumConfig}).
-		WithNamespacedName(namespace, CiliumConfigSecretName), withLocalObjectRefs(CiliumConfigSecretName)
-}
-
 func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
-		Name: cilium.MonitoringName,
-		Path: cilium.CiliumMonitoringChartPath,
+		Name:       cilium.MonitoringName,
+		EmbeddedFS: &charts.InternalChart,
+		Path:       cilium.CiliumMonitoringChartPath,
 		Objects: []*chart.Object{
 			{
 				Type: &corev1.ConfigMap{},
@@ -112,10 +100,12 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		}
 	}
 
-	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled && cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil && *cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" {
-		if cluster.Shoot.Annotations[v1beta1constants.AnnotationNodeLocalDNS] == "true" {
-			return field.Forbidden(field.NewPath("spec", "kubernetes", "kubeProxy", "mode"), "Running kube-proxy with IPVS mode is forbidden in conjunction with node local dns enabled")
-		}
+	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil &&
+		pointer.BoolDeref(cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled, false) &&
+		cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil &&
+		*cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" &&
+		v1beta1helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents) {
+		return field.Forbidden(field.NewPath("spec", "kubernetes", "kubeProxy", "mode"), "Running kube-proxy with IPVS mode is forbidden in conjunction with node local dns enabled")
 	}
 
 	if a.atomicShootWebhookConfig != nil {
@@ -146,27 +136,18 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	ipamMode, err := getIPAMMode(ctx, a.client, cluster)
+	configMap, err := getCiliumConfigMap(ctx, a.client, cluster)
+	if err != nil {
+		return fmt.Errorf("error getting cilium configMap: %w", err)
+	}
+
+	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap))
 	if err != nil {
 		return err
 	}
 
-	ciliumChart, err := charts.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, ipamMode)
-	if err != nil {
-		return err
-	}
-
-	secret, secretRefs := ciliumSecret(a.client, ciliumChart, network.Namespace)
-	if err := secret.Reconcile(ctx); err != nil {
-		return err
-	}
-
-	if err := builder.
-		NewManagedResource(a.client).
-		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
-		WithSecretRefs(secretRefs).
-		WithInjectedLabels(map[string]string{constants.ShootNoCleanup: "true"}).
-		Reconcile(ctx); err != nil {
+	data := map[string][]byte{chartspkg.CiliumConfigKey: ciliumChart}
+	if err := managedresources.CreateForShoot(ctx, a.client, network.Namespace, CiliumConfigManagedResourceName, "extension-networking-cilium", false, data); err != nil {
 		return err
 	}
 
@@ -187,15 +168,18 @@ func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensio
 	return configmap, nil
 }
 
-func getIPAMMode(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (string, error) {
-	configmap, err := getCiliumConfigMap(ctx, cl, cluster)
-	if err != nil {
-		return "", err
-	}
-	if configmap != nil {
-		if ipamMode, ok := configmap.Data["ipam"]; ok {
-			return ipamMode, nil
+func getIPAMMode(configMap *corev1.ConfigMap) string {
+	if configMap != nil {
+		if ipamMode, ok := configMap.Data["ipam"]; ok {
+			return ipamMode
 		}
 	}
-	return "kubernetes", nil
+	return "kubernetes"
+}
+
+func getConfigMapHash(configMap *corev1.ConfigMap) string {
+	if configMap != nil {
+		return utils.ComputeConfigMapChecksum(configMap.Data)
+	}
+	return ""
 }

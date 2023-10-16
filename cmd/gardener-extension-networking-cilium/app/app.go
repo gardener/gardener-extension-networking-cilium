@@ -30,7 +30,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/component-base/version"
 	"k8s.io/component-base/version/verflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -53,10 +52,9 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		generalOpts = &controllercmd.GeneralOptions{}
 		restOpts    = &controllercmd.RESTOptions{}
 		mgrOpts     = &controllercmd.ManagerOptions{
-			LeaderElection:             true,
-			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
-			LeaderElectionID:           controllercmd.LeaderElectionNameID(cilium.Name),
-			LeaderElectionNamespace:    os.Getenv("LEADER_ELECTION_NAMESPACE"),
+			LeaderElection:          true,
+			LeaderElectionID:        controllercmd.LeaderElectionNameID(cilium.Name),
+			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
 		}
 		// options for the networking-cilium controller
 		ciliumCtrlOpts = &controllercmd.ControllerOptions{
@@ -130,9 +128,13 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			}
 
 			completedMgrOpts := mgrOpts.Completed().Options()
-			completedMgrOpts.ClientDisableCacheFor = []client.Object{
-				&corev1.Secret{},    // applied for ManagedResources
-				&corev1.ConfigMap{}, // applied for monitoring config
+			completedMgrOpts.Client = client.Options{
+				Cache: &client.CacheOptions{
+					DisableFor: []client.Object{
+						&corev1.Secret{},    // applied for ManagedResources
+						&corev1.ConfigMap{}, // applied for monitoring config
+					},
+				},
 			}
 
 			mgr, err := manager.New(restOpts.Completed().Config, completedMgrOpts)

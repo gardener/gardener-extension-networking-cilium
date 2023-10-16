@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
+set -e 
+
 $(dirname $0)"/../vendor/github.com/gardener/gardener/hack/.ci/set_dependency_version

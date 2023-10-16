@@ -1,4 +1,4 @@
-apiVersion: {{ include "deploymentversion" . }}
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cilium-operator
@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap-cilium: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/configmap-cilium: "{{ .Values.global.configMapHash }}"
 {{- if and .Values.global.prometheus.enabled (not .Values.global.prometheus.serviceMonitor.enabled) }}
         prometheus.io/port: {{ .Values.global.operatorPrometheus.port | quote }}
         prometheus.io/scrape: "true"

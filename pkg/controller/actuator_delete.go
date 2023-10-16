@@ -23,7 +23,6 @@ import (
 	extensionswebhookshoot "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
-	"github.com/gardener/gardener/pkg/utils/managedresources/builder"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,16 +37,7 @@ func (a *actuator) Delete(ctx context.Context, _ logr.Logger, network *extension
 	}
 
 	// Then delete the managed resource along with its secrets
-	if err := builder.
-		NewSecret(a.client).
-		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
-		Delete(ctx); err != nil {
-		return err
-	}
-	if err := builder.
-		NewManagedResource(a.client).
-		WithNamespacedName(network.Namespace, CiliumConfigSecretName).
-		Delete(ctx); err != nil {
+	if err := managedresources.Delete(ctx, a.client, network.Namespace, CiliumConfigManagedResourceName, true); err != nil {
 		return err
 	}
 
@@ -70,5 +60,5 @@ func (a *actuator) Delete(ctx context.Context, _ logr.Logger, network *extension
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigSecretName)
+	return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigManagedResourceName)
 }

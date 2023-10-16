@@ -22,10 +22,9 @@ import (
 	"github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+	"github.com/gardener/gardener-extension-networking-cilium/imagevector"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/imagevector"
 )
 
 var defaultCiliumConfig = requirementsConfig{
@@ -109,7 +108,7 @@ var defaultGlobalConfig = globalConfig{
 	Devices:               nil,
 	IPv4NativeRoutingCIDR: "",
 	BPF: bpf{
-		LoadBalancingMode: v1alpha1.SNAT,
+		LoadBalancingMode: ciliumv1alpha1.SNAT,
 	},
 	IPAM: ipam{
 		Mode: "kubernetes",
@@ -121,6 +120,7 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: false,
 	},
 	AutoDirectNodeRoutes: false,
+	ConfigMapHash:        "",
 }
 
 func newGlobalConfig() globalConfig {
@@ -132,8 +132,8 @@ func newRequirementsConfig() requirementsConfig {
 }
 
 // ComputeCiliumChartValues computes the values for the cilium chart.
-func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode string) (*ciliumConfig, error) {
-	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster, ipamMode)
+func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) (*ciliumConfig, error) {
+	requirementsConfig, globalConfig, err := generateChartValues(config, network, cluster, ipamMode, configMapHash)
 	if err != nil {
 		return nil, fmt.Errorf("error when generating config values %w", err)
 	}
@@ -144,11 +144,13 @@ func ComputeCiliumChartValues(config *ciliumv1alpha1.NetworkConfig, network *ext
 	}, nil
 }
 
-func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode string) (requirementsConfig, globalConfig, error) {
+func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) (requirementsConfig, globalConfig, error) {
 	var (
 		requirementsConfig = newRequirementsConfig()
 		globalConfig       = newGlobalConfig()
 	)
+
+	globalConfig.ConfigMapHash = configMapHash
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
@@ -195,7 +197,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	// If node local dns feature is enabled, enable local redirect policy
-	if helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents, cluster.Shoot.Annotations) {
+	if helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents) {
 		globalConfig.NodeLocalDNS.Enabled = true
 		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
