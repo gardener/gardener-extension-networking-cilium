@@ -426,8 +426,8 @@ data:
 {{- end }}
 
 {{- if .Values.global.egressGateway.enabled }}
-  {{- if ne .Values.global.kubeProxyReplacement "strict" }}
-    {{ fail "kubeProxyReplacement must be set to 'strict' in order to enable egressGateway" }}
+  {{- if not (or (eq .Values.global.kubeProxyReplacement "strict") (eq .Values.global.kubeProxyReplacement "true")) }}
+    {{ fail "kubeProxyReplacement must be set to 'strict' or 'true' in order to enable egressGateway" }}
   {{- end}}
   enable-ipv4-egress-gateway: "true"
 {{- end}}
