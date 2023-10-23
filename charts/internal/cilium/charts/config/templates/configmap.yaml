@@ -429,6 +429,9 @@ data:
   {{- if not (or (eq .Values.global.kubeProxyReplacement "strict") (eq .Values.global.kubeProxyReplacement "true")) }}
     {{ fail "kubeProxyReplacement must be set to 'strict' or 'true' in order to enable egressGateway" }}
   {{- end}}
+  {{- if eq .Values.global.tunnel "disabled" }}
+      {{ fail "cilium must run with an overlay network in order to enable egressGateway" }}
+  {{- end}}
   enable-ipv4-egress-gateway: "true"
 {{- end}}
 {{- if .Values.global.kubeProxyReplacement }}
