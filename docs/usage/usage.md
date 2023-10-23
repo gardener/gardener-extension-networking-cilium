@@ -49,6 +49,7 @@ spec:
     kubeProxy:
       enabled: false
 ```
+The egress gateway feature is only supported in gardener with an overlay network (shoot.spec.networking.providerConfig.overlay.enabled: true) at the moment. This is due to the reason that bpf masquerading is required for the egress gateway feature. Once the overlay network is enabled `bpf.masquerade` is set to `true` in the cilium configmap.
 
 The `snatToUpstreamDNS.enabled` field describes whether the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
 
