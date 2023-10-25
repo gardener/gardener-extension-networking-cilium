@@ -1,5 +1,5 @@
 {{- if .Values.global.psp.enabled }}
-apiVersion: {{ include "podsecuritypolicyversion" .}}
+apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   annotations:
