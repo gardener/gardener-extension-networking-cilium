@@ -159,6 +159,10 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 }
 
 func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (*corev1.ConfigMap, error) {
+	// Cannot retrieve config map of hibernated clusters => use empty config map instead
+	if extensionscontroller.IsHibernated(cluster) {
+		return &corev1.ConfigMap{}, nil
+	}
 	_, shootClient, err := util.NewClientForShoot(ctx, cl, cluster.ObjectMeta.Name, client.Options{}, extensionsconfig.RESTOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("could not create shoot client: %w", err)
