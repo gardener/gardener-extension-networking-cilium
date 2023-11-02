@@ -21,6 +21,7 @@ import (
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionswebhookshoot "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
+	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
@@ -51,16 +52,22 @@ func (a *actuator) Delete(ctx context.Context, _ logr.Logger, network *extension
 			return fmt.Errorf("could not delete managed resource containing shoot webhook '%s': %w", ShootWebhooksResourceName, err)
 		}
 
-		timeoutCtx4, cancel := context.WithTimeout(ctx, 2*time.Minute)
-		defer cancel()
-		if err := managedresources.WaitUntilDeleted(timeoutCtx4, a.client, network.Namespace, ShootWebhooksResourceName); err != nil {
-			return fmt.Errorf("error while waiting for managed resource containing shoot webhook '%s' to be deleted: %w", ShootWebhooksResourceName, err)
+		if cluster != nil && !v1beta1helper.ShootNeedsForceDeletion(cluster.Shoot) {
+			timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+			defer cancel()
+			if err := managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, ShootWebhooksResourceName); err != nil {
+				return fmt.Errorf("error while waiting for managed resource containing shoot webhook '%s' to be deleted: %w", ShootWebhooksResourceName, err)
+			}
 		}
 	}
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	defer cancel()
-	return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigManagedResourceName)
+	if cluster != nil && !v1beta1helper.ShootNeedsForceDeletion(cluster.Shoot) {
+		timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		defer cancel()
+		return managedresources.WaitUntilDeleted(timeoutCtx, a.client, network.Namespace, CiliumConfigManagedResourceName)
+	}
+
+	return nil
 }
 
 // ForceDelete implements Network.Actuator.
