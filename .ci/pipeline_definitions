@@ -4,7 +4,7 @@ gardener-extension-networking-cilium:
     repo: ~
     steps:
       verify:
-        image: 'golang:1.21.3'
+        image: 'golang:1.21.4'
     traits:
       component_descriptor:
         component_labels:
