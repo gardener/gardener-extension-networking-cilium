@@ -274,7 +274,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	// check if ipv4 native routing cidr is set
 	if config.IPv4NativeRoutingCIDREnabled != nil && *config.IPv4NativeRoutingCIDREnabled {
-		globalConfig.IPv4NativeRoutingCIDR = "0.0.0.0/0"
+		if cluster.Shoot.Spec.Networking.Pods == nil {
+			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv4 native routing cidr was not yet set")
+		}
+		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Pods
 	}
 
 	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {
