@@ -93,10 +93,6 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
 			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
 			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
-			networkConfig.SnatOutOfCluster = &ciliumv1alpha1.SnatOutOfCluster{Enabled: true}
-			if networkConfig.SnatToUpstreamDNS == nil {
-				networkConfig.SnatToUpstreamDNS = &ciliumv1alpha1.SnatToUpstreamDNS{Enabled: true}
-			}
 		}
 	}
 
