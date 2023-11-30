@@ -1,5 +1,5 @@
 image:
-  repository: eu.gcr.io/gardener-project/gardener/extensions/networking-cilium
+  repository: europe-docker.pkg.dev/gardener-project/public/gardener/extensions/networking-cilium
   tag: latest
   pullPolicy: IfNotPresent
 
