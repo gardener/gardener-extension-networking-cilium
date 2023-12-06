@@ -15,7 +15,7 @@
 EXTENSION_PREFIX            := gardener-extension
 NAME                        := networking-cilium
 ADMISSION_NAME              := admission-cilium
-REGISTRY                    := eu.gcr.io/gardener-project/gardener
+REGISTRY                    := europe-docker.pkg.dev/gardener-project/public/gardener
 IMAGE_PREFIX                := $(REGISTRY)/extensions
 REPO_ROOT                   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 HACK_DIR                    := $(REPO_ROOT)/hack

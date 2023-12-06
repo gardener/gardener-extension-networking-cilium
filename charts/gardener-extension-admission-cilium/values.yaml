@@ -4,7 +4,7 @@ global:
     user:
       name: ""
   image:
-    repository: eu.gcr.io/gardener-project/gardener/extensions/admission-cilium
+    repository: europe-docker.pkg.dev/gardener-project/public/gardener/extensions/admission-cilium
     tag: latest
     pullPolicy: IfNotPresent
   replicaCount: 1

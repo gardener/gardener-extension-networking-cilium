@@ -1,12 +1,11 @@
 gardener-extension-networking-cilium:
-  template: 'default'
   base_definition:
-    repo: ~
     steps:
       verify:
         image: 'golang:1.21.4'
     traits:
       component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
         component_labels:
         - name: 'cloud.gardener.cnudie/responsibles'
           value:
@@ -18,8 +17,9 @@ gardener-extension-networking-cilium:
       publish:
         dockerimages:
           gardener-extension-networking-cilium:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/extensions/networking-cilium'
+            image: 'europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/networking-cilium'
+            extra_push_targets: # may be dropped after all users updated to new registry
+              - eu.gcr.io/gardener-project/gardener/extensions/networking-cilium
             dockerfile: 'Dockerfile'
             target: gardener-extension-networking-cilium
             resource_labels:
@@ -32,8 +32,9 @@ gardener-extension-networking-cilium:
                 integrity_requirement: 'high'
                 availability_requirement: 'high'
           gardener-extension-admission-cilium:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/extensions/admission-cilium'
+            image: 'europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/admission-cilium'
+            extra_push_targets: # may be dropped after all users updated to new registry
+              - eu.gcr.io/gardener-project/gardener/extensions/admission-cilium
             dockerfile: 'Dockerfile'
             target: gardener-extension-admission-cilium
             resource_labels:
@@ -48,6 +49,9 @@ gardener-extension-networking-cilium:
   jobs:
     head-update:
       traits:
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         draft_release: ~
         options:
           public_build_logs: true
@@ -60,6 +64,8 @@ gardener-extension-networking-cilium:
       traits:
         version:
           preprocess: 'finalize'
+        component_descriptor:
+          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
         release:
           nextversion: 'bump_minor'
           next_version_callback: '.ci/prepare_release'
@@ -73,6 +79,8 @@ gardener-extension-networking-cilium:
         publish:
           dockerimages:
             gardener-extension-networking-cilium:
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/networking-cilium
               tag_as_latest: true
             gardener-extension-admission-cilium:
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/admission-cilium
               tag_as_latest: true
