@@ -2,7 +2,7 @@ gardener-extension-networking-cilium:
   base_definition:
     steps:
       verify:
-        image: 'golang:1.21.4'
+        image: 'golang:1.21.5'
     traits:
       component_descriptor:
         ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
