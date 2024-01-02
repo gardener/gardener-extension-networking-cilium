@@ -57,18 +57,6 @@ bool
 </tr>
 <tr>
 <td>
-<code>psp</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>PSPEnabled configuration</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>kubeproxy</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.KubeProxy">

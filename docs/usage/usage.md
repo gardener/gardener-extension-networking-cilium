@@ -23,7 +23,6 @@ kind: NetworkConfig
 hubble:
   enabled: true
 #debug: false
-#psp: true
 #tunnel: vxlan
 #store: kubernetes
 ```
@@ -33,8 +32,6 @@ hubble:
 The `hubble.enabled` field describes whether hubble should be deployed into the cluster or not (default).
 
 The `debug` field describes whether you want to run cilium in debug mode or not (default), change this value to `true` to use debug mode.
-
-The `psp` field describes whether `cilium-operator` and `cilium-agent` shall be deployed with pod security policies or not (default).
 
 The `tunnel` field describes the encapsulation mode for communication between nodes. Possible values are `vxlan` (default), `geneve` or `disabled`.
 

@@ -56,4 +56,3 @@ spec:
 #        - "icmp"
 #        - "http"
 #    store: kubernetes
-#    psp: true

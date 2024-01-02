@@ -78,9 +78,6 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: true,
 		Port:    6942,
 	},
-	Psp: psp{
-		Enabled: true,
-	},
 	Images: map[string]string{
 		cilium.CiliumAgentImageName:    imagevector.CiliumAgentImage(),
 		cilium.CiliumOperatorImageName: imagevector.CiliumOperatorImage(),
@@ -202,18 +199,8 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.LocalRedirectPolicy.Enabled = true
 	}
 
-	// disable PSPs if it's disabled in the shoot
-	if helper.IsPSPDisabled(cluster.Shoot) {
-		globalConfig.Psp.Enabled = false
-	}
-
 	if config == nil {
 		return requirementsConfig, globalConfig, nil
-	}
-
-	// do not overwrite if it's set to false before, otherwise use the value from the config
-	if globalConfig.Psp.Enabled && config.PSPEnabled != nil {
-		globalConfig.Psp.Enabled = *config.PSPEnabled
 	}
 
 	// If Hubble enabled
