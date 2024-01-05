@@ -17,17 +17,22 @@ package app
 import (
 	"context"
 	"fmt"
+	"os"
 
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
 	"github.com/gardener/gardener/pkg/apis/core/install"
+	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardenerhealthz "github.com/gardener/gardener/pkg/healthz"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/component-base/version"
 	"k8s.io/component-base/version/verflag"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/cluster"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -47,9 +52,20 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 		mgrOpts  = &controllercmd.ManagerOptions{
 			WebhookServerPort: 443,
 			HealthBindAddress: ":8081",
+			WebhookCertDir:    "/tmp/admission-cilium-cert",
+		}
+		// options for the webhook server
+		webhookServerOptions = &webhookcmd.ServerOptions{
+			Namespace: os.Getenv("WEBHOOK_CONFIG_NAMESPACE"),
 		}
 		webhookSwitches = admissioncmd.GardenWebhookSwitchOptions()
-		webhookOptions  = webhookcmd.NewAddToManagerSimpleOptions(webhookSwitches)
+		webhookOptions  = webhookcmd.NewAddToManagerOptions(
+			Name,
+			"",
+			nil,
+			webhookServerOptions,
+			webhookSwitches,
+		)
 
 		aggOption = controllercmd.NewOptionAggregator(
 			restOpts,
@@ -91,9 +107,39 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
-			log.Info("Setting up webhook server")
+			// Operators can enable the source cluster option via SOURCE_CLUSTER environment variable.
+			// In-cluster config will be used if no SOURCE_KUBECONFIG is specified.
+			//
+			// The source cluster is for instance used by Gardener's certificate controller, to maintain certificate
+			// secrets in a different cluster ('runtime-garden') than the cluster where the webhook configurations
+			// are maintained ('virtual-garden').
+			var sourceCluster cluster.Cluster
+			if sourceClusterEnabled := os.Getenv("SOURCE_CLUSTER"); sourceClusterEnabled != "" {
+				log.Info("Configuring source cluster option")
+				config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("SOURCE_KUBECONFIG"))
+				if err != nil {
+					return err
+				}
 
-			if err := webhookOptions.Completed().AddToManager(mgr); err != nil {
+				sourceCluster, err = cluster.New(config, func(opts *cluster.Options) {
+					opts.Logger = log
+					opts.Cache.DefaultNamespaces = map[string]cache.Config{v1beta1constants.GardenNamespace: {}}
+				})
+				if err != nil {
+					return err
+				}
+
+				if err := mgr.AddReadyzCheck("source-informer-sync", gardenerhealthz.NewCacheSyncHealthz(sourceCluster.GetCache())); err != nil {
+					return err
+				}
+
+				if err = mgr.Add(sourceCluster); err != nil {
+					return err
+				}
+			}
+
+			log.Info("Setting up webhook server")
+			if _, err := webhookOptions.Completed().AddToManager(ctx, mgr, sourceCluster); err != nil {
 				return err
 			}
 

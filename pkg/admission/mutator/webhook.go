@@ -17,6 +17,7 @@ package mutator
 import (
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -45,6 +46,10 @@ func New(mgr manager.Manager) (*extensionswebhook.Webhook, error) {
 		Predicates: []predicate.Predicate{createCiliumPredicate()},
 		Mutators: map[extensionswebhook.Mutator][]extensionswebhook.Type{
 			NewShootMutator(): {{Obj: &gardencorev1beta1.Shoot{}}},
+		},
+		Target: extensionswebhook.TargetSeed,
+		ObjectSelector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{"networking.extensions.gardener.cloud/cilium": "true"},
 		},
 	})
 }
