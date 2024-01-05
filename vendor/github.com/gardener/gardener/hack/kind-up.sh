@@ -18,6 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+REGISTRY_CACHE=${CI:-false}
 CLUSTER_NAME=""
 PATH_CLUSTER_VALUES=""
 PATH_KUBECONFIG=""
@@ -128,6 +129,7 @@ setup_containerd_registry_mirrors() {
     setup_containerd_registry_mirror $NODE "ghcr.io" "https://ghcr.io" "http://${REGISTRY_HOSTNAME}:5005"
     setup_containerd_registry_mirror $NODE "registry.k8s.io" "https://registry.k8s.io" "http://${REGISTRY_HOSTNAME}:5006"
     setup_containerd_registry_mirror $NODE "quay.io" "https://quay.io" "http://${REGISTRY_HOSTNAME}:5007"
+    setup_containerd_registry_mirror $NODE "europe-docker.pkg.dev" "https://europe-docker.pkg.dev" "http://${REGISTRY_HOSTNAME}:5008"
   done
 }
 
@@ -147,6 +149,22 @@ server = "${UPSTREAM_SERVER}"
 [host."${MIRROR_HOST}"]
   capabilities = ["pull", "resolve"]
 EOF
+}
+
+check_registry_cache_availability() {
+  local registry_cache_ip
+  local registry_cache_dns
+  if [[ "$REGISTRY_CACHE" != "true" ]]; then
+    return
+  fi
+  echo "Registry-cache enabled. Checking if registry-cache instances are deployed in prow cluster."
+  for registry_cache_dns in $(kubectl create -k "$(dirname "$0")/../example/gardener-local/registry-prow" --dry-run=client -o yaml | grep kube-system.svc.cluster.local | awk '{ print $2 }' | sed -e "s/^http:\/\///" -e "s/:5000$//"); do
+    registry_cache_ip=$(getent hosts "$registry_cache_dns" | awk '{ print $1 }')
+    if [[ "$registry_cache_ip" == "" ]]; then
+      echo "Unable to resolve IP of $registry_cache_dns in prow cluster. Disabling registry-cache."
+      REGISTRY_CACHE=false
+    fi
+  done
 }
 
 parse_flags "$@"
@@ -177,9 +195,9 @@ kind create cluster \
 # adjust Kind's CRI default OCI runtime spec for new containers to include the cgroup namespace
 # this is required for nesting kubelets on cgroupsv2, as the kindest-node entrypoint script assumes an existing cgroupns when the host kernel uses cgroupsv2
 # See containerd CRI: https://github.com/containerd/containerd/commit/687469d3cee18bf0e12defa5c6d0c7b9139a2dbd
-if [ -f "/sys/fs/cgroup/cgroup.controllers" ]; then
+if [ -f "/sys/fs/cgroup/cgroup.controllers" ] || [ "$(uname -s)" == "Darwin" ]; then
     echo "Host uses cgroupsv2"
-    cat << 'EOF' > adjust_cri_base.sh
+    cat << 'EOF' > "$(dirname "$0")/../dev/adjust_cri_base.sh"
 #!/bin/bash
 if [ -f /etc/containerd/cri-base.json ]; then
   key=$(cat /etc/containerd/cri-base.json | jq '.linux.namespaces | map(select(.type == "cgroup"))[0]')
@@ -201,7 +219,7 @@ EOF
         echo "Adjusting containerd config for kind node $node_name"
 
         # copy script to the kind's docker container and execute it
-        docker cp adjust_cri_base.sh "$node_name":/etc/containerd/adjust_cri_base.sh
+        docker cp "$(dirname "$0")/../dev/adjust_cri_base.sh" "$node_name":/etc/containerd/adjust_cri_base.sh
         docker exec "$node_name" bash -c "chmod +x /etc/containerd/adjust_cri_base.sh && /etc/containerd/adjust_cri_base.sh && systemctl restart containerd"
     done
 fi
@@ -262,7 +280,14 @@ kubectl -n kube-system get configmap coredns -ojson | \
 kubectl -n kube-system rollout restart deployment coredns
 
 if [[ "$DEPLOY_REGISTRY" == "true" ]]; then
-  kubectl apply -k "$(dirname "$0")/../example/gardener-local/registry" --server-side
+  check_registry_cache_availability
+  if [[ "$REGISTRY_CACHE" == "true" ]]; then
+    echo "Deploying local container registries in registry-cache configuration"
+    kubectl apply -k "$(dirname "$0")/../example/gardener-local/registry-prow" --server-side
+  else
+    echo "Deploying local container registries in default configuration"
+    kubectl apply -k "$(dirname "$0")/../example/gardener-local/registry" --server-side
+  fi
   kubectl wait --for=condition=available deployment -l app=registry -n registry --timeout 5m
 fi
 kubectl apply -k "$(dirname "$0")/../example/gardener-local/calico/$IPFAMILY" --server-side

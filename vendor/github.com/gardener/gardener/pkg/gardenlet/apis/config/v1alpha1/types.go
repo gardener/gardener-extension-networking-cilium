@@ -560,6 +560,9 @@ type ETCDConfig struct {
 	// Default: nil
 	// +optional
 	FeatureGates map[string]bool `json:"featureGates,omitempty"`
+	// DeltaSnapshotRetentionPeriod defines the duration for which delta snapshots will be retained, excluding the latest snapshot set.
+	// +optional
+	DeltaSnapshotRetentionPeriod *metav1.Duration `json:"deltaSnapshotRetentionPeriod,omitempty"`
 }
 
 // ETCDController contains config specific to ETCD controller
@@ -596,6 +599,10 @@ type BackupCompactionController struct {
 	// Defaults to 3 hours
 	// +optional
 	ActiveDeadlineDuration *metav1.Duration `json:"activeDeadlineDuration,omitempty"`
+	// MetricsScrapeWaitDuration is the duration to wait for after compaction job is completed, to allow Prometheus metrics to be scraped
+	// Defaults to 60 seconds
+	// +optional
+	MetricsScrapeWaitDuration *metav1.Duration `json:"metricsScrapeWaitDuration,omitempty"`
 }
 
 // ETCDBackupLeaderElection contains configuration for the leader election for the etcd backup-restore sidecar.

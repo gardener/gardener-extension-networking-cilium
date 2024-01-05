@@ -35,24 +35,6 @@ type TaskFn func(ctx context.Context) error
 // RecoverFn is a function that can recover an error.
 type RecoverFn func(ctx context.Context, err error) error
 
-// EmptyTaskFn is a TaskFn that does nothing (returns nil).
-var EmptyTaskFn TaskFn = func(ctx context.Context) error { return nil }
-
-// SkipIf returns a TaskFn that does nothing if the condition is true, otherwise the function
-// will be executed once called.
-func (t TaskFn) SkipIf(condition bool) TaskFn {
-	if condition {
-		return EmptyTaskFn
-	}
-	return t
-}
-
-// DoIf returns a TaskFn that will be executed if the condition is true when it is called.
-// Otherwise, it will do nothing when called.
-func (t TaskFn) DoIf(condition bool) TaskFn {
-	return t.SkipIf(!condition)
-}
-
 // Timeout returns a TaskFn that is bound to a context which times out.
 func (t TaskFn) Timeout(timeout time.Duration) TaskFn {
 	return func(ctx context.Context) error {
@@ -112,6 +94,53 @@ func Sequential(fns ...TaskFn) TaskFn {
 			}
 		}
 		return nil
+	}
+}
+
+// ParallelN returns a function that runs the given TaskFns in parallel by spawning N workers,
+// collecting their errors in a multierror. If N <= 0, then N will be defaulted to len(fns).
+func ParallelN(n int, fns ...TaskFn) TaskFn {
+	workers := n
+	if n <= 0 {
+		workers = len(fns)
+	}
+	return func(ctx context.Context) error {
+		var (
+			wg     sync.WaitGroup
+			fnsCh  = make(chan TaskFn)
+			errCh  = make(chan error)
+			result error
+		)
+
+		for i := 0; i < workers; i++ {
+			wg.Add(1)
+			go func() {
+				for fn := range fnsCh {
+					fn := fn
+					errCh <- fn(ctx)
+				}
+				wg.Done()
+			}()
+		}
+
+		go func() {
+			for _, f := range fns {
+				fnsCh <- f
+			}
+			close(fnsCh)
+		}()
+
+		go func() {
+			defer close(errCh)
+			wg.Wait()
+		}()
+
+		for err := range errCh {
+			if err != nil {
+				result = multierror.Append(result, err)
+			}
+		}
+		return result
 	}
 }
 

@@ -461,6 +461,8 @@ type ETCDConfig struct {
 	// "github.com/gardener/etcd-druid/pkg/features/features.go".
 	// Default: nil
 	FeatureGates map[string]bool
+	// DeltaSnapshotRetentionPeriod defines the duration for which delta snapshots will be retained, excluding the latest snapshot set.
+	DeltaSnapshotRetentionPeriod *metav1.Duration
 }
 
 // ETCDController contains config specific to ETCD controller
@@ -491,6 +493,9 @@ type BackupCompactionController struct {
 	// ActiveDeadlineDuration defines duration after which a running backup compaction job will be killed
 	// Defaults to 3 hours
 	ActiveDeadlineDuration *metav1.Duration
+	// MetricsScrapeWaitDuration is the duration to wait for after compaction job is completed, to allow Prometheus metrics to be scraped
+	// Defaults to 60 seconds
+	MetricsScrapeWaitDuration *metav1.Duration
 }
 
 // ETCDBackupLeaderElection contains configuration for the leader election for the etcd backup-restore sidecar.

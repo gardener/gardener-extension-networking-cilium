@@ -203,6 +203,11 @@ type ShootStatus struct {
 	// LastMaintenance holds information about the last maintenance operations on the Shoot.
 	// +optional
 	LastMaintenance *LastMaintenance `json:"lastMaintenance,omitempty" protobuf:"bytes,17,opt,name=lastMaintenance"`
+	// EncryptedResources is the list of resources in the Shoot which are currently encrypted.
+	// Secrets are encrypted by default and are not part of the list.
+	// See https://github.com/gardener/gardener/blob/master/docs/usage/etcd_encryption_config.md for more details.
+	// +optional
+	EncryptedResources []string `json:"encryptedResources,omitempty" protobuf:"bytes,18,rep,name=encryptedResources"`
 }
 
 // LastMaintenance holds information about a maintenance operation on the Shoot.
@@ -593,6 +598,12 @@ type ClusterAutoscaler struct {
 	// IgnoreTaints specifies a list of taint keys to ignore in node templates when considering to scale a node group.
 	// +optional
 	IgnoreTaints []string `json:"ignoreTaints,omitempty" protobuf:"bytes,10,opt,name=ignoreTaints"`
+	// NewPodScaleUpDelay specifies how long CA should ignore newly created pods before they have to be considered for scale-up.
+	// +optional
+	NewPodScaleUpDelay *metav1.Duration `json:"newPodScaleUpDelay,omitempty" protobuf:"bytes,11,opt,name=newPodScaleUpDelay"`
+	// MaxEmptyBulkDelete specifies the maximum number of empty nodes that can be deleted at the same time (default: 10).
+	// +optional
+	MaxEmptyBulkDelete *int32 `json:"maxEmptyBulkDelete,omitempty" protobuf:"varint,12,opt,name=maxEmptyBulkDelete"`
 }
 
 // ExpanderMode is type used for Expander values
@@ -741,6 +752,9 @@ type KubeAPIServerConfig struct {
 	// Defaults to 300.
 	// +optional
 	DefaultUnreachableTolerationSeconds *int64 `json:"defaultUnreachableTolerationSeconds,omitempty" protobuf:"varint,15,opt,name=defaultUnreachableTolerationSeconds"`
+	// EncryptionConfig contains customizable encryption configuration of the Kube API server.
+	// +optional
+	EncryptionConfig *EncryptionConfig `json:"encryptionConfig,omitempty" protobuf:"bytes,16,opt,name=encryptionConfig"`
 }
 
 // APIServerLogging contains configuration for the logs level and http access logs
@@ -764,6 +778,16 @@ type APIServerRequests struct {
 	// exceeds this, it rejects requests.
 	// +optional
 	MaxMutatingInflight *int32 `json:"maxMutatingInflight,omitempty" protobuf:"bytes,2,name=maxMutatingInflight"`
+}
+
+// EncryptionConfig contains customizable encryption configuration of the API server.
+type EncryptionConfig struct {
+	// Resources contains the list of resources that shall be encrypted in addition to secrets.
+	// Each item is a Kubernetes resource name in plural (resource or resource.group) that should be encrypted.
+	// Note that configuring a custom resource is only supported for versions >= 1.26.
+	// Wildcards are not supported for now.
+	// See https://github.com/gardener/gardener/blob/master/docs/usage/etcd_encryption_config.md for more details.
+	Resources []string `json:"resources" protobuf:"bytes,1,rep,name=resources"`
 }
 
 // ServiceAccountConfig is the kube-apiserver configuration for service accounts.
@@ -1507,7 +1531,7 @@ type DataVolume struct {
 
 // CRI contains information about the Container Runtimes.
 type CRI struct {
-	// The name of the CRI library. Supported values are `docker` and `containerd`.
+	// The name of the CRI library. Supported values are `containerd`.
 	Name CRIName `json:"name" protobuf:"bytes,1,opt,name=name,casttype=CRIName"`
 	// ContainerRuntimes is the list of the required container runtimes supported for a worker pool.
 	// +optional

@@ -47,6 +47,7 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 func SetObjectDefaults_CloudProfile(in *CloudProfile) {
 	for i := range in.Spec.MachineImages {
 		a := &in.Spec.MachineImages[i]
+		SetDefaults_MachineImage(a)
 		for j := range a.Versions {
 			b := &a.Versions[j]
 			SetDefaults_MachineImageVersion(b)
@@ -119,6 +120,7 @@ func SetObjectDefaults_Seed(in *Seed) {
 	SetDefaults_Seed(in)
 	SetDefaults_SeedNetworks(&in.Spec.Networks)
 	if in.Spec.Settings != nil {
+		SetDefaults_SeedSettings(in.Spec.Settings)
 		if in.Spec.Settings.DependencyWatchdog != nil {
 			SetDefaults_SeedSettingDependencyWatchdog(in.Spec.Settings.DependencyWatchdog)
 		}
@@ -144,9 +146,6 @@ func SetObjectDefaults_Shoot(in *Shoot) {
 	}
 	if in.Spec.Kubernetes.KubeAPIServer != nil {
 		SetDefaults_KubeAPIServerConfig(in.Spec.Kubernetes.KubeAPIServer)
-	}
-	if in.Spec.Kubernetes.KubeControllerManager != nil {
-		SetDefaults_KubeControllerManagerConfig(in.Spec.Kubernetes.KubeControllerManager)
 	}
 	if in.Spec.Kubernetes.VerticalPodAutoscaler != nil {
 		SetDefaults_VerticalPodAutoscaler(in.Spec.Kubernetes.VerticalPodAutoscaler)
