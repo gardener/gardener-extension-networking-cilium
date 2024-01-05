@@ -27,11 +27,14 @@ import (
 	gardenerhealthz "github.com/gardener/gardener/pkg/healthz"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/component-base/version"
 	"k8s.io/component-base/version/verflag"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
@@ -50,9 +53,12 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 	var (
 		restOpts = &controllercmd.RESTOptions{}
 		mgrOpts  = &controllercmd.ManagerOptions{
-			WebhookServerPort: 443,
-			HealthBindAddress: ":8081",
-			WebhookCertDir:    "/tmp/admission-cilium-cert",
+			LeaderElection:          true,
+			LeaderElectionID:        controllercmd.LeaderElectionNameID(Name),
+			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
+			WebhookServerPort:       443,
+			HealthBindAddress:       ":8081",
+			WebhookCertDir:          "/tmp/admission-cilium-cert",
 		}
 		// options for the webhook server
 		webhookServerOptions = &webhookcmd.ServerOptions{
@@ -96,7 +102,32 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 				Burst: 130,
 			}, restOpts.Completed().Config)
 
-			mgr, err := manager.New(restOpts.Completed().Config, mgrOpts.Completed().Options())
+			managerOptions := mgrOpts.Completed().Options()
+
+			// Operators can enable the source cluster option via SOURCE_CLUSTER environment variable.
+			// In-cluster config will be used if no SOURCE_KUBECONFIG is specified.
+			//
+			// The source cluster is for instance used by Gardener's certificate controller, to maintain certificate
+			// secrets in a different cluster ('runtime-garden') than the cluster where the webhook configurations
+			// are maintained ('virtual-garden').
+			var sourceClusterConfig *rest.Config
+			if sourceClusterEnabled := os.Getenv("SOURCE_CLUSTER"); sourceClusterEnabled != "" {
+				var err error
+				sourceClusterConfig, err = clientcmd.BuildConfigFromFlags("", os.Getenv("SOURCE_KUBECONFIG"))
+				if err != nil {
+					return err
+				}
+				managerOptions.LeaderElectionConfig = sourceClusterConfig
+			} else {
+				// Restrict the cache for secrets to the configured namespace to avoid the need for cluster-wide list/watch permissions.
+				managerOptions.Cache = cache.Options{
+					ByObject: map[client.Object]cache.ByObject{
+						&corev1.Secret{}: {Namespaces: map[string]cache.Config{webhookOptions.Server.Completed().Namespace: {}}},
+					},
+				}
+			}
+
+			mgr, err := manager.New(restOpts.Completed().Config, managerOptions)
 			if err != nil {
 				return fmt.Errorf("could not instantiate manager: %w", err)
 			}
@@ -107,21 +138,10 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
-			// Operators can enable the source cluster option via SOURCE_CLUSTER environment variable.
-			// In-cluster config will be used if no SOURCE_KUBECONFIG is specified.
-			//
-			// The source cluster is for instance used by Gardener's certificate controller, to maintain certificate
-			// secrets in a different cluster ('runtime-garden') than the cluster where the webhook configurations
-			// are maintained ('virtual-garden').
 			var sourceCluster cluster.Cluster
-			if sourceClusterEnabled := os.Getenv("SOURCE_CLUSTER"); sourceClusterEnabled != "" {
+			if sourceClusterConfig != nil {
 				log.Info("Configuring source cluster option")
-				config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("SOURCE_KUBECONFIG"))
-				if err != nil {
-					return err
-				}
-
-				sourceCluster, err = cluster.New(config, func(opts *cluster.Options) {
+				sourceCluster, err = cluster.New(sourceClusterConfig, func(opts *cluster.Options) {
 					opts.Logger = log
 					opts.Cache.DefaultNamespaces = map[string]cache.Config{v1beta1constants.GardenNamespace: {}}
 				})

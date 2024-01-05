@@ -49,6 +49,7 @@ spec:
         - --kubeconfig={{ required ".Values.global.projectedKubeconfig.baseMountPath is required" .Values.global.projectedKubeconfig.baseMountPath }}/kubeconfig
         {{- end }}
         - --health-bind-address=:{{ .Values.global.healthPort }}
+        - --leader-election-id={{ include "leaderelectionid" . }}
         {{- if .Values.global.virtualGarden.enabled }}
         env:
         - name: SOURCE_CLUSTER
