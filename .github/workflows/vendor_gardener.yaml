@@ -6,7 +6,7 @@ on:
 permissions: write-all
 jobs:
   run:
-    name: Run make revendor
+    name: Run make tidy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -14,8 +14,8 @@ jobs:
       with:
         go-version-file: go.mod
 
-    - name: Make revendor
-      run: make revendor
+    - name: Make tidy
+      run: make tidy
     - name: Commit changes
       run: |
         # Exit early if there is nothing to commit. This can happen if someone pushes to the dependabot's PR (for example has to adapt to a breaking change).
@@ -27,5 +27,5 @@ jobs:
         git config user.name gardener-robot-ci-1
         git config user.email gardener.ci.user@gmail.com
         git add .
-        git commit -m "[dependabot skip] make revendor"
+        git commit -m "[dependabot skip] make tidy"
         git push origin

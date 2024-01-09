@@ -29,8 +29,6 @@ export GO111MODULE=off
 
 rm -f $GOPATH/bin/*-gen
 
-PROJECT_ROOT=$(dirname $0)/..
-
 bash "${CODE_GEN_DIR}/generate-internal-groups.sh" \
   deepcopy,defaulter \
   github.com/gardener/gardener-extension-networking-cilium/pkg/client \
