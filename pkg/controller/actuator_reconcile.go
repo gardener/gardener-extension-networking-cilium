@@ -21,6 +21,7 @@ import (
 	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
+	"github.com/gardener/gardener/extensions/pkg/webhook"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
 	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
@@ -29,7 +30,6 @@ import (
 	"github.com/gardener/gardener/pkg/utils/chart"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
@@ -51,7 +51,7 @@ const (
 func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
 		Name:       cilium.MonitoringName,
-		EmbeddedFS: &charts.InternalChart,
+		EmbeddedFS: charts.InternalChart,
 		Path:       cilium.CiliumMonitoringChartPath,
 		Objects: []*chart.Object{
 			{
@@ -106,7 +106,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 
 	if a.atomicShootWebhookConfig != nil {
 		value := a.atomicShootWebhookConfig.Load()
-		webhookConfig, ok := value.(*admissionregistrationv1.MutatingWebhookConfiguration)
+		webhookConfig, ok := value.(*webhook.Configs)
 		if !ok {
 			return fmt.Errorf("expected *admissionregistrationv1.MutatingWebhookConfiguration, got %T", value)
 		}
@@ -118,8 +118,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			DefaultAddOptions.WebhookServerNamespace,
 			cilium.Name,
 			ShootWebhooksResourceName,
-			int32(a.webhookServerPort),
-			webhookConfig,
+			*webhookConfig,
 			cluster,
 		); err != nil {
 			return fmt.Errorf("could not reconcile shoot webhooks: %w", err)

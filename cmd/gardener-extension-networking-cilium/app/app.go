@@ -156,7 +156,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
 			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 
-			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr)
+			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil)
 			if err != nil {
 				return errors.Wrap(err, "Could not add webhooks to manager")
 			}
