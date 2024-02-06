@@ -21,8 +21,6 @@ import (
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
 	"github.com/gardener/gardener/pkg/utils"
-	"gopkg.in/yaml.v2"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/gardener/gardener-extension-networking-cilium/charts"
@@ -69,16 +67,11 @@ func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.
 }
 
 func getConfigMapHash(release *chartrenderer.RenderedChart) (string, error) {
-	configMap := &corev1.ConfigMap{}
 	configMapPath := "cilium/charts/config/templates/configmap.yaml"
-	configMapFile, ok := release.Files()[configMapPath]
+	configMapData, ok := release.Files()[configMapPath]
 	if !ok {
 		return "", fmt.Errorf("configmap not found in the given path: %s", configMapPath)
 	}
 
-	if err := yaml.Unmarshal([]byte(configMapFile), &configMap); err != nil {
-		return "", fmt.Errorf("error unmarshalling configMap: %w, %s", err, configMapFile)
-	}
-
-	return utils.ComputeConfigMapChecksum(configMap.Data), nil
+	return utils.ComputeConfigMapChecksum(configMapData), nil
 }
