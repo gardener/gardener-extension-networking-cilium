@@ -13,7 +13,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/mock v0.2.0
 	golang.org/x/tools v0.13.0
-	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
 	k8s.io/client-go v0.28.3
@@ -106,6 +105,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.11.1 // indirect
 	istio.io/api v1.19.2-0.20231011000955-f3015ebb5bd4 // indirect
