@@ -50,8 +50,12 @@ spec:
         {{- end }}
         - --health-bind-address=:{{ .Values.global.healthPort }}
         - --leader-election-id={{ include "leaderelectionid" . }}
-        {{- if .Values.global.virtualGarden.enabled }}
         env:
+        - name: LEADER_ELECTION_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        {{- if .Values.global.virtualGarden.enabled }}
         - name: SOURCE_CLUSTER
           value: enabled
         {{- end }}
