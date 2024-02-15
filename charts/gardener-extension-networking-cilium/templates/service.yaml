@@ -13,7 +13,7 @@ metadata:
     resources.gardener.cloud/ignore: "true"
     {{- end }}
     {{- if .Values.gardener.seed.spec.settings.topologyAwareRouting.enabled }}
-    {{- if semverCompare ">= 1.27-0" .Capabilities.KubeVersion.GitVersion }}
+    {{- if semverCompare ">= 1.27-0" .Capabilities.KubeVersion.Version }}
     service.kubernetes.io/topology-mode: "auto"
     {{- else }}
     service.kubernetes.io/topology-aware-hints: "auto"
