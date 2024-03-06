@@ -28,7 +28,7 @@ spec:
       dns:
         domain: foo.bar.example.com
       kubernetes:
-        version: 1.24.8
+        version: 1.28.4
 ---
 apiVersion: extensions.gardener.cloud/v1alpha1
 kind: Network
@@ -56,4 +56,3 @@ spec:
 #        - "icmp"
 #        - "http"
 #    store: kubernetes
-#    psp: true

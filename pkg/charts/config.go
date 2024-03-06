@@ -26,7 +26,6 @@ type globalConfig struct {
 	Prometheus               prometheus                              `json:"prometheus"`
 	OperatorHighAvailability operatorHighAvailability                `json:"operatorHighAvailability"`
 	OperatorPrometheus       operatorPrometheus                      `json:"operatorPrometheus"`
-	Psp                      psp                                     `json:"psp"`
 	Images                   map[string]string                       `json:"images"`
 	K8sServiceHost           string                                  `json:"k8sServiceHost"`
 	K8sServicePort           int32                                   `json:"k8sServicePort"`
@@ -119,12 +118,6 @@ type ipv4 struct {
 // ipv6 configuration for cilium
 type ipv6 struct {
 	// ipv6 Enabled is used to define whether IPv6 address is required or not.
-	Enabled bool `json:"enabled"`
-}
-
-// psp configuration for cilium
-type psp struct {
-	// psp is required or not
 	Enabled bool `json:"enabled"`
 }
 

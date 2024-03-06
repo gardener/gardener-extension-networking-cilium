@@ -273,7 +273,6 @@ func Convert_cilium_KubeProxy_To_v1alpha1_KubeProxy(in *cilium.KubeProxy, out *K
 
 func autoConvert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfig, out *cilium.NetworkConfig, s conversion.Scope) error {
 	out.Debug = (*bool)(unsafe.Pointer(in.Debug))
-	out.PSPEnabled = (*bool)(unsafe.Pointer(in.PSPEnabled))
 	out.KubeProxy = (*cilium.KubeProxy)(unsafe.Pointer(in.KubeProxy))
 	out.Hubble = (*cilium.Hubble)(unsafe.Pointer(in.Hubble))
 	out.TunnelMode = (*cilium.TunnelMode)(unsafe.Pointer(in.TunnelMode))
@@ -299,7 +298,6 @@ func Convert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfig, o
 
 func autoConvert_cilium_NetworkConfig_To_v1alpha1_NetworkConfig(in *cilium.NetworkConfig, out *NetworkConfig, s conversion.Scope) error {
 	out.Debug = (*bool)(unsafe.Pointer(in.Debug))
-	out.PSPEnabled = (*bool)(unsafe.Pointer(in.PSPEnabled))
 	out.KubeProxy = (*KubeProxy)(unsafe.Pointer(in.KubeProxy))
 	out.Hubble = (*Hubble)(unsafe.Pointer(in.Hubble))
 	out.TunnelMode = (*TunnelMode)(unsafe.Pointer(in.TunnelMode))

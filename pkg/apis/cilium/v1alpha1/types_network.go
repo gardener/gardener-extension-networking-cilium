@@ -154,9 +154,6 @@ type NetworkConfig struct {
 	// Debug configuration to be enabled or not
 	// +optional
 	Debug *bool `json:"debug,omitempty"`
-	// PSPEnabled configuration
-	// +optional
-	PSPEnabled *bool `json:"psp,omitempty"`
 	// KubeProxy configuration to be enabled or not
 	// +optional
 	KubeProxy *KubeProxy `json:"kubeproxy,omitempty"`

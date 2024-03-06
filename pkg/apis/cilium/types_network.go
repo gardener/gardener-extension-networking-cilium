@@ -159,8 +159,6 @@ type NetworkConfig struct {
 	metav1.TypeMeta
 	// Debug configuration to be enabled or not
 	Debug *bool
-	// PSPEnabled configuration
-	PSPEnabled *bool
 	// KubeProxy configuration to be enabled or not
 	KubeProxy *KubeProxy
 	// Hubble configuration to be enabled or not

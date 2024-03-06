@@ -140,11 +140,6 @@ func (in *NetworkConfig) DeepCopyInto(out *NetworkConfig) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.PSPEnabled != nil {
-		in, out := &in.PSPEnabled, &out.PSPEnabled
-		*out = new(bool)
-		**out = **in
-	}
 	if in.KubeProxy != nil {
 		in, out := &in.KubeProxy, &out.KubeProxy
 		*out = new(KubeProxy)

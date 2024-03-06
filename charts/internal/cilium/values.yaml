@@ -453,10 +453,6 @@ global:
 
   synchronizeK8sNodes: true
 
-  # psp creates and binds PodSecurityPolicies for the components that require it
-  psp:
-    enabled: false
-
   proxy:
     # Regular expression matching compatible Istio sidecar istio-proxy
     # container image names
