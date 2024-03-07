@@ -110,6 +110,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 			ShootWebhooksResourceName,
 			*webhookConfig,
 			cluster,
+			true,
 		); err != nil {
 			return fmt.Errorf("could not reconcile shoot webhooks: %w", err)
 		}
