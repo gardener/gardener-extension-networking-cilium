@@ -57,7 +57,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		shootKubeconfigSecret := &corev1.Secret{}
 		gardenClient := f.GardenClient.Client()
-		gardenClient.Get(ctx, kubernetesutils.Key(f.Shoot.Namespace, gardenerutils.ComputeShootProjectSecretName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)), shootKubeconfigSecret)
+		gardenClient.Get(ctx, kubernetesutils.Key(f.Shoot.Namespace, gardenerutils.ComputeShootProjectResourceName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)), shootKubeconfigSecret)
 		Expect(err).NotTo(HaveOccurred())
 
 		f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
