@@ -459,7 +459,7 @@ global:
     sidecarImageRegex: "cilium/istio_proxy"
 
   # Enables L7 proxy for L7 policy enforcement and visibility
-  l7proxy:
+  l7Proxy:
     enabled: true
 
   ipam:
