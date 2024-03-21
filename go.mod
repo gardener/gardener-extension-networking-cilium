@@ -6,13 +6,13 @@ require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
 	github.com/gardener/gardener v1.90.4
 	github.com/go-logr/logr v1.4.1
-	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/ginkgo/v2 v2.17.0
 	github.com/onsi/gomega v1.32.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/mock v0.4.0
-	golang.org/x/tools v0.16.1
+	golang.org/x/tools v0.17.0
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
