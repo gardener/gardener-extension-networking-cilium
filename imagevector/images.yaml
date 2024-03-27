@@ -28,7 +28,7 @@ images:
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui
-    tag: v0.12.3
+    tag: v0.13.0
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -41,7 +41,7 @@ images:
   - name: hubble-ui-backend
     sourceRepository: github.com/cilium/hubble-ui-backend
     repository: quay.io/cilium/hubble-ui-backend
-    tag: v0.12.3
+    tag: v0.13.0
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -67,7 +67,7 @@ images:
   - name: certgen
     sourceRepository: github.com/cilium/certgen
     repository: quay.io/cilium/certgen
-    tag: v0.1.10
+    tag: v0.1.9
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
