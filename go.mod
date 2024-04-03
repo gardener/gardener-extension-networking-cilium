@@ -1,6 +1,6 @@
 module github.com/gardener/gardener-extension-networking-cilium
 
-go 1.22.1
+go 1.22.2
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
