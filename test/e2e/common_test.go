@@ -61,6 +61,10 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 					RegistryBurst:       pointer.Int32(20),
 				},
 				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{},
+				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
+					Mode:    defaultShootCreationFramework().Shoot.Spec.Kubernetes.KubeProxy.Mode,
+					Enabled: pointer.Bool(false),
+				},
 			},
 			Networking: &gardencorev1beta1.Networking{
 				Type:           pointer.String("cilium"),
