@@ -237,7 +237,11 @@ data:
 {{- end }}
 
   # Enable socket-based LB for E/W traffic
+{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
+  bpf-lb-sock: "true"
+{{- else}}
   bpf-lb-sock:  "{{ .Values.global.bpfSocketLB.enabled }}"
+{{- end }}
 
 {{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
@@ -471,7 +475,7 @@ data:
 {{- end }}
 {{- if .Values.global.nodePort }}
 {{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  enable-node-port: {{ .Values.global.nodePort.enabled | quote }}
+  enable-node-port: "true"
 {{- end }}
 {{- if .Values.global.nodePort.range }}
   node-port-range: {{ .Values.global.nodePort.range | quote }}
@@ -491,7 +495,6 @@ data:
   enable-health-check-loadbalancer-ip: "false"
   node-port-bind-protection: {{ .Values.global.nodePort.bindProtection | quote }}
   enable-auto-protect-node-port-range: {{ .Values.global.nodePort.autoProtectPortRange | quote }}
-  bpf-lb-acceleration: "disabled"
   enable-service-topology: {{ .Values.global.loadBalancer.serviceTopology | quote }}
   enable-svc-source-range-check: {{ .Values.global.enableSvcSrcRangeCheck | quote }}
 {{- end }}
