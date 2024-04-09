@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -62,7 +63,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 				},
 				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{},
 				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
-					Mode:    defaultShootCreationFramework().Shoot.Spec.Kubernetes.KubeProxy.Mode,
+					Mode:    ptr.To(gardencorev1beta1.ProxyModeIPTables),
 					Enabled: pointer.Bool(false),
 				},
 			},
