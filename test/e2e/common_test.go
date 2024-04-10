@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
@@ -61,6 +62,10 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 					RegistryBurst:       pointer.Int32(20),
 				},
 				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{},
+				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
+					Mode:    ptr.To(gardencorev1beta1.ProxyModeIPTables),
+					Enabled: pointer.Bool(false),
+				},
 			},
 			Networking: &gardencorev1beta1.Networking{
 				Type:           pointer.String("cilium"),
