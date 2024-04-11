@@ -12,6 +12,12 @@ images:
         confidentiality_requirement: 'low'
         integrity_requirement: 'high'
         availability_requirement: 'high'
+    - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
+      value:
+      # https://github.com/cilium/proxy: v1.15.2 -> v1.27.3
+      # https://www.envoyproxy.io/docs/envoy/v1.27.3/intro/arch_overview/security/external_deps
+      - name: 'v8'
+        version: '10.7.193.13'
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
