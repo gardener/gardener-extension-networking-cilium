@@ -1,5 +1,4 @@
 {{- /*  Default values with backwards compatibility */ -}}
-{{- $defaultEnableCnpStatusUpdates := "true" -}}
 {{- $defaultBpfMapDynamicSizeRatio := 0.0 -}}
 {{- $defaultBpfClockProbe := "false" -}}
 {{- $defaultSessionAffinity := "false" -}}
@@ -10,7 +9,6 @@
 
 {{- /* Default values when 1.8 was initially deployed */ -}}
 {{- if semverCompare ">=1.8" (default "1.8" .Values.upgradeCompatibility) -}}
-{{- $defaultEnableCnpStatusUpdates = "false" -}}
 {{- $defaultBpfMapDynamicSizeRatio = 0.0025 -}}
 {{- $defaultBpfClockProbe := "false" -}}
 {{- $defaultSessionAffinity = "true" -}}
@@ -77,6 +75,8 @@ data:
   # https://docs.cilium.io/en/latest/policy/intro/#policy-enforcement-modes
   enable-policy: "{{ .Values.global.agent.policyMode }}"
 
+  policy-cidr-match-mode: ""
+
 {{- if .Values.global.debug.verbose }}
   debug-verbose: "{{ .Values.global.debug.verbose }}"
 {{- end }}
@@ -96,6 +96,14 @@ data:
   # scheduled.
   prometheus-serve-addr: ":{{ .Values.global.prometheus.port }}"
 {{- end }}
+
+  # A space-separated list of controller groups for which to enable metrics.
+  # The special values of "all" and "none" are supported.
+  controller-group-metrics:
+    write-cni-file
+    sync-host-ips
+    sync-lb-maps-with-k8s-services
+
 
 {{- if .Values.global.operatorPrometheus.enabled }}
   # If you want metrics enabled in cilium-operator, set the port for
@@ -229,7 +237,11 @@ data:
 {{- end }}
 
   # Enable socket-based LB for E/W traffic
+{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
+  bpf-lb-sock: "true"
+{{- else}}
   bpf-lb-sock:  "{{ .Values.global.bpfSocketLB.enabled }}"
+{{- end }}
 
 {{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
@@ -281,6 +293,7 @@ data:
   routing-mode: "tunnel"
   tunnel-protocol: "geneve"
 {{- end }}
+  service-no-backend-response: "reject"
 
 
 {{- if .Values.global.eni }}
@@ -322,6 +335,7 @@ data:
 {{- if ne .Values.global.tunnel "disabled" }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 {{- end }}
+  enable-masquerade-to-route-source: "false"
 
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
@@ -461,7 +475,7 @@ data:
 {{- end }}
 {{- if .Values.global.nodePort }}
 {{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  enable-node-port: {{ .Values.global.nodePort.enabled | quote }}
+  enable-node-port: "true"
 {{- end }}
 {{- if .Values.global.nodePort.range }}
   node-port-range: {{ .Values.global.nodePort.range | quote }}
@@ -478,6 +492,7 @@ data:
 {{- if .Values.global.nodePort.acceleration }}
   node-port-acceleration: {{ .Values.global.nodePort.acceleration | quote }}
 {{- end }}
+  enable-health-check-loadbalancer-ip: "false"
   node-port-bind-protection: {{ .Values.global.nodePort.bindProtection | quote }}
   enable-auto-protect-node-port-range: {{ .Values.global.nodePort.autoProtectPortRange | quote }}
   enable-service-topology: {{ .Values.global.loadBalancer.serviceTopology | quote }}
@@ -611,12 +626,6 @@ data:
   cluster-pool-ipv6-mask-size: {{ .Values.global.ipam.operator.clusterPoolIPv6MaskSize | quote }}
   {{- end }}
 {{- end }}
-{{- if hasKey .Values "enableCnpStatusUpdates" }}
-  disable-cnp-status-updates: {{ (not .Values.enableCnpStatusUpdates) | quote }}
-{{- else if (eq $defaultEnableCnpStatusUpdates "false") }}
-  disable-cnp-status-updates: "true"
-  cnp-node-status-gc-interval: "0s"
-{{- end }}
 
   egress-gateway-reconciliation-trigger-interval: "1s"
   enable-vtep: "false"
@@ -630,8 +639,8 @@ data:
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
   enable-sctp: "false"
-  k8s-client-qps: "5"
-  k8s-client-burst: "10"
+  k8s-client-qps: "10"
+  k8s-client-burst: "20"
   annotate-k8s-node: "true"
   remove-cilium-node-taints: "true"
   set-cilium-node-taints: "true"

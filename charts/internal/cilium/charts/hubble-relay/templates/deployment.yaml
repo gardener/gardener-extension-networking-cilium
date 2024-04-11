@@ -42,11 +42,20 @@ spec:
           - name: grpc
             containerPort: {{ .Values.listenPort }}
           readinessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 3
           livenessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 3
+          startupProbe:
+            # give the relay one minute to start up
+            grpc:
+              port: 4222
+            timeoutSeconds: 3
+            failureThreshold: 20
+            periodSeconds: 3
 {{- if .Values.resources }}
           resources:
 {{- toYaml .Values.resources | trim | nindent 12 }}
