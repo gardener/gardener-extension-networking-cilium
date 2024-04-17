@@ -13,11 +13,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/mock v0.4.0
 	golang.org/x/tools v0.20.0
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/client-go v0.29.3
-	k8s.io/code-generator v0.29.3
-	k8s.io/component-base v0.29.3
+	k8s.io/api v0.29.4
+	k8s.io/apimachinery v0.29.4
+	k8s.io/client-go v0.29.4
+	k8s.io/code-generator v0.29.4
+	k8s.io/component-base v0.29.4
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	sigs.k8s.io/controller-runtime v0.17.3
 )
