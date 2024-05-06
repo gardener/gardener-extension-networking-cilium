@@ -1,0 +1,17 @@
+{{- if .Values.gep19Monitoring }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shoot-cilium-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: shoot
+spec:
+  groups:
+  - name: recording-rules.rules
+    rules:
+    - record: cilium:api_latency
+      expr: histogram_quantile(0.99,sum by(verb, method, path, le) (rate(cilium_agent_api_process_time_seconds_bucket[10m])))
+      labels:
+        quantile: "0.99"
+{{- end }}

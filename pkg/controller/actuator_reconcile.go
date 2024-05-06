@@ -18,9 +18,14 @@ import (
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/utils"
 	"github.com/gardener/gardener/pkg/utils/chart"
+	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
 	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/go-logr/logr"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,6 +53,26 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 				Type: &corev1.ConfigMap{},
 				Name: cilium.MonitoringName,
 			},
+			{
+				Type: &corev1.ConfigMap{},
+				Name: "cilium-dashboards",
+			},
+			{
+				Type: &monitoringv1alpha1.ScrapeConfig{},
+				Name: "shoot-cilium-agent",
+			},
+			{
+				Type: &monitoringv1alpha1.ScrapeConfig{},
+				Name: "shoot-cilium-hubble",
+			},
+			{
+				Type: &monitoringv1alpha1.ScrapeConfig{},
+				Name: "shoot-cilium-operator",
+			},
+			{
+				Type: &monitoringv1.PrometheusRule{},
+				Name: "shoot-cilium-agent",
+			},
 		},
 	}
 
@@ -55,7 +80,15 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 		return client.IgnoreNotFound(ciliumControlPlaneMonitoringChart.Delete(ctx, seedClient, network.Namespace))
 	}
 
-	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", nil)
+	// TODO(rfranzke): Delete this after August 2024.
+	gep19Monitoring := seedClient.Get(ctx, client.ObjectKey{Name: "prometheus-shoot", Namespace: network.Namespace}, &appsv1.StatefulSet{}) == nil
+	if gep19Monitoring {
+		if err := kubernetesutils.DeleteObject(ctx, seedClient, &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "calico-monitoring-config", Namespace: network.Namespace}}); err != nil {
+			return fmt.Errorf("failed deleting calico-monitoring-config ConfigMap: %w", err)
+		}
+	}
+
+	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", map[string]interface{}{"gep19Monitoring": gep19Monitoring})
 }
 
 // Reconcile implements Network.Actuator.

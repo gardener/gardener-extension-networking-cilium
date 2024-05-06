@@ -1,0 +1,67 @@
+{{- if .Values.gep19Monitoring }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: shoot-cilium-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: shoot
+spec:
+  authorization:
+    credentials:
+      name: shoot-access-prometheus-shoot
+      key: token
+  scheme: HTTPS
+  tlsConfig:
+    # This is needed because the kubelets' certificates are not are generated
+    # for a specific pod IP
+    insecureSkipVerify: true
+  kubernetesSDConfigs:
+  - apiServer: https://kube-apiserver
+    authorization:
+      credentials:
+        name: shoot-access-prometheus-shoot
+        key: token
+    followRedirects: true
+    namespaces:
+      names:
+      - kube-system
+    role: endpoints
+    tlsConfig:
+      # This is needed because we do not fetch the correct cluster CA bundle right now
+      insecureSkipVerify: true
+  metricRelabelings:
+  - sourceLabels:
+    - __name__
+    action: keep
+    regex: ^(cilium_process_virtual_memory_bytes|cilium_process_resident_memory_bytes|cilium_process_open_fds|cilium_bpf_maps_virtual_memory_max_bytes|cilium_bpf_progs_virtual_memory_max_bytes|cilium_agent_api_process_time_seconds_count|cilium_agent_api_process_time_seconds_sum|cilium_agent_api_process_time_seconds_bucket|cilium_bpf_syscall_duration_seconds_count|cilium_bpf_syscall_duration_seconds_sum|cilium_bpf_map_ops_total|kvstore_operations_total|cilium_kvstore_operations_duration_seconds_sum|cilium_kvstore_events_queue_seconds_count|cilium_forward_count_total|cilium_forward_bytes_total|cilium_datapath_conntrack_gc_entries|cilium_ip_addresses|cilium_datapath_errors_total|cilium_services_events_total|cilium_unreachable_health_endpoints|cilium_unreachable_nodes|cilium_unreachable_health_endpoints|cilium_drop_count_total|cilium_nodes_all_events_received_total|cilium_drop_bytes_total|cilium_nodes_all_num|cilium_policy_l7_denied_total|cilium_policy_l7_forwarded_total|cilium_policy_l7_received_total|cilium_policy_l7_parse_errors_total|cilium_proxy_upstream_reply_seconds_sum|cilium_proxy_upstream_reply_seconds_count|cilium_triggers_policy_update_call_duration_seconds_sum|cilium_policy_endpoint_enforcement_status|cilium_proxy_redirects|cilium_triggers_policy_update_total|cilium_policy_count|cilium_policy_import_errors|cilium_policy_max_revision|cilium_endfpoint_regeneration_time_stats_seconds_bucket|cilium_endpoint_regenerations|cilium_endpoint_state|cilium_controllers_runs_total|cilium_controllers_failing|cilium_controllers_runs_duration_seconds_sum|cilium_controllers_runs_duration_seconds_count|cilium_k8s_client_api_latency_time_seconds_sum|cilium_k8s_client_api_latency_time_seconds_count|cilium_k8s_client_api_calls_counter|cilium_kubernetes_events_received_total|cilium_kubernetes_events_total|cilium_process_cpu_seconds_total|cilium_errors_warnings_total|cilium_endpoint_regeneration_time_stats_seconds_bucket)$
+  - sourceLabels:
+    - namespace
+    action: keep
+    regex: kube-system
+  relabelings:
+  - action: replace
+    replacement: cilium-agent-metrics
+    targetLabel: job
+  - sourceLabels: [__meta_kubernetes_pod_label_k8s_app,__meta_kubernetes_service_annotation_prometheus_io_scrape]
+    separator: ;
+    regex: cilium;true
+    replacement: $1
+    action: keep
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - sourceLabels: [__meta_kubernetes_pod_name]
+    separator: ;
+    regex: (.*)
+    targetLabel: pod
+    replacement: $1
+    action: replace
+  - targetLabel: __address__
+    replacement: kube-apiserver:443
+  - sourceLabels: [__meta_kubernetes_pod_name]
+    separator: ;
+    regex: (.+);(.+)
+    targetLabel: __metrics_path__
+    replacement: /api/v1/namespaces/kube-system/pods/${1}:9090/proxy/metrics
+    action: replace
+{{- end }}

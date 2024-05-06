@@ -68,3 +68,6 @@ allowedMetrics:
   ciliumOperator:
   - cilium_operator_process_cpu_seconds_total
   - cilium_operator_process_resident_memory_bytes
+
+# TODO(rfranzke): Remove this field after August 2024.
+gep19Monitoring: false

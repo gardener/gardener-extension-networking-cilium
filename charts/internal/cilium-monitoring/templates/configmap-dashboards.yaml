@@ -1,0 +1,18 @@
+{{- if .Values.gep19Monitoring }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-dashboards
+  namespace: {{ .Release.Namespace }}
+  labels:
+    dashboard.monitoring.gardener.cloud/shoot: "true"
+data:
+  cilium-agent-metrics-dashboard.json: |-
+  {{- .Files.Get "cilium-agent-metrics-dashboard.json" | nindent 4 }}
+
+  cilium-operator-metrics--dashboard.json: |-
+  {{- .Files.Get "cilium-operator-metrics-dashboard.json" | nindent 4 }}
+
+  hubble-dashboard-metrics-dashboard.json: |-
+  {{- .Files.Get "hubble-metrics-dashboard.json" | nindent 4 }}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if not .Values.gep19Monitoring }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -125,3 +126,4 @@ data:
           expr: histogram_quantile(0.99,sum by(verb, method, path, le) (rate(cilium_agent_api_process_time_seconds_bucket[10m])))
           labels:
             quantile: "0.99"
+{{- end }}
