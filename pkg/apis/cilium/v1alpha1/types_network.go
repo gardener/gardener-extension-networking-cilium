@@ -184,6 +184,9 @@ type NetworkConfig struct {
 	// Devices is the list of devices facing cluster/external network
 	// +optional
 	Devices []string `json:"devices,omitempty"`
+	// DirectRoutingDevice the device using for direct routing between Cilium nodes
+	// +optional
+	DirectRoutingDevice *string `json:"directRoutingDevice,omitempty"`
 	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
 	// +optional
 	LoadBalancingMode *LoadBalancingMode `json:"loadBalancingMode,omitempty"`

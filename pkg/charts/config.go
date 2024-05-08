@@ -92,8 +92,9 @@ type hubble struct {
 // nodePort enablement for cilium
 type nodePort struct {
 	// Nodeport Enabled is used to define whether Nodeport is required or not.
-	Enabled bool                        `json:"enabled"`
-	Mode    ciliumv1alpha1.NodePortMode `json:"mode"`
+	Enabled             bool                        `json:"enabled"`
+	Mode                ciliumv1alpha1.NodePortMode `json:"mode"`
+	DirectRoutingDevice string                      `json:"directRoutingDevice"`
 }
 
 // operator configuration for cilium

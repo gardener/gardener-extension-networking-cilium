@@ -244,6 +244,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.Devices = config.Devices
 	}
 
+	if config.DirectRoutingDevice != nil {
+		globalConfig.NodePort.DirectRoutingDevice = *config.DirectRoutingDevice
+	}
+
 	// check if load balancing mode is set
 	if config.LoadBalancingMode != nil {
 		globalConfig.BPF = bpf{

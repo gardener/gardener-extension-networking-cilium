@@ -193,6 +193,18 @@ int
 </tr>
 <tr>
 <td>
+<code>directRoutingDevice</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DirectRoutingDevice the device using for direct routing between Cilium nodes</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>loadBalancingMode</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.LoadBalancingMode">
