@@ -150,6 +150,11 @@ type SnatOutOfCluster struct {
 	Enabled bool
 }
 
+// BGPControlPlane enables the BGP Control Plane
+type BGPControlPlane struct {
+	Enabled bool
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -189,4 +194,6 @@ type NetworkConfig struct {
 	SnatToUpstreamDNS *SnatToUpstreamDNS
 	// SnatOutOfCluster enables the masquerading of packets outside of the cluster
 	SnatOutOfCluster *SnatOutOfCluster
+	// BGPControlPlane enables the BGP Control Plane
+	BGPControlPlane *BGPControlPlane
 }
