@@ -200,7 +200,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>DirectRoutingDevice the device using for direct routing between Cilium nodes</p>
+<p>DirectRoutingDevice is the device used for direct routing between Cilium nodes</p>
 </td>
 </tr>
 <tr>
