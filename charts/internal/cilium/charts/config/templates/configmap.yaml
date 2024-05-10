@@ -629,7 +629,6 @@ data:
 
 {{- if .Values.global.bgpControlPlane.enabled }}
   enable-bgp-control-plane: "true"
-  bgp-secrets-namespace: "kube-system"
 {{- else }}
   enable-bgp-control-plane: "false"
 {{- end }}
