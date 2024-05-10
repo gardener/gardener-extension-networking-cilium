@@ -179,7 +179,7 @@ type NetworkConfig struct {
 	MTU *int
 	// Devices is the list of devices facing cluster/external network
 	Devices []string
-	// DirectRoutingDevice the device using for direct routing between Cilium nodes
+	// DirectRoutingDevice is the device used for direct routing between Cilium nodes
 	DirectRoutingDevice *string
 	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
 	LoadBalancingMode *LoadBalancingMode
