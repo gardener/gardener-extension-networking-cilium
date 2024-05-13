@@ -253,6 +253,10 @@ global:
     # control socket, if it is on a non-standard path.
     #socketPath:
 
+  # Enables the BGP control plane
+  bgpControlPlane:
+    enabled: false
+
   # bpf is the BPF datapath specific configuration
   bpf:
     # preallocateMaps enables pre allocation of BPF map values. This increases

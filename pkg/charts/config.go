@@ -45,6 +45,7 @@ type globalConfig struct {
 	SnatToUpstreamDNS        snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 	SnatOutOfCluster         snatOutOfCluster                        `json:"snatOutOfCluster"`
 	AutoDirectNodeRoutes     bool                                    `json:"autoDirectNodeRoutes"`
+	BGPControlPlane          bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash            string                                  `json:"configMapHash"`
 }
 
@@ -169,5 +170,10 @@ type snatToUpstreamDNS struct {
 
 // snatOutOfCluster enables the masquerading of packets outside of the cluster
 type snatOutOfCluster struct {
+	Enabled bool `json:"enabled"`
+}
+
+// bgpControlPlane enables the BGP Control Plane
+type bgpControlPlane struct {
 	Enabled bool `json:"enabled"`
 }

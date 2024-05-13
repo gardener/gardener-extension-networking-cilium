@@ -107,7 +107,10 @@ var defaultGlobalConfig = globalConfig{
 		Enabled: false,
 	},
 	AutoDirectNodeRoutes: false,
-	ConfigMapHash:        "",
+	BGPControlPlane: bgpControlPlane{
+		Enabled: false,
+	},
+	ConfigMapHash: "",
 }
 
 func newGlobalConfig() globalConfig {
@@ -273,6 +276,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.Overlay != nil && !config.Overlay.Enabled && config.Overlay.CreatePodRoutes != nil {
 		globalConfig.AutoDirectNodeRoutes = *config.Overlay.CreatePodRoutes
+	}
+
+	if config.BGPControlPlane != nil && config.BGPControlPlane.Enabled {
+		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
 	}
 
 	globalConfig.IPAM.Mode = ipamMode
