@@ -210,6 +210,11 @@ func (in *NetworkConfig) DeepCopyInto(out *NetworkConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.DirectRoutingDevice != nil {
+		in, out := &in.DirectRoutingDevice, &out.DirectRoutingDevice
+		*out = new(string)
+		**out = **in
+	}
 	if in.LoadBalancingMode != nil {
 		in, out := &in.LoadBalancingMode, &out.LoadBalancingMode
 		*out = new(LoadBalancingMode)
