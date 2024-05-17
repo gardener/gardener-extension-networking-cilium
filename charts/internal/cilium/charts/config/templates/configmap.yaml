@@ -75,7 +75,7 @@ data:
   # https://docs.cilium.io/en/latest/policy/intro/#policy-enforcement-modes
   enable-policy: "{{ .Values.global.agent.policyMode }}"
 
-  policy-cidr-match-mode: ""
+  policy-cidr-match-mode: "nodes"
 
 {{- if .Values.global.debug.verbose }}
   debug-verbose: "{{ .Values.global.debug.verbose }}"
