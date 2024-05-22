@@ -17,6 +17,7 @@ spec:
     metadata:
       annotations:
         checksum/configmap-cilium: "{{ .Values.global.configMapHash }}"
+        checksum/configmap-label-prefix: "{{ .Values.global.configMapLabelPrefixHash }}"
 {{- if and .Values.global.prometheus.enabled (not .Values.global.prometheus.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.global.prometheus.port }}"
         prometheus.io/scrape: "true"
@@ -195,6 +196,9 @@ spec:
           readOnly: true
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
+          readOnly: true
+        - name: label-prefix
+          mountPath: /tmp/cilium/label-prefix
           readOnly: true
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
         - name: ip-masq-agent
@@ -658,6 +662,10 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
+      - name: label-prefix
+        configMap:
+          defaultMode: 420
+          name: label-prefix-conf
       - name: host-proc-sys-net
         hostPath:
           path: /proc/sys/net

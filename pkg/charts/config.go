@@ -47,6 +47,7 @@ type globalConfig struct {
 	AutoDirectNodeRoutes     bool                                    `json:"autoDirectNodeRoutes"`
 	BGPControlPlane          bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash            string                                  `json:"configMapHash"`
+	ConfigMapLabelPrefixHash string                                  `json:"configMapLabelPrefixHash"`
 }
 
 // etcd related configuration for cilium

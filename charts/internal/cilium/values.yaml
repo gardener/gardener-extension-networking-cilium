@@ -14,6 +14,7 @@ requirements:
 # global groups all configuration options that have effect on all sub-charts
 global:
   configMapHash: ""
+  configMapLabelPrefixHash: ""
 
   egressGateway:
     enabled: false
