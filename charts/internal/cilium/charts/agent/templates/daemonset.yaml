@@ -196,6 +196,9 @@ spec:
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
           readOnly: true
+        - name: label-prefix
+          mountPath: /tmp/cilium/label-prefix
+          readOnly: true
 {{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
         - name: ip-masq-agent
           mountPath: /etc/config
@@ -658,6 +661,10 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
+      - name: label-prefix
+        configMap:
+          defaultMode: 420
+          name: label-prefix-conf
       - name: host-proc-sys-net
         hostPath:
           path: /proc/sys/net

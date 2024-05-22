@@ -661,6 +661,8 @@ data:
   tofqdns-proxy-response-max-delay: "100ms"
   agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
 
+  label-prefix-file: "/tmp/cilium/label-prefix/label-prefix"
+
   mesh-auth-enabled: "true"
   mesh-auth-queue-size: "1024"
   mesh-auth-rotated-identities-queue-size: "1024"
