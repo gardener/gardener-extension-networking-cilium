@@ -22,10 +22,10 @@ import (
 const CiliumConfigKey = "config.yaml"
 
 // RenderCiliumChart renders the cilium chart with the given values.
-func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash string) ([]byte, error) {
+func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.NetworkConfig, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster, ipamMode, configMapHash, configMapLabelPrefixHash string) ([]byte, error) {
 	var release *chartrenderer.RenderedChart
 
-	values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, configMapHash)
+	values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, configMapHash, configMapLabelPrefixHash)
 	if err != nil {
 		return nil, err
 	}
@@ -35,14 +35,21 @@ func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.
 		return nil, err
 	}
 
-	newConfigMapHash, err := getConfigMapHash(release)
+	configMapPath := "cilium/charts/config/templates/configmap.yaml"
+	newConfigMapHash, err := getConfigMapHash(release, configMapPath)
 	if err != nil {
 		return nil, err
 	}
 
-	if newConfigMapHash != configMapHash {
+	configMapPath = "cilium/charts/config/templates/label-prefix-configmap.yaml"
+	newConfigMapLabelPrefixHash, err := getConfigMapHash(release, configMapPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if newConfigMapHash != configMapHash || newConfigMapLabelPrefixHash != configMapLabelPrefixHash {
 		// Render the charts with the new configMap hash.
-		values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, newConfigMapHash)
+		values, err := ComputeCiliumChartValues(config, network, cluster, ipamMode, newConfigMapHash, configMapLabelPrefixHash)
 		if err != nil {
 			return nil, err
 		}
@@ -56,8 +63,7 @@ func RenderCiliumChart(renderer chartrenderer.Interface, config *ciliumv1alpha1.
 	return release.Manifest(), nil
 }
 
-func getConfigMapHash(release *chartrenderer.RenderedChart) (string, error) {
-	configMapPath := "cilium/charts/config/templates/configmap.yaml"
+func getConfigMapHash(release *chartrenderer.RenderedChart, configMapPath string) (string, error) {
 	configMapData, ok := release.Files()[configMapPath]
 	if !ok {
 		return "", fmt.Errorf("configmap not found in the given path: %s", configMapPath)

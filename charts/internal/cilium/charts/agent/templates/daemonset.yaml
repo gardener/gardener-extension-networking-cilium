@@ -17,6 +17,7 @@ spec:
     metadata:
       annotations:
         checksum/configmap-cilium: "{{ .Values.global.configMapHash }}"
+        checksum/configmap-label-prefix: "{{ .Values.global.configMapLabelPrefixHash }}"
 {{- if and .Values.global.prometheus.enabled (not .Values.global.prometheus.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.global.prometheus.port }}"
         prometheus.io/scrape: "true"

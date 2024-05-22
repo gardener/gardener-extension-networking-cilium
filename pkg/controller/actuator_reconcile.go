@@ -120,12 +120,17 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		return fmt.Errorf("could not create chart renderer for shoot '%s': %w", network.Namespace, err)
 	}
 
-	configMap, err := getCiliumConfigMap(ctx, a.client, cluster)
+	configMap, err := getConfigMap(ctx, a.client, cluster, "cilium-config")
 	if err != nil {
 		return fmt.Errorf("error getting cilium configMap: %w", err)
 	}
 
-	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap))
+	configMapLabelPrefix, err := getConfigMap(ctx, a.client, cluster, "label-prefix-conf")
+	if err != nil {
+		return fmt.Errorf("error getting cilium configMap: %w", err)
+	}
+
+	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap), getConfigMapHash(configMapLabelPrefix))
 	if err != nil {
 		return err
 	}
@@ -142,7 +147,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 	return a.updateProviderStatus(ctx, network, networkConfig)
 }
 
-func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster) (*corev1.ConfigMap, error) {
+func getConfigMap(ctx context.Context, cl client.Client, cluster *extensionscontroller.Cluster, name string) (*corev1.ConfigMap, error) {
 	// Cannot retrieve config map of hibernated clusters => use empty config map instead
 	if extensionscontroller.IsHibernated(cluster) {
 		return &corev1.ConfigMap{}, nil
@@ -152,7 +157,7 @@ func getCiliumConfigMap(ctx context.Context, cl client.Client, cluster *extensio
 		return nil, fmt.Errorf("could not create shoot client: %w", err)
 	}
 	configmap := &corev1.ConfigMap{}
-	_ = shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: "cilium-config"}, configmap)
+	_ = shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: name}, configmap)
 	return configmap, nil
 }
 
