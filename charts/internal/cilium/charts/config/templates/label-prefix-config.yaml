@@ -4,6 +4,7 @@ kind: ConfigMap
 metadata:
   name: label-prefix-conf
   namespace: {{ .Release.Namespace }}
+immutable: true
 data:
   label-prefix: |
     {
@@ -40,6 +41,11 @@ data:
             "invert": true
         },
         {
+            "prefix": "k8s.io",
+            "source": "any",
+            "invert": true
+        },
+        {
             "prefix": "pod-template-generation",
             "source": "any",
             "invert": true
@@ -51,11 +57,6 @@ data:
         },
         {
             "prefix": "controller-revision-hash",
-            "source": "any",
-            "invert": true
-        },
-        {
-            "prefix": "k8s.io",
             "source": "any",
             "invert": true
         },
