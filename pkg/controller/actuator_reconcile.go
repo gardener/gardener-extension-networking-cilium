@@ -83,8 +83,8 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 	// TODO(rfranzke): Delete this after August 2024.
 	gep19Monitoring := seedClient.Get(ctx, client.ObjectKey{Name: "prometheus-shoot", Namespace: network.Namespace}, &appsv1.StatefulSet{}) == nil
 	if gep19Monitoring {
-		if err := kubernetesutils.DeleteObject(ctx, seedClient, &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "calico-monitoring-config", Namespace: network.Namespace}}); err != nil {
-			return fmt.Errorf("failed deleting calico-monitoring-config ConfigMap: %w", err)
+		if err := kubernetesutils.DeleteObject(ctx, seedClient, &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "cilium-monitoring-config", Namespace: network.Namespace}}); err != nil {
+			return fmt.Errorf("failed deleting cilium-monitoring-config ConfigMap: %w", err)
 		}
 	}
 
