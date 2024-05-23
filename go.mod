@@ -9,7 +9,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.17.3
 	github.com/onsi/gomega v1.33.1
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/mock v0.4.0
@@ -113,7 +113,7 @@ require (
 	helm.sh/helm/v3 v3.14.4 // indirect
 	istio.io/api v1.21.2 // indirect
 	istio.io/client-go v1.21.1 // indirect
-	k8s.io/apiextensions-apiserver v0.29.4 // indirect
+	k8s.io/apiextensions-apiserver v0.29.5 // indirect
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.1.1 // indirect
 	k8s.io/gengo v0.0.0-20230829151522-9cce18d56c01 // indirect
 	k8s.io/klog v1.0.0 // indirect
