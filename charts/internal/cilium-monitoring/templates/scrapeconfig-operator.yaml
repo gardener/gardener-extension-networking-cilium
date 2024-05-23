@@ -1,0 +1,67 @@
+{{- if .Values.gep19Monitoring }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: shoot-cilium-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: shoot
+spec:
+  authorization:
+    credentials:
+      name: shoot-access-prometheus-shoot
+      key: token
+  scheme: HTTPS
+  tlsConfig:
+    # This is needed because the kubelets' certificates are not are generated
+    # for a specific pod IP
+    insecureSkipVerify: true
+  kubernetesSDConfigs:
+  - apiServer: https://kube-apiserver
+    authorization:
+      credentials:
+        name: shoot-access-prometheus-shoot
+        key: token
+    followRedirects: true
+    namespaces:
+      names:
+      - kube-system
+    role: endpoints
+    tlsConfig:
+      # This is needed because we do not fetch the correct cluster CA bundle right now
+      insecureSkipVerify: true
+  metricRelabelings:
+  - sourceLabels:
+    - __name__
+    action: keep
+    regex: ^(cilium_operator_process_cpu_seconds_total|cilium_operator_process_resident_memory_bytes)$
+  - sourceLabels:
+    - namespace
+    action: keep
+    regex: kube-system
+  relabelings:
+  - action: replace
+    replacement: cilium-operator-metrics
+    targetLabel: job
+  - sourceLabels: [__meta_kubernetes_pod_label_io_cilium_app,__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+    separator: ;
+    regex: operator;true
+    replacement: $1
+    action: keep
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - sourceLabels: [__meta_kubernetes_pod_name]
+    separator: ;
+    regex: (.*)
+    targetLabel: pod
+    replacement: $1
+    action: replace
+  - targetLabel: __address__
+    replacement: kube-apiserver:443
+  - sourceLabels: [__meta_kubernetes_pod_name,__meta_kubernetes_pod_annotation_prometheus_io_port]
+    separator: ;
+    regex: (.+);(.+)
+    targetLabel: __metrics_path__
+    replacement: /api/v1/namespaces/kube-system/pods/${1}:${2}/proxy/metrics
+    action: replace
+{{- end }}

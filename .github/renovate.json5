@@ -17,7 +17,7 @@
   "separateMinorPatch": true,
   "packageRules": [
     {
-      // Group calico image updates in one PR.
+      // Group cilium image updates in one PR.
       "groupName": "cilium images",
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["quay\\.io\/cilium\/.+"],

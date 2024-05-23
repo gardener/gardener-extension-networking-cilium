@@ -18,6 +18,8 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/logger"
 	"github.com/pkg/errors"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/component-base/version"
@@ -137,6 +139,13 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			}
 
 			if err := ciliuminstall.AddToScheme(mgr.GetScheme()); err != nil {
+				return fmt.Errorf("could not update manager scheme: %w", err)
+			}
+
+			if err := monitoringv1.AddToScheme(mgr.GetScheme()); err != nil {
+				return fmt.Errorf("could not update manager scheme: %w", err)
+			}
+			if err := monitoringv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
