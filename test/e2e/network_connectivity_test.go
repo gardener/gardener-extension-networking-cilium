@@ -18,7 +18,6 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	gardenerutils "github.com/gardener/gardener/pkg/utils/gardener"
-	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
 	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -57,7 +56,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		shootKubeconfigSecret := &corev1.Secret{}
 		gardenClient := f.GardenClient.Client()
-		gardenClient.Get(ctx, kubernetesutils.Key(f.Shoot.Namespace, gardenerutils.ComputeShootProjectResourceName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)), shootKubeconfigSecret)
+		err = gardenClient.Get(ctx, client.ObjectKey{Namespace: f.Shoot.Namespace, Name: gardenerutils.ComputeShootProjectResourceName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)}, shootKubeconfigSecret)
 		Expect(err).NotTo(HaveOccurred())
 
 		f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
@@ -92,7 +91,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		job := &batchv1.Job{}
 		var succeeded bool
 		for {
-			err = f.ShootFramework.ShootClient.Client().Get(ctx, kubernetesutils.Key(values.HelmDeployNamespace, "network-test"), job)
+			err = f.ShootFramework.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: values.HelmDeployNamespace, Name: "network-test"}, job)
 			Expect(err).NotTo(HaveOccurred())
 
 			if job.Status.Succeeded > 0 {

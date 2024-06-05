@@ -68,6 +68,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			},
 			Networking: &gardencorev1beta1.Networking{
 				Type:           pointer.String("cilium"),
+				Nodes: pointer.String("10.10.0.0/16"),
 				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true}}`)},
 			},
 			Provider: gardencorev1beta1.Provider{
