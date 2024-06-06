@@ -36,10 +36,10 @@ kind load docker-image networking-cilium-local:$version --name gardener-local
 
 mkdir -p $repo_root/tmp
 cp -f $repo_root/example/controller-registration.yaml $repo_root/tmp/controller-registration.yaml
-yq -i e "(select (.providerConfig.values.image) | .providerConfig.values.image.tag) |= \"$version\"" $repo_root/tmp/controller-registration.yaml
-yq -i e '(select (.providerConfig.values.image) | .providerConfig.values.image.repository) |= "docker.io/library/networking-cilium-local"' $repo_root/tmp/controller-registration.yaml
+yq -i e "(select (.helm.values.image) | .helm.values.image.tag) |= \"$version\"" $repo_root/tmp/controller-registration.yaml
+yq -i e '(select (.helm.values.image) | .helm.values.image.repository) |= "docker.io/library/networking-cilium-local"' $repo_root/tmp/controller-registration.yaml
 
-kubectl apply -f "$repo_root/tmp/controller-registration.yaml"
+kubectl apply --server-side --force-conflicts -f "$repo_root/tmp/controller-registration.yaml"
 
 echo '127.0.0.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
 echo '127.0.0.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
