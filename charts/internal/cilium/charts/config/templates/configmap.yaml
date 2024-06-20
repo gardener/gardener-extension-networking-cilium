@@ -332,7 +332,7 @@ data:
   enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
   enable-ipv6-big-tcp: {{ .Values.global.enableIpv6BigTCP | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
-{{- if ne .Values.global.tunnel "disabled" }}
+{{- if and (not .Values.global.snatOutOfCluster.enabled) (not .Values.global.snatToUpstreamDNS.enabled ) }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 {{- end }}
   enable-masquerade-to-route-source: "false"
