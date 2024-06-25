@@ -230,7 +230,7 @@ spec:
         - name: hubble-tls
           mountPath: /var/lib/cilium/tls/hubble
           readOnly: true
-{{- if .Values.global.encryption.enabled }}
+{{- if and .Values.global.encryption.enabled (eq .Values.global.encryption.mode "ipsec") }}
         - name: cilium-ipsec-secrets
           mountPath: {{ .Values.global.encryption.mountPath }}
 {{- end }}
@@ -757,10 +757,10 @@ spec:
               path: ip-masq-agent
         name: ip-masq-agent
 {{- end }}
-{{- if .Values.global.encryption.enabled }}
+{{- if and .Values.global.encryption.enabled (eq .Values.global.encryption.mode "ipsec") }}
       - name: cilium-ipsec-secrets
         secret:
-          secretName: {{ .Values.global.encryption.secretName }}
+          secretName: {{ .Values.global.encryption.ipsec.secretName }}
 {{- end }}
 {{- if .Values.global.cni.configMap }}
       - name: cni-configuration
