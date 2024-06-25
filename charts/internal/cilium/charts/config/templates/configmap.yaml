@@ -414,14 +414,27 @@ data:
 {{- end }}
 
 {{- if .Values.global.encryption.enabled }}
+{{- if eq .Values.global.encryption.mode "ipsec" }}
   enable-ipsec: {{ .Values.global.encryption.enabled | quote }}
-  ipsec-key-file: {{ .Values.global.encryption.mountPath }}/{{ .Values.global.encryption.keyFile }}
-{{- if .Values.global.encryption.interface }}
-  encrypt-interface: {{ .Values.global.encryption.interface }}
+  ipsec-key-file: {{ .Values.global.encryption.ipsec.mountPath }}/{{ .Values.global.encryption.ipsec.keyFile }}
+  {{- if .Values.global.encryption.ipsec.interface }}
+  encrypt-interface: {{ .Values.global.encryption.ipsec.interface }}
+  {{- end }}
+{{- else if eq .Values.global.encryption.mode "wireguard" }}
+  enable-wireguard: {{ .Values.global.encryption.enabled | quote }}
+  # 0s to disable.
+  wireguard-persistent-keepalive: 0s
+  {{- if .Values.global.encryption.wireguard.strictMode.enabled }}
+  enable-encryption-strict-mode: {{ .Values.global.encryption.wireguard.strictMode.enabled | quote }}
+
+  encryption-strict-mode-cidr: {{ .Values.global.podCIDR | quote }}
+
+  encryption-strict-mode-allow-remote-node-identities: {{ .Values.global.encryption.wireguard.strictMode.allowRemoteNodeIdentities | quote }}
+  {{- end }}
 {{- end }}
-{{- if .Values.global.encryption.nodeEncryption }}
+  {{- if .Values.global.encryption.nodeEncryption }}
   encrypt-node: {{ .Values.global.encryption.nodeEncryption | quote }}
-{{- end }}
+  {{- end }}
 {{- end }}
 {{- if .Values.global.iptablesLockTimeout }}
   iptables-lock-timeout: {{ .Values.global.iptablesLockTimeout | quote }}

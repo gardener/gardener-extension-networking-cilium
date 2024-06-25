@@ -332,23 +332,35 @@ global:
   encryption:
     # enabled enables encryption
     enabled: false
+    # Encryption method. Can be either ipsec or wireguard.
+    mode: ipsec
+    ipsec:
+      # keyFile is the name of the key file inside the Kubernetes secret
+      # configured via secretName
+      keyFile: keys
 
-    # keyFile is the name of the key file inside the Kubernetes secret
-    # configured via secretName
-    keyFile: keys
+      # mountPath is the path where to mount the ipsec secret inside the Cilium pod
+      mountPath: /etc/ipsec
 
-    # mountPath is the path where to mount the secret inside the Cilium pod
-    mountPath: /etc/ipsec
+      # secretName is the name of the Kubernetes secret containing the ipsec encryption
+      # keys
+      secretName: cilium-ipsec-keys
+      
+      # interface is the interface to use for encryption
+      # interface: eth0
 
-    # secretName is the name of the Kubernetes secret containing the encryption
-    # keys
-    secretName: cilium-ipsec-keys
+    wireguard:
+      # Controls WireGuard PersistentKeepalive option. Set 0s to disable. persistentKeepalive: 0s
+      # Configure the WireGuard Pod2Pod strict mode.
+      strictMode:
+        # Enable WireGuard Pod2Pod strict mode.
+        enabled: false
+        # Allow dynamic lookup of remote node identities.
+        # This is required when tunneling is used or direct routing is used and the node CIDR and pod CIDR overlap.
+        allowRemoteNodeIdentities: false
 
     # nodeEncryption enables encryption for pure node to node traffic
     nodeEncryption: false
-
-    # interface is the interface to use for encryption
-    # interface: eth0
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
   kubeProxyReplacement: "false"
