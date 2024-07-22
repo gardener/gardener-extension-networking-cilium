@@ -1,4 +1,25 @@
 gardener-extension-networking-cilium:
+  templates: 
+    helmcharts:
+    - &networking-cilium
+      name: networking-cilium
+      dir: charts/gardener-extension-networking-cilium
+      registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
+      mappings:
+      - ref: ocm-resource:gardener-extension-networking-cilium.repository
+        attribute: image.repository
+      - ref: ocm-resource:gardener-extension-networking-cilium.tag
+        attribute: image.tag
+    - &admission-cilium
+      name: admission-cilium
+      dir: charts/gardener-extension-admission-cilium
+      registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
+      mappings:
+      - ref: ocm-resource:gardener-extension-admission-cilium.repository
+        attribute: global.image.repository
+      - ref: ocm-resource:gardener-extension-admission-cilium.tag
+        attribute: global.image.tag
+
   base_definition:
     steps:
       verify:
@@ -55,11 +76,19 @@ gardener-extension-networking-cilium:
         draft_release: ~
         options:
           public_build_logs: true
+        publish:
+          helmcharts:
+          - *networking-cilium
+          - *admission-cilium
     pull-request:
       traits:
         pull-request: ~
         options:
           public_build_logs: true
+        publish:
+          helmcharts:
+          - *networking-cilium
+          - *admission-cilium
     release:
       traits:
         version:
@@ -84,3 +113,8 @@ gardener-extension-networking-cilium:
             gardener-extension-admission-cilium:
               image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/admission-cilium
               tag_as_latest: true
+          helmcharts:
+          - <<: *networking-cilium
+            registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
+          - <<: *admission-cilium
+            registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
