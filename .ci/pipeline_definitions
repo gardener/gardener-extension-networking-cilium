@@ -10,9 +10,18 @@ gardener-extension-networking-cilium:
         attribute: image.repository
       - ref: ocm-resource:gardener-extension-networking-cilium.tag
         attribute: image.tag
-    - &admission-cilium
-      name: admission-cilium
-      dir: charts/gardener-extension-admission-cilium
+    - &admission-cilium-application
+      name: admission-cilium-application
+      dir: charts/gardener-extension-admission-cilium/application
+      registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
+      mappings:
+      - ref: ocm-resource:gardener-extension-admission-cilium.repository
+        attribute: global.image.repository
+      - ref: ocm-resource:gardener-extension-admission-cilium.tag
+        attribute: global.image.tag
+    - &admission-cilium-runtime
+      name: admission-cilium-runtime
+      dir: charts/gardener-extension-admission-cilium/runtime
       registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
       mappings:
       - ref: ocm-resource:gardener-extension-admission-cilium.repository
@@ -79,7 +88,8 @@ gardener-extension-networking-cilium:
         publish:
           helmcharts:
           - *networking-cilium
-          - *admission-cilium
+          - *admission-cilium-application
+          - *admission-cilium-runtime
     pull-request:
       traits:
         pull-request: ~
@@ -88,7 +98,8 @@ gardener-extension-networking-cilium:
         publish:
           helmcharts:
           - *networking-cilium
-          - *admission-cilium
+          - *admission-cilium-application
+          - *admission-cilium-runtime
     release:
       traits:
         version:
@@ -116,5 +127,7 @@ gardener-extension-networking-cilium:
           helmcharts:
           - <<: *networking-cilium
             registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
-          - <<: *admission-cilium
+          - <<: *admission-cilium-application
+            registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
+          - <<: *admission-cilium-runtime
             registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
