@@ -12,7 +12,7 @@ gardener-extension-networking-cilium:
         attribute: image.tag
     - &admission-cilium-application
       name: admission-cilium-application
-      dir: charts/gardener-extension-admission-cilium/application
+      dir: charts/gardener-extension-admission-cilium/charts/application
       registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
       mappings:
       - ref: ocm-resource:gardener-extension-admission-cilium.repository
@@ -21,7 +21,7 @@ gardener-extension-networking-cilium:
         attribute: global.image.tag
     - &admission-cilium-runtime
       name: admission-cilium-runtime
-      dir: charts/gardener-extension-admission-cilium/runtime
+      dir: charts/gardener-extension-admission-cilium/charts/runtime
       registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
       mappings:
       - ref: ocm-resource:gardener-extension-admission-cilium.repository
