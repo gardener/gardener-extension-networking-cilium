@@ -6,7 +6,7 @@ toolchain go1.22.6
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.100.1
+	github.com/gardener/gardener v1.101.1
 	github.com/go-logr/logr v1.4.2
 	github.com/onsi/ginkgo/v2 v2.20.0
 	github.com/onsi/gomega v1.34.1
@@ -43,7 +43,7 @@ require (
 	github.com/fluent/fluent-operator/v2 v2.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gardener/cert-management v0.15.0 // indirect
-	github.com/gardener/etcd-druid v0.22.3 // indirect
+	github.com/gardener/etcd-druid v0.22.4 // indirect
 	github.com/gardener/hvpa-controller/api v0.15.0 // indirect
 	github.com/gardener/machine-controller-manager v0.53.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
@@ -106,7 +106,7 @@ require (
 	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
