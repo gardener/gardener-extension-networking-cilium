@@ -146,7 +146,7 @@ global:
   # destinations outside of the cluster.
   enableIpv4Masquerade: true
   enableIpv6Masquerade: true
-  enableBPFMasquerade: true
+  enableBPFMasquerade: false
 
   enableIpv4BigTCP : false
   enableIpv6BigTCP: false
@@ -219,7 +219,7 @@ global:
     # This ensures no Pods can be scheduled using other CNI plugins during Cilium
     # agent downtime.
     exclusive: true
-    
+
     # -- Configure the log file for CNI logging with retention policy of 7 days.
     # Disable CNI file logging by setting this field to empty explicitly.
     logFile: "/var/run/cilium/cilium-cni.log"
