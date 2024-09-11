@@ -30,7 +30,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		By("Wait for Shoot to be force-deleted")
 		ctx, cancel = context.WithTimeout(parentCtx, 10*time.Minute)
 		defer cancel()
-		Expect(f.ForceDeleteShootAndWaitForDeletion(ctx, f.Shoot, f.ShootFramework.SeedClient.Client())).To(Succeed())
+		Expect(f.ForceDeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
 		By("Network Test status")
 		Expect(succeeded).To(BeTrue())
