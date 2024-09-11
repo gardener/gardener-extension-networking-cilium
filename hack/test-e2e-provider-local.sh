@@ -41,9 +41,9 @@ yq -i e '(select (.helm.values.image) | .helm.values.image.repository) |= "docke
 
 kubectl apply --server-side --force-conflicts -f "$repo_root/tmp/controller-registration.yaml"
 
-echo '127.0.0.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
-echo '127.0.0.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
-echo '127.0.0.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
 
 # reduce flakiness in contended pipelines
 export GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT=5s
