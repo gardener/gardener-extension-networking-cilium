@@ -22,6 +22,11 @@ func CiliumAgentImage() string {
 	return findImage(cilium.CiliumAgentImageName)
 }
 
+// CiliumEnvoyImage returns the Cilium Envoy image.
+func CiliumEnvoyImage() string {
+	return findImage(cilium.CiliumEnvoyImageName)
+}
+
 // CiliumOperatorImage returns the Cilium Operator image.
 func CiliumOperatorImage() string {
 	return findImage(cilium.CiliumOperatorImageName)

@@ -70,6 +70,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	Images: map[string]string{
 		cilium.CiliumAgentImageName:    imagevector.CiliumAgentImage(),
+		cilium.CiliumEnvoyImageName:    imagevector.CiliumEnvoyImage(),
 		cilium.CiliumOperatorImageName: imagevector.CiliumOperatorImage(),
 
 		cilium.HubbleRelayImageName:     imagevector.CiliumHubbleRelayImage(),
