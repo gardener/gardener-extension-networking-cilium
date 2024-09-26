@@ -2,7 +2,7 @@ images:
   - name: cilium-agent
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.15.6
+    tag: v1.16.1
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -18,10 +18,23 @@ images:
       # https://www.envoyproxy.io/docs/envoy/v1.27.3/intro/arch_overview/security/external_deps
       - name: 'v8'
         version: '10.7.193.13'
+  - name: cilium-envoy
+    sourceRepository: github.com/cilium/cilium
+    repository: quay.io/cilium/cilium-envoy
+    tag: v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b
+    labels:
+    - name: 'gardener.cloud/cve-categorisation'
+      value:
+        network_exposure: 'protected'
+        authentication_enforced: false
+        user_interaction: 'end-user'
+        confidentiality_requirement: 'low'
+        integrity_requirement: 'high'
+        availability_requirement: 'low'
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
-    tag: v1.15.6
+    tag: v1.16.1
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -34,7 +47,7 @@ images:
   - name: hubble-ui
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-ui
-    tag: v0.13.0
+    tag: v0.13.1
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -47,7 +60,7 @@ images:
   - name: hubble-ui-backend
     sourceRepository: github.com/cilium/hubble-ui-backend
     repository: quay.io/cilium/hubble-ui-backend
-    tag: v0.13.0
+    tag: v0.13.1
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -60,7 +73,7 @@ images:
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
-    tag: v1.15.6
+    tag: v1.16.1
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -73,7 +86,7 @@ images:
   - name: certgen
     sourceRepository: github.com/cilium/certgen
     repository: quay.io/cilium/certgen
-    tag: v0.1.12
+    tag: v0.2.0
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:

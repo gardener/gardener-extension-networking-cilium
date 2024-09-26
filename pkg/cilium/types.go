@@ -16,6 +16,8 @@ const (
 
 	// CiliumAgentImageName defines the agent name.
 	CiliumAgentImageName = "cilium-agent"
+	// CiliumEnvoyImageName defines the envoy name.
+	CiliumEnvoyImageName = "cilium-envoy"
 	// CiliumOperatorImageName defines cilium operator's image name.
 	CiliumOperatorImageName = "cilium-operator"
 

@@ -31,7 +31,6 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: hubble-ui
-      serviceAccount: hubble-ui
       automountServiceAccountToken: true
       containers:
         - name: frontend

@@ -144,7 +144,6 @@ spec:
       hostNetwork: true
       restartPolicy: Always
       priorityClassName: system-cluster-critical
-      serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
       automountServiceAccountToken: true
       tolerations:
