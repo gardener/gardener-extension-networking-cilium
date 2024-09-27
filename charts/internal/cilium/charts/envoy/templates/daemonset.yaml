@@ -20,8 +20,6 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/port: "9964"
-        prometheus.io/scrape: "true"
         # Set app AppArmor's profile to "unconfined". The value of this annotation
         # can be modified as long users know which profiles they have available
         # in AppArmor.
