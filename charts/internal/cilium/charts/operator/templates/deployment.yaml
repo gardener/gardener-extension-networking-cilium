@@ -102,11 +102,7 @@ spec:
 {{- end }}
         livenessProbe:
           httpGet:
-{{- if .Values.global.ipv4.enabled }}
-            host: "127.0.0.1"
-{{- else }}
-            host: '[::1]'
-{{- end }}
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: 9234
             scheme: HTTP
@@ -115,11 +111,7 @@ spec:
           timeoutSeconds: 3
         readinessProbe:
           httpGet:
-{{- if .Values.global.ipv4.enabled }}
-            host: "127.0.0.1"
-{{- else }}
-            host: '[::1]'
-{{- end }}
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: 9234
             scheme: HTTP

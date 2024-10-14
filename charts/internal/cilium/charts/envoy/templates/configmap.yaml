@@ -70,7 +70,7 @@ data:
             "name": "envoy-health-listener",
             "address": {
               "socket_address": {
-                "address": "127.0.0.1",
+                "address": {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }},
                 "port_value": 9878
               }
             },

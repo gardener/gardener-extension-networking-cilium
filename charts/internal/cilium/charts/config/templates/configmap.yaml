@@ -315,7 +315,11 @@ data:
 {{- end }}
 
   enable-ipv4-big-tcp: {{ .Values.global.enableIpv4BigTCP | quote }}
-  enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
+{{- if .Values.global.ipv4.enabled }}
+  enable-ipv4-masquerade: "true"
+{{- else }}
+  enable-ipv4-masquerade: "false"
+{{- end }}
   enable-ipv6-big-tcp: {{ .Values.global.enableIpv6BigTCP | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
   enable-tcx: "true"
@@ -406,6 +410,9 @@ data:
 {{- end }}
 {{- if .Values.global.ipv4NativeRoutingCIDR }}
   ipv4-native-routing-cidr: {{ .Values.global.ipv4NativeRoutingCIDR }}
+{{- end }}
+{{- if .Values.global.ipv6NativeRoutingCIDR }}
+  ipv6-native-routing-cidr: {{ .Values.global.ipv6NativeRoutingCIDR }}
 {{- end }}
 
 {{- if .Values.global.hostFirewall }}
