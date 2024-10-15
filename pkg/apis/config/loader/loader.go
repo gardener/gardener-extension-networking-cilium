@@ -38,7 +38,7 @@ func init() {
 
 // LoadFromFile takes a filename and de-serializes the contents into ControllerConfiguration object.
 func LoadFromFile(filename string) (*config.ControllerConfiguration, error) {
-	bytes, err := os.ReadFile(filename)
+	bytes, err := os.ReadFile(filename) // #nosec: G304 -- loading configuration from file is a feature. In reality files can be read from the pod's file system only.
 	if err != nil {
 		return nil, err
 	}
