@@ -30,6 +30,13 @@ gardener-extension-networking-cilium:
         attribute: global.image.tag
 
   base_definition:
+    repo:
+      source_labels:
+      - name: cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1
+        value:
+          policy: skip
+          comment: |
+            we use gosec for sast scanning. See attached log.
     steps:
       verify:
         image: 'golang:1.23.1'
@@ -110,6 +117,17 @@ gardener-extension-networking-cilium:
           nextversion: 'bump_minor'
           next_version_callback: '.ci/prepare_release'
           release_callback: '.ci/prepare_release'
+          assets:
+          - type: build-step-log
+            step_name: verify
+            purposes:
+            - lint
+            - sast
+            - gosec
+            comment: |
+                we use gosec (linter) for SAST scans
+                see: https://github.com/securego/gosec
+                enabled by https://github.com/gardener/gardener-extension-networking-cilium/pull/420
         slack:
           default_channel: 'internal_scp_workspace'
           channel_cfgs:
