@@ -54,7 +54,7 @@ spec:
         - cilium-agent
         startupProbe:
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -74,7 +74,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -95,7 +95,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP

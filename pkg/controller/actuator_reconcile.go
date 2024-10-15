@@ -26,6 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -105,17 +106,54 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		}
 	}
 
+	ipFamilies := sets.New[extensionsv1alpha1.IPFamily](network.Spec.IPFamilies...)
+
 	if networkConfig != nil {
 		if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
 			if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
 				// use vxlan as default overlay network
 				networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
 			}
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
+			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+				networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
+			}
+			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+				networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(false)
+			}
 		}
 		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
 			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
+			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+				networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
+			}
+			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+				networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(true)
+			}
+		}
+	}
+
+	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
+			Enabled: true,
+		}
+		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
+			Enabled: false,
+		}
+	}
+	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
+			Enabled: false,
+		}
+		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
+			Enabled: true,
+		}
+	}
+	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) && ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
+			Enabled: true,
+		}
+		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
+			Enabled: true,
 		}
 	}
 

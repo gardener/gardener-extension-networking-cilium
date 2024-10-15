@@ -113,6 +113,20 @@ Store
 </tr>
 <tr>
 <td>
+<code>ipv4</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.IPv4">
+IPv4
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enable IPv4</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>ipv6</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.IPv6">
@@ -227,6 +241,18 @@ bool
 <td>
 <em>(Optional)</em>
 <p>IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node&rsquo;s cidr if enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipv6NativeRoutingCIDREnabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IPv6NativeRoutingCIDRMode will set the ipv6 native routing cidr from the network configs node&rsquo;s cidr if enabled.</p>
 </td>
 </tr>
 <tr>
@@ -430,6 +456,36 @@ bool
 </td>
 <td>
 <p>Enabled indicates whether hubble is enabled or not.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.IPv4">IPv4
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>IPv4 enablement for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled indicates whether IPv4 is enabled or not.</p>
 </td>
 </tr>
 </tbody>

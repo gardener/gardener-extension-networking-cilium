@@ -261,12 +261,32 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 	}
 
+	if config.IPv4.Enabled {
+		globalConfig.Ipv4.Enabled = true
+	} else {
+		globalConfig.Ipv4.Enabled = false
+	}
+
+	if config.IPv6.Enabled {
+		globalConfig.Ipv6.Enabled = true
+	} else {
+		globalConfig.Ipv6.Enabled = false
+	}
+
 	// check if ipv4 native routing cidr is set
 	if config.IPv4NativeRoutingCIDREnabled != nil && *config.IPv4NativeRoutingCIDREnabled {
 		if cluster.Shoot.Spec.Networking.Pods == nil {
 			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv4 native routing cidr was not yet set")
 		}
 		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Pods
+	}
+
+	// check if ipv6 native routing cidr is set
+	if config.IPv6NativeRoutingCIDREnabled != nil && *config.IPv6NativeRoutingCIDREnabled {
+		if cluster.Shoot.Status.Networking.Pods == nil {
+			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv6 native routing cidr was not yet set")
+		}
+		globalConfig.IPv6NativeRoutingCIDR = cluster.Shoot.Status.Networking.Pods[0]
 	}
 
 	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {

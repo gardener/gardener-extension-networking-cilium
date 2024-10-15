@@ -94,6 +94,12 @@ type Hubble struct {
 	Enabled bool
 }
 
+// IPv4 enablement for cilium
+type IPv4 struct {
+	// Enabled indicates whether IPv4 is enabled or not.
+	Enabled bool
+}
+
 // IPv6 enablement for cilium
 type IPv6 struct {
 	// Enabled indicates whether IPv6 is enabled or not.
@@ -172,6 +178,8 @@ type NetworkConfig struct {
 	TunnelMode *TunnelMode
 	// Store can be either Kubernetes or etcd.
 	Store *Store
+	// Enable IPv4
+	IPv4 *IPv4
 	// Enable IPv6
 	IPv6 *IPv6
 	// BPFSocketLBHostnsOnly flag to be enabled or not
@@ -190,6 +198,8 @@ type NetworkConfig struct {
 	LoadBalancingMode *LoadBalancingMode
 	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
 	IPv4NativeRoutingCIDREnabled *bool
+	// IPv6NativeRoutingCIDRMode will set the ipv6 native routing cidr from the network configs node's cidr if enabled.
+	IPv6NativeRoutingCIDREnabled *bool
 	// Overlay enables the network overlay
 	Overlay *Overlay
 	// SnatToUpstreamDNS enables the masquerading of packets to the upstream dns server
