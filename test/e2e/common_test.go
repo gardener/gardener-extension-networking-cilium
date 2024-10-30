@@ -46,7 +46,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			Name: generateName,
 			Annotations: map[string]string{
 				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds: "0",
-				v1beta1constants.ShootDisableIstioTLSTermination: "true",
+				v1beta1constants.ShootDisableIstioTLSTermination:                    "true",
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
