@@ -42,7 +42,15 @@ func RegisterConversions(s *runtime.Scheme) error {
 }
 
 func autoConvert_v1alpha1_ControllerConfiguration_To_config_ControllerConfiguration(in *ControllerConfiguration, out *config.ControllerConfiguration, s conversion.Scope) error {
-	out.ClientConnection = (*componentbaseconfig.ClientConnectionConfiguration)(unsafe.Pointer(in.ClientConnection))
+	if in.ClientConnection != nil {
+		in, out := &in.ClientConnection, &out.ClientConnection
+		*out = new(componentbaseconfig.ClientConnectionConfiguration)
+		if err := configv1alpha1.Convert_v1alpha1_ClientConnectionConfiguration_To_config_ClientConnectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ClientConnection = nil
+	}
 	out.HealthCheckConfig = (*apisconfig.HealthCheckConfig)(unsafe.Pointer(in.HealthCheckConfig))
 	return nil
 }
@@ -53,7 +61,15 @@ func Convert_v1alpha1_ControllerConfiguration_To_config_ControllerConfiguration(
 }
 
 func autoConvert_config_ControllerConfiguration_To_v1alpha1_ControllerConfiguration(in *config.ControllerConfiguration, out *ControllerConfiguration, s conversion.Scope) error {
-	out.ClientConnection = (*configv1alpha1.ClientConnectionConfiguration)(unsafe.Pointer(in.ClientConnection))
+	if in.ClientConnection != nil {
+		in, out := &in.ClientConnection, &out.ClientConnection
+		*out = new(configv1alpha1.ClientConnectionConfiguration)
+		if err := configv1alpha1.Convert_config_ClientConnectionConfiguration_To_v1alpha1_ClientConnectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ClientConnection = nil
+	}
 	out.HealthCheckConfig = (*apisconfigv1alpha1.HealthCheckConfig)(unsafe.Pointer(in.HealthCheckConfig))
 	return nil
 }
