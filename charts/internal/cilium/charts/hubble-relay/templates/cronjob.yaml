@@ -54,6 +54,7 @@ spec:
                       - signing
                       - key encipherment
                       - server auth
+                      - client auth
                       validity: 26280h
                     - name: hubble-relay-client-certs
                       namespace: kube-system

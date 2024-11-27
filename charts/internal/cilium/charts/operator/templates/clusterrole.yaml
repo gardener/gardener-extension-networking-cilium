@@ -17,6 +17,15 @@ rules:
   # managed by Cilium
   - delete
 - apiGroups:
+    - ""
+  resources:
+    - configmaps
+  resourceNames:
+    - cilium-config
+  verbs:
+    # allow patching of the configmap to set annotations
+    - patch
+- apiGroups:
   - ""
   resources:
   - nodes
