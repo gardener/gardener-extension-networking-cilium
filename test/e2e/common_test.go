@@ -53,7 +53,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			SecretBindingName: pointer.String("local"),
 			CloudProfileName:  pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version:                     "1.26.0",
+				Version:                     "1.28.4",
 				EnableStaticTokenKubeconfig: pointer.Bool(true),
 				Kubelet: &gardencorev1beta1.KubeletConfig{
 					SerializeImagePulls: pointer.Bool(false),
@@ -68,7 +68,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			},
 			Networking: &gardencorev1beta1.Networking{
 				Type:           pointer.String("cilium"),
-				Nodes: pointer.String("10.10.0.0/16"),
+				Nodes:          pointer.String("10.10.0.0/16"),
 				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true}}`)},
 			},
 			Provider: gardencorev1beta1.Provider{
