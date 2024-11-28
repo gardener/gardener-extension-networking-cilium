@@ -95,7 +95,7 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 // Reconcile implements Network.Actuator.
 func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
 	var (
-		networkConfig *ciliumv1alpha1.NetworkConfig
+		networkConfig *ciliumv1alpha1.NetworkConfig = &ciliumv1alpha1.NetworkConfig{}
 		err           error
 	)
 
@@ -108,53 +108,33 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 
 	ipFamilies := sets.New[extensionsv1alpha1.IPFamily](network.Spec.IPFamilies...)
 
-	if networkConfig != nil {
-		if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
-			if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
-				// use vxlan as default overlay network
-				networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
-			}
-			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
-				networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
-			}
-			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-				networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(false)
-			}
+	if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
+		if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
+			// use vxlan as default overlay network
+			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
 		}
-		if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
-			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
-				networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
-			}
-			if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-				networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(true)
-			}
+		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
+		}
+		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+			networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(false)
+		}
+	}
+	if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
+		networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
+		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
+		}
+		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+			networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(true)
 		}
 	}
 
-	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
-		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
-			Enabled: true,
-		}
-		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
-			Enabled: false,
-		}
+	networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
+		Enabled: ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4),
 	}
-	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
-			Enabled: false,
-		}
-		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
-			Enabled: true,
-		}
-	}
-	if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) && ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-		networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
-			Enabled: true,
-		}
-		networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
-			Enabled: true,
-		}
+	networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
+		Enabled: ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6),
 	}
 
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil &&
