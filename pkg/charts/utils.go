@@ -211,6 +211,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 	}
 
+	// check if IPv4 is enabled
+	if config.IPv4 != nil {
+		globalConfig.Ipv4.Enabled = config.IPv4.Enabled
+	}
 	// check if IPv6 is enabled
 	if config.IPv6 != nil {
 		globalConfig.Ipv6.Enabled = config.IPv6.Enabled
@@ -259,18 +263,6 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.BPF = bpf{
 			LoadBalancingMode: *config.LoadBalancingMode,
 		}
-	}
-
-	if config.IPv4.Enabled {
-		globalConfig.Ipv4.Enabled = true
-	} else {
-		globalConfig.Ipv4.Enabled = false
-	}
-
-	if config.IPv6.Enabled {
-		globalConfig.Ipv6.Enabled = true
-	} else {
-		globalConfig.Ipv6.Enabled = false
 	}
 
 	// check if ipv4 native routing cidr is set
