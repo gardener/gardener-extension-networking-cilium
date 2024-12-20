@@ -143,7 +143,7 @@ global:
   # masquerade enables masquerading of traffic leaving the node for
   # destinations outside of the cluster.
   enableIpv4Masquerade: true
-  enableIpv6Masquerade: true
+  enableIpv6Masquerade: false
   enableBPFMasquerade: true
 
   enableIpv4BigTCP : false
