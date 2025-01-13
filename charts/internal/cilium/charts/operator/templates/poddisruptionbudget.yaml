@@ -12,6 +12,4 @@ spec:
     matchLabels:
       io.cilium/app: operator
       name: cilium-operator
-{{- if semverCompare ">= 1.26-0" .Capabilities.KubeVersion.Version }}
-  unhealthyPodEvictionPolicy: AlwaysAllow
-{{- end }}
+  unhealthyPodEvictionPolicy: AlwaysAllows
