@@ -1,1 +1,44 @@
-../../values.yaml
+image:
+  repository: europe-docker.pkg.dev/gardener-project/public/gardener/extensions/admission-cilium
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+resources: {}
+healthPort: 8081
+vpa:
+  enabled: true
+  resourcePolicy: {}
+#     minAllowed:
+#       memory: 64Mi
+#     maxAllowed:
+#       cpu: 4
+#       memory: 10G
+  updatePolicy:
+    updateMode: "Auto"
+webhookConfig:
+  serverPort: 10250
+# Kubeconfig to the target cluster. In-cluster configuration will be used if not specified.
+kubeconfig:
+
+# projectedKubeconfig:
+#   baseMountPath: /var/run/secrets/gardener.cloud
+#   genericKubeconfigSecretName: generic-token-kubeconfig
+#   tokenSecretName: access-cilium-admission
+
+serviceAccountTokenVolumeProjection:
+  enabled: false
+  expirationSeconds: 43200
+  audience: ""
+service:
+  topologyAwareRouting:
+    enabled: false
+
+gardener:
+  virtualCluster:
+    enabled: true
+    serviceAccount: {}
+#     name: gardener-extension-admission-cilium
+#     namespace: kube-system
+  runtimeCluster: {}
+#   priorityClassName: gardener-garden-system-400
