@@ -1,1 +1,6 @@
-../../values.yaml
+gardener:
+  virtualCluster:
+    enabled: true
+    serviceAccount: {}
+#     name: gardener-extension-admission-cilium
+#     namespace: kube-system
