@@ -41,7 +41,7 @@ global:
   hubble:
     socketPath: "/var/run/cilium/hubble.sock"
     clusterName: default
-    peerService: "hubble-peer.kube-system.svc.cluster.local:443"
+    peerService: "hubble-peer.kube-system.svc.cluster.local.:443"
     peerPort: 4244
     enabled: true
     listenAddress: ":4244"
