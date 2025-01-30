@@ -2,7 +2,7 @@ images:
   - name: cilium-agent
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.16.5
+    tag: v1.16.6
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -14,14 +14,14 @@ images:
         availability_requirement: 'high'
     - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
       value:
-      # https://github.com/cilium/proxy: v1.16.5 -> v1.30.7
-      # https://www.envoyproxy.io/docs/envoy/v1.30.7/intro/arch_overview/security/external_deps
+      # https://github.com/cilium/proxy: v1.16.6 -> v1.30.9
+      # https://www.envoyproxy.io/docs/envoy/v1.30.9/intro/arch_overview/security/external_deps
       - name: 'v8'
         version: '10.7.193.13'
   - name: cilium-envoy
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium-envoy
-    tag: v1.30.7-1731393961-97edc2815e2c6a174d3d12e71731d54f5d32ea16
+    tag: v1.30.9-1737073743-40a016d11c0d863b772961ed0168eea6fe6b10a5
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -33,14 +33,14 @@ images:
         availability_requirement: 'low'
     - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
       value:
-      # https://github.com/cilium/proxy: v1.16.5 -> v1.30.7
-      # https://www.envoyproxy.io/docs/envoy/v1.30.7/intro/arch_overview/security/external_deps
+      # https://github.com/cilium/proxy: v1.16.6 -> v1.30.9
+      # https://www.envoyproxy.io/docs/envoy/v1.30.9/intro/arch_overview/security/external_deps
       - name: 'c-ares'
         version: '1.19.1'
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
-    tag: v1.16.5
+    tag: v1.16.6
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -79,7 +79,7 @@ images:
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
-    tag: v1.16.5
+    tag: v1.16.6
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:

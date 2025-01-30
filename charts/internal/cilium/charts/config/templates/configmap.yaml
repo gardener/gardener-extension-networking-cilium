@@ -245,7 +245,6 @@ data:
 {{- else}}
   bpf-lb-sock:  "{{ .Values.global.bpfSocketLB.enabled }}"
 {{- end }}
-  bpf-lb-sock-terminate-pod-connections: "false"
 
 {{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.

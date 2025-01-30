@@ -192,6 +192,9 @@ spec:
           mountPropagation: HostToContainer
         - name: cilium-run
           mountPath: /var/run/cilium
+        - name: cilium-netns
+          mountPath: /var/run/cilium/netns
+          mountPropagation: HostToContainer
         - name: etc-cni-netd
           mountPath: {{ .Values.global.cni.hostConfDirMountPath }}
         - name: clustermesh-secrets
@@ -588,6 +591,11 @@ spec:
       - name: cilium-run
         hostPath:
           path: {{ .Values.global.daemon.runPath }}
+          type: DirectoryOrCreate
+        # To exec into pod network namespaces
+      - name: cilium-netns
+        hostPath:
+          path: /var/run/netns
           type: DirectoryOrCreate
 {{- /* CRI-O already mounts the BPF filesystem */ -}}
 {{- if not (eq .Values.global.containerRuntime.integration "crio") }}
