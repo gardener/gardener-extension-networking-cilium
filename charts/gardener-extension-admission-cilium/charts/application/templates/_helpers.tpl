@@ -13,11 +13,3 @@ app.kubernetes.io/name
 {{ include "labels.app.key" . }}: {{ include "labels.app.value" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
-
-{{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .tag }}
-  {{- printf "%s@%s" .repository .tag }}
-  {{- else }}
-  {{- printf "%s:%s" .repository .tag }}
-  {{- end }}
-{{- end }}
