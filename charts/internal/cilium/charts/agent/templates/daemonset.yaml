@@ -43,8 +43,6 @@ spec:
           exec:
             command:
             - "true"
-        securityContext:
-          allowPrivilegeEscalation: false
         readinessProbe:
           exec:
             command:
