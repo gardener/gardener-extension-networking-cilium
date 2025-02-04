@@ -26,6 +26,7 @@ spec:
       containers:
         - name: hubble-relay
           securityContext:
+            allowPrivilegeEscalation: false
             capabilities:
               drop:
               - ALL
