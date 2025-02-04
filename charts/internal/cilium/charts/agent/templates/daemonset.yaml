@@ -43,6 +43,8 @@ spec:
           exec:
             command:
             - "true"
+        securityContext:
+          allowPrivilegeEscalation: false
         readinessProbe:
           exec:
             command:
@@ -256,6 +258,7 @@ spec:
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
             add:
               - NET_ADMIN
@@ -277,6 +280,7 @@ spec:
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
             add:
               - NET_ADMIN
@@ -307,6 +311,7 @@ spec:
         - name: host-etc
           mountPath: /host/etc
         securityContext:
+          allowPrivilegeEscalation: false
           seLinuxOptions:
             level: s0
             # Running with spc_t since we have removed the privileged mode.
@@ -322,6 +327,8 @@ spec:
         command:
         - cilium-dbg
         - build-config
+        securityContext:
+          allowPrivilegeEscalation: false
         env:
         - name: K8S_NODE_NAME
           valueFrom:
@@ -518,6 +525,7 @@ spec:
         resources:
           {{- toYaml .Values.initResources | trim | nindent 10 }}
         securityContext:
+          allowPrivilegeEscalation: false
           seLinuxOptions:
             level: s0
             type: spc_t
@@ -543,6 +551,7 @@ spec:
         imagePullPolicy: {{ .Values.global.pullPolicy }}
         name: cilium-kube-proxy-clean-up
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
             add:
             - NET_ADMIN
