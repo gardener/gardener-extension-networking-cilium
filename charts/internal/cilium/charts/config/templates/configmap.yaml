@@ -443,6 +443,9 @@ data:
 {{- if ne .Values.global.kubeProxyReplacement "disabled" }}
   kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
 {{- end }}
+{{- if or (or (eq .Values.global.kubeProxyReplacement "false") (eq .Values.global.kubeProxyReplacement "partial")) (eq .Values.global.kubeProxyReplacement "disabled") }}
+  enable-health-check-nodeport: "false"
+{{- end }}
 
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
@@ -538,8 +541,6 @@ data:
 {{- end }}
 {{- if hasKey .Values "healthChecking" }}
   enable-health-checking: {{ .Values.healthChecking | quote }}
-{{- else if or (or (eq .Values.global.kubeProxyReplacement "false") (eq .Values.global.kubeProxyReplacement "partial")) (eq .Values.global.kubeProxyReplacement "disabled") }}
-  enable-health-checking: "false"
 {{- end }}
 {{- if .Values.global.wellKnownIdentities.enabled }}
   enable-well-known-identities: "true"
