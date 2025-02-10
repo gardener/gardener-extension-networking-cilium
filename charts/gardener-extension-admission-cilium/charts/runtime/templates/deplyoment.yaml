@@ -53,6 +53,8 @@ spec:
         {{- end }}
         - --health-bind-address=:{{ .Values.global.healthPort }}
         - --leader-election-id={{ include "leaderelectionid" . }}
+        securityContext:
+          allowPrivilegeEscalation: false
         env:
         - name: LEADER_ELECTION_NAMESPACE
           valueFrom:

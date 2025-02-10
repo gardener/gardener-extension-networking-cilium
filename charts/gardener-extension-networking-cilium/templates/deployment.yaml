@@ -51,6 +51,8 @@ spec:
         - --webhook-config-service-port={{ .Values.webhookConfig.servicePort }}
         - --webhook-config-server-port={{ .Values.webhookConfig.serverPort }}
         - --gardener-version={{ .Values.gardener.version }}
+        securityContext:
+          allowPrivilegeEscalation: false
         env:
         - name: LEADER_ELECTION_NAMESPACE
           valueFrom:
