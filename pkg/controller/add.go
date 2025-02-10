@@ -57,7 +57,7 @@ func AddToManagerWithOptions(ctx context.Context, mgr manager.Manager, opts AddO
 		return fmt.Errorf("expected *webhook.DefaultServer, got %T", webhookServer)
 	}
 
-	return network.Add(ctx, mgr, network.AddArgs{
+	return network.Add(mgr, network.AddArgs{
 		Actuator:          NewActuator(mgr, chartApplier, extensioncontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot), opts.ShootWebhookConfig, defaultServer.Options.Port),
 		ControllerOptions: opts.Controller,
 		Predicates:        network.DefaultPredicates(ctx, mgr, opts.IgnoreOperationAnnotation),
