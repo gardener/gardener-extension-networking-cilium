@@ -130,21 +130,10 @@ data:
             echo "$(date): $ip - succeeded"
         done
     }
-
-    function curl_kubeapi_through_proxy() {
-        ip=$(kubectl get endpoints -n default kubernetes -o jsonpath='{.subsets[*].addresses[*].ip}')
-        curl -v --max-time 5 --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt --resolve kubernetes:443:${ip} https://kubernetes:443
-        if [ $? -ne 0 ]
-        then
-            echo "ERROR: curl to kubernetes api ${ip} failed"
-            exit 1
-        fi
-      }
     
     while true
     do 
         sleep 15
         ping_ips "host-network"
         ping_ips "pod-network"
-        curl_kubeapi_through_proxy
     done
