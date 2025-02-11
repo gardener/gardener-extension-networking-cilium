@@ -38,6 +38,7 @@ type globalConfig struct {
 	NodeLocalDNS             nodeLocalDNS                            `json:"nodeLocalDNS"`
 	EgressGateway            egressGateway                           `json:"egressGateway"`
 	IPv4NativeRoutingCIDR    string                                  `json:"ipv4NativeRoutingCIDR"`
+	IPv6NativeRoutingCIDR    string                                  `json:"ipv6NativeRoutingCIDR"`
 	MTU                      int                                     `json:"mtu"`
 	Devices                  []string                                `json:"devices"`
 	BPF                      bpf                                     `json:"bpf"`

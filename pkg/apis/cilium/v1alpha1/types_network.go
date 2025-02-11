@@ -84,6 +84,12 @@ type Hubble struct {
 	Enabled bool `json:"enabled"`
 }
 
+// IPv4 enablement for cilium
+type IPv4 struct {
+	// Enabled indicates whether IPv4 is enabled or not.
+	Enabled bool `json:"enabled"`
+}
+
 // IPv6 enablement for cilium
 type IPv6 struct {
 	// Enabled indicates whether IPv6 is enabled or not.
@@ -171,6 +177,9 @@ type NetworkConfig struct {
 	// Store can be either Kubernetes or etcd.
 	// +optional
 	Store *Store `json:"store,omitempty"`
+	// Enable IPv4
+	// +optional
+	IPv4 *IPv4 `json:"ipv4,omitempty"`
 	// Enable IPv6
 	// +optional
 	IPv6 *IPv6 `json:"ipv6,omitempty"`
@@ -198,6 +207,9 @@ type NetworkConfig struct {
 	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
 	// +optional
 	IPv4NativeRoutingCIDREnabled *bool `json:"ipv4NativeRoutingCIDREnabled,omitempty"`
+	// IPv6NativeRoutingCIDRMode will set the ipv6 native routing cidr from the network configs node's cidr if enabled.
+	// +optional
+	IPv6NativeRoutingCIDREnabled *bool `json:"ipv6NativeRoutingCIDREnabled,omitempty"`
 	// Overlay enables the network overlay
 	// +optional
 	Overlay *Overlay `json:"overlay,omitempty"`

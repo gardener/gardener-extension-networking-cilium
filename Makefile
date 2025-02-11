@@ -80,6 +80,7 @@ tidy:
 	@mkdir -p $(REPO_ROOT)/.ci/hack && cp $(GARDENER_HACK_DIR)/.ci/* $(REPO_ROOT)/.ci/hack/ && chmod +xw $(REPO_ROOT)/.ci/hack/*
 	@GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(REPO_ROOT)/hack/update-github-templates.sh
 	@cp $(GARDENER_HACK_DIR)/cherry-pick-pull.sh $(HACK_DIR)/cherry-pick-pull.sh && chmod +xw $(HACK_DIR)/cherry-pick-pull.sh
+	@cp $(GARDENER_HACK_DIR)/sast.sh $(HACK_DIR)/sast.sh && chmod +xw $(HACK_DIR)/sast.sh
 
 .PHONY: clean
 clean:
@@ -104,6 +105,20 @@ generate: $(VGOPATH) $(CONTROLLER_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(M
 format: $(GOIMPORTS) $(GOIMPORTSREVISER)
 	@bash $(GARDENER_HACK_DIR)/format.sh ./cmd ./pkg
 
+# TODO(scheererj): Remove once https://github.com/gardener/gardener/pull/10642 is available as release.
+TOOLS_PKG_PATH := $(shell go list -tags tools -f '{{ .Dir }}' github.com/gardener/gardener/hack/tools 2>/dev/null)
+.PHONY: adjust-install-gosec.sh
+adjust-install-gosec.sh:
+	@chmod +xw $(TOOLS_PKG_PATH)/install-gosec.sh
+
+.PHONY: sast
+sast: adjust-install-gosec.sh $(GOSEC)
+	@./hack/sast.sh
+
+.PHONY: sast-report
+sast-report: adjust-install-gosec.sh $(GOSEC)
+	@./hack/sast.sh --gosec-report true
+
 .PHONY: test
 test:
 	@bash $(GARDENER_HACK_DIR)/test.sh ./cmd/... ./pkg/...
@@ -117,10 +132,10 @@ test-cov-clean:
 	@bash $(GARDENER_HACK_DIR)/test-cover-clean.sh
 
 .PHONY: verify
-verify: check format test
+verify: check format test sast
 
 .PHONY: verify-extended
-verify-extended: check-generate check format test-cov test-cov-clean
+verify-extended: check-generate check format test-cov test-cov-clean sast-report
 
 .PHONY: test-e2e-local
 test-e2e-local: $(KIND) $(YQ) $(GINKGO)

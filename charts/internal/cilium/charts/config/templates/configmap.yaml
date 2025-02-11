@@ -54,7 +54,6 @@ data:
 {{- if .Values.global.nodesGCInterval }}
   nodes-gc-interval: "5m0s"
 {{- end }}
-  skip-cnp-status-startup-clean: {{ .Values.global.skipCnpStatusStartupClean | quote}}
 {{- if .Values.global.disableEndpointCrd }}
   disable-endpoint-crd: "{{ .Values.global.disableEndpointCrd }}"
 {{- end }}
@@ -236,12 +235,17 @@ data:
   bpf-lb-external-clusterip: "{{ .Values.global.bpf.lbExternalClusterip }}"
 {{- end }}
 
+  bpf-events-drop-enabled: "true"
+  bpf-events-policy-verdict-enabled: "true"
+  bpf-events-trace-enabled: "true"
+
   # Enable socket-based LB for E/W traffic
 {{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
   bpf-lb-sock: "true"
 {{- else}}
   bpf-lb-sock:  "{{ .Values.global.bpfSocketLB.enabled }}"
 {{- end }}
+  bpf-lb-sock-terminate-pod-connections: "false"
 
 {{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
@@ -265,10 +269,6 @@ data:
   # If this option is set to "false" during an upgrade from 1.3 or earlier to
   # 1.4 or later, then it may cause one-time disruptions during the upgrade.
   preallocate-bpf-maps: "{{ .Values.global.bpf.preallocateMaps }}"
-
-  # Regular expression matching compatible Istio sidecar istio-proxy
-  # container image names
-  sidecar-istio-proxy-image: "{{ .Values.global.proxy.sidecarImageRegex }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: {{ .Values.global.cluster.name }}
@@ -309,29 +309,21 @@ data:
   enable-local-node-route: "false"
 {{- end }}
 
-{{- if .Values.global.flannel.enabled }}
-  # Interface to be used when running Cilium on top of a CNI plugin.
-  # For flannel, use "cni0"
-  flannel-master-device: {{ .Values.global.flannel.masterDevice }}
-
-  # When running Cilium with policy enforcement enabled on top of a CNI plugin
-  # the BPF programs will be installed on the network interface specified in
-  # 'flannel-master-device' and on all network interfaces belonging to
-  # a container. When the Cilium DaemonSet is removed, the BPF programs will
-  # be kept in the interfaces unless this option is set to "true".
-  flannel-uninstall-on-exit: "{{ .Values.global.flannel.uninstallOnExit}}"
-
-{{- end }}
-
 {{- if .Values.global.l7Proxy }}
   # Enables L7 proxy for L7 policy enforcement and visibility
   enable-l7-proxy: {{ .Values.global.l7Proxy.enabled | quote }}
 {{- end }}
 
   enable-ipv4-big-tcp: {{ .Values.global.enableIpv4BigTCP | quote }}
-  enable-ipv4-masquerade: {{ .Values.global.enableIpv4Masquerade | quote }}
+{{- if .Values.global.ipv4.enabled }}
+  enable-ipv4-masquerade: "true"
+{{- else }}
+  enable-ipv4-masquerade: "false"
+{{- end }}
   enable-ipv6-big-tcp: {{ .Values.global.enableIpv6BigTCP | quote }}
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
+  enable-tcx: "true"
+  datapath-mode: "veth"
 {{- if ne .Values.global.tunnel "disabled" }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 {{- end }}
@@ -342,10 +334,12 @@ data:
   install-no-conntrack-iptables-rules: {{ .Values.global.installNoConntrackIptablesRules | quote }}
 
   auto-direct-node-routes: {{ .Values.global.autoDirectNodeRoutes | quote }}
+  direct-routing-skip-unreachable: "false"
 
 {{- if .Values.global.localRedirectPolicy.enabled }}
   enable-local-redirect-policy: {{ .Values.global.localRedirectPolicy.enabled | quote }}
 {{- end }}
+  enable-runtime-device-detection: "true"
 
   # DNS Polling periodically issues a DNS lookup for each `matchName` from
   # cilium-agent. The result is used to regenerate endpoint policy.
@@ -374,7 +368,6 @@ data:
   # Supported modes:
   #  - none
   #  - aws-cni
-  #  - flannel
   #  - portmap (Enables HostPort support for Cilium)
   cni-chaining-mode: {{ .Values.global.cni.chainingMode }}
 
@@ -409,12 +402,6 @@ data:
   encrypt-node: {{ .Values.global.encryption.nodeEncryption | quote }}
 {{- end }}
 {{- end }}
-{{- if .Values.global.datapathMode }}
-{{- if eq .Values.global.datapathMode "ipvlan" }}
-  datapath-mode: ipvlan
-  ipvlan-master-device: {{ .Values.global.ipvlan.masterDevice }}
-{{- end }}
-{{- end }}
 {{- if .Values.global.iptablesLockTimeout }}
   iptables-lock-timeout: {{ .Values.global.iptablesLockTimeout | quote }}
 {{- end }}
@@ -423,6 +410,9 @@ data:
 {{- end }}
 {{- if .Values.global.ipv4NativeRoutingCIDR }}
   ipv4-native-routing-cidr: {{ .Values.global.ipv4NativeRoutingCIDR }}
+{{- end }}
+{{- if .Values.global.ipv6NativeRoutingCIDR }}
+  ipv6-native-routing-cidr: {{ .Values.global.ipv6NativeRoutingCIDR }}
 {{- end }}
 
 {{- if .Values.global.hostFirewall }}
@@ -454,6 +444,9 @@ data:
 {{- if ne .Values.global.kubeProxyReplacement "disabled" }}
   kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
 {{- end }}
+{{- if or (or (eq .Values.global.kubeProxyReplacement "false") (eq .Values.global.kubeProxyReplacement "partial")) (eq .Values.global.kubeProxyReplacement "disabled") }}
+  enable-health-check-nodeport: "false"
+{{- end }}
 
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
@@ -477,6 +470,7 @@ data:
 {{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
   enable-node-port: "true"
 {{- end }}
+  nodeport-addresses: ""
 {{- if .Values.global.nodePort.range }}
   node-port-range: {{ .Values.global.nodePort.range | quote }}
 {{- end }}
@@ -554,7 +548,7 @@ data:
 {{- else }}
   enable-well-known-identities: "false"
 {{- end }}
-  enable-remote-node-identity: {{ .Values.global.remoteNodeIdentity | quote }}
+  enable-node-selector-labels: "false"
   enable-api-rate-limit: {{ .Values.global.apiRateLimit | quote }}
 {{- if hasKey .Values "synchronizeK8sNodes" }}
   synchronize-k8s-nodes: {{ .Values.synchronizeK8sNodes | quote }}
@@ -585,6 +579,7 @@ data:
   # Address to expose Hubble metrics (e.g. ":7070"). Metrics server will be disabled if this
   # field is not set.
   hubble-metrics-server: ":{{ .Values.global.hubble.metrics.port }}"
+  hubble-metrics-server-enable-tls: "false"
   # A space separated list of metrics to enable. See [0] for available metrics.
   #
   # https://github.com/cilium/hubble/blob/master/Documentation/metrics.md
@@ -653,6 +648,7 @@ data:
   unmanaged-pod-watcher-interval: "15"
   # default DNS proxy to transparent mode in non-chaining modes
   dnsproxy-enable-transparent-mode: "true"
+  dnsproxy-socket-linger-timeout: "10"
   tofqdns-dns-reject-response-code: "refused"
   tofqdns-enable-dns-compression: "true"
   tofqdns-endpoint-max-ip-per-hostname: "50"
@@ -671,11 +667,21 @@ data:
   proxy-xff-num-trusted-hops-ingress: "0"
   proxy-xff-num-trusted-hops-egress: "0"
   proxy-connect-timeout: "2"
+  proxy-initial-fetch-timeout: "30"
   proxy-max-requests-per-connection: "0"
   proxy-max-connection-duration-seconds: "0"
   proxy-idle-timeout-seconds: "60"
 
-  external-envoy-proxy: "false"
+  external-envoy-proxy: "true"
+  envoy-base-id: "0"
+
+  envoy-keep-cap-netbindservice: "false"
+
+  clustermesh-enable-endpoint-sync: "false"
+  clustermesh-enable-mcs-api: "false"
+
+  nat-map-stats-entries: "32"
+  nat-map-stats-interval: "30s"
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.

@@ -13,7 +13,7 @@ spec:
         app: networking-test
     spec:
       containers:
-      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.2.0
+      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.9.0
         name: networking-shoot-tests-cilium
         command: ["sh", "-c"]
         args:

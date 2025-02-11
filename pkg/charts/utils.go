@@ -70,6 +70,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	Images: map[string]string{
 		cilium.CiliumAgentImageName:    imagevector.CiliumAgentImage(),
+		cilium.CiliumEnvoyImageName:    imagevector.CiliumEnvoyImage(),
 		cilium.CiliumOperatorImageName: imagevector.CiliumOperatorImage(),
 
 		cilium.HubbleRelayImageName:     imagevector.CiliumHubbleRelayImage(),
@@ -210,6 +211,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 	}
 
+	// check if IPv4 is enabled
+	if config.IPv4 != nil {
+		globalConfig.Ipv4.Enabled = config.IPv4.Enabled
+	}
 	// check if IPv6 is enabled
 	if config.IPv6 != nil {
 		globalConfig.Ipv6.Enabled = config.IPv6.Enabled
@@ -266,6 +271,14 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv4 native routing cidr was not yet set")
 		}
 		globalConfig.IPv4NativeRoutingCIDR = *cluster.Shoot.Spec.Networking.Pods
+	}
+
+	// check if ipv6 native routing cidr is set
+	if config.IPv6NativeRoutingCIDREnabled != nil && *config.IPv6NativeRoutingCIDREnabled {
+		if cluster.Shoot.Status.Networking.Pods == nil {
+			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv6 native routing cidr was not yet set")
+		}
+		globalConfig.IPv6NativeRoutingCIDR = cluster.Shoot.Status.Networking.Pods[0]
 	}
 
 	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {

@@ -54,7 +54,7 @@ spec:
         - cilium-agent
         startupProbe:
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -74,7 +74,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -95,7 +95,7 @@ spec:
             - --brief
 {{- else }}
           httpGet:
-            host: "127.0.0.1"
+            host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
             port: {{ .Values.global.agent.healthPort }}
             scheme: HTTP
@@ -172,6 +172,9 @@ spec:
               - ALL
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
+        - name: envoy-sockets
+          mountPath: /var/run/cilium/envoy/sockets
+          readOnly: false
         # Unprivileged containers need to mount /proc/sys/net from the host
         # to have write access
         - mountPath: /host/proc/sys/net
@@ -565,7 +568,6 @@ spec:
         - 1
         seccompProfile:
           type: RuntimeDefault
-      serviceAccount: "cilium"
       serviceAccountName: "cilium"
       automountServiceAccountToken: true
       terminationGracePeriodSeconds: 1
@@ -595,7 +597,7 @@ spec:
           path: /sys/fs/bpf
           type: DirectoryOrCreate
 {{- end }}
-      # To mount cgroup2 filesystem on the host
+      # To mount cgroup2 filesystem on the host or apply sysctlfix
       - name: hostproc
         hostPath:
           path: /proc
@@ -624,6 +626,11 @@ spec:
         hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
+      # Sharing socket with Cilium Envoy on the same node by using a host path
+      - name: envoy-sockets
+        hostPath:
+          path: "/var/run/cilium/envoy/sockets"
+          type: DirectoryOrCreate
 {{- if .Values.global.kubeConfigPath }}
       - name: kube-config
         hostPath:
@@ -658,6 +665,20 @@ spec:
                 path: common-etcd-client.crt
               - key: ca.crt
                 path: common-etcd-client-ca.crt
+          # note: we configure the volume for the kvstoremesh-specific certificate
+          # regardless of whether KVStoreMesh is enabled or not, so that it can be
+          # automatically mounted in case KVStoreMesh gets subsequently enabled,
+          # without requiring an agent restart.
+          - secret:
+              name: clustermesh-apiserver-local-cert
+              optional: true
+              items:
+              - key: tls.key
+                path: local-etcd-client.key
+              - key: tls.crt
+                path: local-etcd-client.crt
+              - key: ca.crt
+                path: local-etcd-client-ca.crt
         # To read the configuration from the config map
       - name: cilium-config-path
         configMap:

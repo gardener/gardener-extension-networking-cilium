@@ -18,6 +18,12 @@ gardener_version=$(go list -m -f '{{.Version}}' github.com/gardener/gardener)
 cd "$repo_root/gardener"
 git checkout "$gardener_version"
 source "$repo_root/gardener/hack/ci-common.sh"
+
+echo '172.18.255.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
+echo '127.0.0.1 garden.local.gardener.cloud' >> /etc/hosts
+
 make kind-up
 trap '{
   cd "$repo_root/gardener"
@@ -40,10 +46,6 @@ yq -i e "(select (.helm.values.image) | .helm.values.image.tag) |= \"$version\""
 yq -i e '(select (.helm.values.image) | .helm.values.image.repository) |= "docker.io/library/networking-cilium-local"' $repo_root/tmp/controller-registration.yaml
 
 kubectl apply --server-side --force-conflicts -f "$repo_root/tmp/controller-registration.yaml"
-
-echo '127.0.0.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
-echo '127.0.0.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
-echo '127.0.0.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
 
 # reduce flakiness in contended pipelines
 export GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT=5s

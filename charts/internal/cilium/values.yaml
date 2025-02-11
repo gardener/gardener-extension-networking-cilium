@@ -73,8 +73,6 @@ global:
 
   nodesGCInterval: "5m0s"
 
-  skipCnpStatusStartupClean: "false"
-
   # Disable the usage of CiliumEndpoint CRD
   disableEndpointCrd: false
 
@@ -147,6 +145,7 @@ global:
   enableIpv4Masquerade: true
   enableIpv6Masquerade: true
   enableBPFMasquerade: false
+
 
   enableIpv4BigTCP : false
   enableIpv6BigTCP: false
@@ -384,27 +383,6 @@ global:
     # enabled enables ExternalIPs functionality
     enabled: false
 
-  # flannel is the flannel specific configuration
-  flannel:
-    # enabled enables the flannel integration
-    enabled: false
-
-    # masterDevice is the name of the flannel bridge
-    masterDevice: cni0
-
-    # uninstallOnExt enables uninstallation of Cilium BPF programs on flannel
-    # managed pods when the Cilium pod is terminated
-    uninstallOnExit: false
-
-  # ipvlan is the IPVLAN configuration
-  ipvlan:
-    # enabled enables use of the IPVLAN datapath
-    enabled: false
-
-    # masterDevice is the name of the device to use to attach secondary IPVLAN
-    # devices
-    # masterDevice: eth0
-
   # pprof is the GO pprof configuration
   pprof:
     # enabled enables go pprof debugging
@@ -451,17 +429,9 @@ global:
   tls:
     secretsBackend: local
 
-  # remoteNodeIdentity enables use of the remote node identity
-  remoteNodeIdentity: true
-
   apiRateLimit: false
 
   synchronizeK8sNodes: true
-
-  proxy:
-    # Regular expression matching compatible Istio sidecar istio-proxy
-    # container image names
-    sidecarImageRegex: "cilium/istio_proxy"
 
   # Enables L7 proxy for L7 policy enforcement and visibility
   l7Proxy:

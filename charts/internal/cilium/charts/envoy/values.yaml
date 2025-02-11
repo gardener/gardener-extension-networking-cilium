@@ -1,0 +1,10 @@
+# Specifies the maximum number of Pods that can be unavailable during the
+# update process.
+maxUnavailable: 2
+
+# Specifies the resources for the cilium-envoy container
+resources:
+  requests:
+    memory: 200Mi
+  limits:
+    memory: 1Gi

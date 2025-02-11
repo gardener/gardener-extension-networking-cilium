@@ -22,3 +22,6 @@ TODO
 
 # GitGuardian
 .cache_ggshield
+
+# gosec
+gosec-report.sarif

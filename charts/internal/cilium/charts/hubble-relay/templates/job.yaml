@@ -21,21 +21,48 @@ spec:
         - name: certgen
           image: {{ index .Values.global.images "certgen" }}
           imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            allowPrivilegeEscalation: false
           command:
             - "/usr/bin/cilium-certgen"
           # Because this is executed as a job, we pass the values as command
           # line args instead of via config map. This allows users to inspect
           # the values used in past runs by inspecting the completed pod.
           args:
-            - "--cilium-namespace=kube-system"
             - "--ca-generate"
             - "--ca-reuse-secret"
-            - "--hubble-server-cert-generate"
-            - "--hubble-server-cert-common-name=*.{{ .Values.global.cluster.name }}.hubble-grpc.cilium.io"
-            - "--hubble-server-cert-validity-duration=94608000s"
-            - "--hubble-relay-client-cert-generate"
-            - "--hubble-relay-client-cert-validity-duration=94608000s"
-      hostNetwork: true
+            - "--ca-secret-namespace=kube-system"
+            - "--ca-secret-name=cilium-ca"
+            - "--ca-common-name=Cilium CA"
+          env:
+            - name: CILIUM_CERTGEN_CONFIG
+              value: |
+                certs:
+                - name: hubble-server-certs
+                  namespace: kube-system
+                  commonName: "*.{{ .Values.global.cluster.name }}.hubble-grpc.cilium.io"
+                  hosts:
+                  - "*.{{ .Values.global.cluster.name }}.hubble-grpc.cilium.io"
+                  usage:
+                  - signing
+                  - key encipherment
+                  - server auth
+                  - client auth
+                  validity: 26280h
+                - name: hubble-relay-client-certs
+                  namespace: kube-system
+                  commonName: "*.hubble-relay.cilium.io"
+                  hosts:
+                  - "*.hubble-relay.cilium.io"
+                  usage:
+                  - signing
+                  - key encipherment
+                  - client auth
+                  validity: 26280h
+      hostNetwork: false
       serviceAccount: hubble-generate-certs
       serviceAccountName: hubble-generate-certs
       automountServiceAccountToken: true
