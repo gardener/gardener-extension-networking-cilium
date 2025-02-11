@@ -92,7 +92,7 @@ images:
   - name: certgen
     sourceRepository: github.com/cilium/certgen
     repository: quay.io/cilium/certgen
-    tag: v0.2.2
+    tag: v0.2.3
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
