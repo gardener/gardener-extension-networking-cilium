@@ -443,6 +443,9 @@ data:
 {{- if ne .Values.global.kubeProxyReplacement "disabled" }}
   kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
 {{- end }}
+{{- if or (or (eq .Values.global.kubeProxyReplacement "false") (eq .Values.global.kubeProxyReplacement "partial")) (eq .Values.global.kubeProxyReplacement "disabled") }}
+  enable-health-check-nodeport: "false"
+{{- end }}
 
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
