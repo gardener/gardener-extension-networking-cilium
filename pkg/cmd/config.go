@@ -7,7 +7,7 @@ package cmd
 import (
 	"fmt"
 
-	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
+	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	"github.com/spf13/pflag"
 
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/config"
