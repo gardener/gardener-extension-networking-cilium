@@ -24,7 +24,7 @@ spec:
         {{- if .Values.metrics.enableScraping }}
         prometheus.io/name: "{{ .Release.Name }}"
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.metrics.port }}"
+        prometheus.io/port: "{{ tpl .Values.metrics.port . }}"
         {{- end }}
       labels:
         app.kubernetes.io/name: gardener-extension-networking-cilium
@@ -49,7 +49,7 @@ spec:
         - --config-file=/etc/{{ include "name" . }}/config/config.yaml
         - --webhook-config-namespace={{ .Release.Namespace }}
         - --webhook-config-service-port={{ .Values.webhookConfig.servicePort }}
-        - --webhook-config-server-port={{ .Values.webhookConfig.serverPort }}
+        - --webhook-config-server-port={{ tpl .Values.webhookConfig.serverPort . }}
         - --gardener-version={{ .Values.gardener.version }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -64,7 +64,7 @@ spec:
         {{- end }}
         ports:
         - name: webhook-server
-          containerPort: {{ .Values.webhookConfig.serverPort }}
+          containerPort: {{ tpl .Values.webhookConfig.serverPort . }}
           protocol: TCP
 {{- if .Values.resources }}
         resources:
