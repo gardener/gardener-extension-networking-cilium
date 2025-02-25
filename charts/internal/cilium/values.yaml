@@ -39,7 +39,7 @@ global:
   pullPolicy: IfNotPresent
 
   # -- Configure iptables--random-fully. Disabled by default. View https://github.com/cilium/cilium/issues/13037 for more information.
-  iptablesRandomFully: false
+  iptablesRandomFully: true
 
   hubble:
     socketPath: "/var/run/cilium/hubble.sock"
