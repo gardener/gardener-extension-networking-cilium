@@ -53,7 +53,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			SecretBindingName: pointer.String("local"),
 			CloudProfileName:  pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version:                     "1.28.4",
+				Version:                     "1.28.2",
 				EnableStaticTokenKubeconfig: pointer.Bool(true),
 				Kubelet: &gardencorev1beta1.KubeletConfig{
 					SerializeImagePulls: pointer.Bool(false),
