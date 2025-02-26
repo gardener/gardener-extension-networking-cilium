@@ -32,7 +32,7 @@ spec:
           # line args instead of via config map. This allows users to inspect
           # the values used in past runs by inspecting the completed pod.
           args:
-            - "--ca-generate"
+            - "--ca-generate=true"
             - "--ca-reuse-secret"
             - "--ca-secret-namespace=kube-system"
             - "--ca-secret-name=cilium-ca"

@@ -11,7 +11,6 @@ data:
     listen-address: {{ .Values.listenHost }}:{{ .Values.listenPort }}
     gops: {{ .Values.gops }}
     gops-port: {{ .Values.gopsPort }}
-    dial-timeout: {{ .Values.dialTimeout }}
     retry-timeout: {{ .Values.retryTimeout }}
     sort-buffer-len-max: {{ .Values.sortBufferLenMax }}
     sort-buffer-drain-timeout: {{ .Values.sortBufferDrainTimeout }}

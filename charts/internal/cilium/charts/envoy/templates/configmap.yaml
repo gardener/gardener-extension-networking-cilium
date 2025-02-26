@@ -15,6 +15,11 @@ data:
           }
         }
       },
+      "applicationLogConfig": {
+        "logFormat": {
+          "textFormat": "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v"
+        }
+      },
       "bootstrapExtensions": [
         {
           "name": "envoy.bootstrap.internal_listener",
@@ -75,6 +80,13 @@ data:
       "staticResources": {
         "clusters": [
           {
+            "circuitBreakers": {
+              "thresholds": [
+                {
+                  "maxRetries": 128
+                }
+              ]
+            },
             "cleanupInterval": "2.500s",
             "connectTimeout": "2s",
             "lbPolicy": "CLUSTER_PROVIDED",
@@ -93,6 +105,13 @@ data:
             }
           },
           {
+            "circuitBreakers": {
+              "thresholds": [
+                {
+                  "maxRetries": 128
+                }
+              ]
+            },
             "cleanupInterval": "2.500s",
             "connectTimeout": "2s",
             "lbPolicy": "CLUSTER_PROVIDED",
@@ -118,6 +137,13 @@ data:
             }
           },
           {
+            "circuitBreakers": {
+              "thresholds": [
+                {
+                  "maxRetries": 128
+                }
+              ]
+            },
             "cleanupInterval": "2.500s",
             "connectTimeout": "2s",
             "lbPolicy": "CLUSTER_PROVIDED",
@@ -136,6 +162,13 @@ data:
             }
           },
           {
+            "circuitBreakers": {
+              "thresholds": [
+                {
+                  "maxRetries": 128
+                }
+              ]
+            },
             "cleanupInterval": "2.500s",
             "connectTimeout": "2s",
             "lbPolicy": "CLUSTER_PROVIDED",
