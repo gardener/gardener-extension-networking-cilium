@@ -55,8 +55,6 @@ gardener-extension-networking-cilium:
         dockerimages:
           gardener-extension-networking-cilium:
             image: 'europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/networking-cilium'
-            extra_push_targets: # may be dropped after all users updated to new registry
-              - eu.gcr.io/gardener-project/gardener/extensions/networking-cilium
             dockerfile: 'Dockerfile'
             target: gardener-extension-networking-cilium
             resource_labels:
@@ -70,8 +68,6 @@ gardener-extension-networking-cilium:
                 availability_requirement: 'high'
           gardener-extension-admission-cilium:
             image: 'europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/admission-cilium'
-            extra_push_targets: # may be dropped after all users updated to new registry
-              - eu.gcr.io/gardener-project/gardener/extensions/admission-cilium
             dockerfile: 'Dockerfile'
             target: gardener-extension-admission-cilium
             resource_labels:
