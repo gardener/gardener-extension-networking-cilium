@@ -718,3 +718,24 @@ data:
   # Configure blacklisting of local routes not owned by Cilium.
   blacklist-conflicting-routes: {{ .Values.blacklistConflictingRoutes | quote }}
 {{- end }}
+
+{{- if or .Values.global.envoyConfig.enabled .Values.global.gatewayAPI.enabled }}
+  enable-envoy-config: "true"
+  envoy-config-retry-interval: {{ .Values.global.envoyConfig.retryInterval | quote }}
+  {{- if .Values.global.envoyConfig.enabled }}
+  envoy-secrets-namespace: {{ .Values.global.envoyConfig.secretsNamespace.name | quote }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.global.gatewayAPI.enabled }}
+  enable-gateway-api: "true"
+  enable-gateway-api-secrets-sync: {{ .Values.global.gatewayAPI.secretsNamespace.sync | quote }}
+  enable-gateway-api-proxy-protocol: {{ .Values.global.gatewayAPI.enableProxyProtocol | quote }}
+  enable-gateway-api-app-protocol: {{ or .Values.global.gatewayAPI.enableAppProtocol .Values.global.gatewayAPI.enableAlpn | quote }}
+  enable-gateway-api-alpn: {{ .Values.global.gatewayAPI.enableAlpn | quote }}
+  gateway-api-xff-num-trusted-hops: {{ .Values.global.gatewayAPI.xffNumTrustedHops | quote }}
+  gateway-api-service-externaltrafficpolicy: {{ .Values.global.gatewayAPI.externalTrafficPolicy | quote }}
+  gateway-api-secrets-namespace: {{ .Values.global.gatewayAPI.secretsNamespace.name | quote }}
+  gateway-api-hostnetwork-enabled: {{ .Values.global.gatewayAPI.hostNetwork.enabled | quote }}
+  gateway-api-hostnetwork-nodelabelselector: {{ include "mapToString" .Values.global.gatewayAPI.hostNetwork.nodes.matchLabels | quote }}
+{{- end }}

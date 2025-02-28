@@ -49,6 +49,8 @@ type globalConfig struct {
 	BGPControlPlane          bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash            string                                  `json:"configMapHash"`
 	ConfigMapLabelPrefixHash string                                  `json:"configMapLabelPrefixHash"`
+	EnvoyConfig              envoyConfig                             `json:"envoyConfig"`
+	GatewayAPI               gatewayAPI                              `json:"gatewayAPI"`
 }
 
 // etcd related configuration for cilium
@@ -178,4 +180,29 @@ type snatOutOfCluster struct {
 // bgpControlPlane enables the BGP Control Plane
 type bgpControlPlane struct {
 	Enabled bool `json:"enabled"`
+}
+
+// envoyConfig enables CiliumEnvoyConfig CRD
+type envoyConfig struct {
+	Enabled          bool                        `json:"enabled"`
+	SecretsNamespace EnvoyConfigSecretsNamespace `json:"secretsNamespace"`
+	RetryInterval    string                      `json:"retryInterval"`
+}
+
+type EnvoyConfigSecretsNamespace struct {
+	Create bool   `json:"create"`
+	Name   string `json:"name"`
+}
+
+// gatewayAPI enables the Gateway API
+type gatewayAPI struct {
+	Enabled               bool                                     `json:"enabled"`
+	EnableProxyProtocol   bool                                     `json:"enableProxyProtocol"`
+	EnableAppProtocol     bool                                     `json:"enableAppProtocol"`
+	EnableAlpn            bool                                     `json:"enableAlpn"`
+	XffNumTrustedHops     int                                      `json:"xffNumTrustedHops"`
+	ExternalTrafficPolicy string                                   `json:"externalTrafficPolicy"`
+	GatewayClass          ciliumv1alpha1.GatewayAPIGatewayClass    `json:"gatewayClass"`
+	SecretsNamespace      ciliumv1alpha1.GatewayAPISecretNamespace `json:"secretsNamespace"`
+	HostNetwork           ciliumv1alpha1.GatewayAPIHostNetwork     `json:"hostNetwork"`
 }

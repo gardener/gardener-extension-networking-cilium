@@ -64,6 +64,76 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*EnvoyConfig)(nil), (*cilium.EnvoyConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_EnvoyConfig_To_cilium_EnvoyConfig(a.(*EnvoyConfig), b.(*cilium.EnvoyConfig), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.EnvoyConfig)(nil), (*EnvoyConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_EnvoyConfig_To_v1alpha1_EnvoyConfig(a.(*cilium.EnvoyConfig), b.(*EnvoyConfig), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*EnvoyConfigSecretsNamespace)(nil), (*cilium.EnvoyConfigSecretsNamespace)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace(a.(*EnvoyConfigSecretsNamespace), b.(*cilium.EnvoyConfigSecretsNamespace), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.EnvoyConfigSecretsNamespace)(nil), (*EnvoyConfigSecretsNamespace)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace(a.(*cilium.EnvoyConfigSecretsNamespace), b.(*EnvoyConfigSecretsNamespace), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*GatewayAPI)(nil), (*cilium.GatewayAPI)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_GatewayAPI_To_cilium_GatewayAPI(a.(*GatewayAPI), b.(*cilium.GatewayAPI), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.GatewayAPI)(nil), (*GatewayAPI)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_GatewayAPI_To_v1alpha1_GatewayAPI(a.(*cilium.GatewayAPI), b.(*GatewayAPI), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*GatewayAPIGatewayClass)(nil), (*cilium.GatewayAPIGatewayClass)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass(a.(*GatewayAPIGatewayClass), b.(*cilium.GatewayAPIGatewayClass), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.GatewayAPIGatewayClass)(nil), (*GatewayAPIGatewayClass)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass(a.(*cilium.GatewayAPIGatewayClass), b.(*GatewayAPIGatewayClass), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*GatewayAPIHostNetwork)(nil), (*cilium.GatewayAPIHostNetwork)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork(a.(*GatewayAPIHostNetwork), b.(*cilium.GatewayAPIHostNetwork), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.GatewayAPIHostNetwork)(nil), (*GatewayAPIHostNetwork)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork(a.(*cilium.GatewayAPIHostNetwork), b.(*GatewayAPIHostNetwork), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*GatewayAPINodes)(nil), (*cilium.GatewayAPINodes)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes(a.(*GatewayAPINodes), b.(*cilium.GatewayAPINodes), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.GatewayAPINodes)(nil), (*GatewayAPINodes)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes(a.(*cilium.GatewayAPINodes), b.(*GatewayAPINodes), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*GatewayAPISecretNamespace)(nil), (*cilium.GatewayAPISecretNamespace)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace(a.(*GatewayAPISecretNamespace), b.(*cilium.GatewayAPISecretNamespace), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*cilium.GatewayAPISecretNamespace)(nil), (*GatewayAPISecretNamespace)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace(a.(*cilium.GatewayAPISecretNamespace), b.(*GatewayAPISecretNamespace), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*Hubble)(nil), (*cilium.Hubble)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_Hubble_To_cilium_Hubble(a.(*Hubble), b.(*cilium.Hubble), scope)
 	}); err != nil {
@@ -237,6 +307,194 @@ func Convert_cilium_EgressGateway_To_v1alpha1_EgressGateway(in *cilium.EgressGat
 	return autoConvert_cilium_EgressGateway_To_v1alpha1_EgressGateway(in, out, s)
 }
 
+func autoConvert_v1alpha1_EnvoyConfig_To_cilium_EnvoyConfig(in *EnvoyConfig, out *cilium.EnvoyConfig, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	if err := Convert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace(&in.SecretsNamespace, &out.SecretsNamespace, s); err != nil {
+		return err
+	}
+	out.RetryInterval = in.RetryInterval
+	return nil
+}
+
+// Convert_v1alpha1_EnvoyConfig_To_cilium_EnvoyConfig is an autogenerated conversion function.
+func Convert_v1alpha1_EnvoyConfig_To_cilium_EnvoyConfig(in *EnvoyConfig, out *cilium.EnvoyConfig, s conversion.Scope) error {
+	return autoConvert_v1alpha1_EnvoyConfig_To_cilium_EnvoyConfig(in, out, s)
+}
+
+func autoConvert_cilium_EnvoyConfig_To_v1alpha1_EnvoyConfig(in *cilium.EnvoyConfig, out *EnvoyConfig, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	if err := Convert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace(&in.SecretsNamespace, &out.SecretsNamespace, s); err != nil {
+		return err
+	}
+	out.RetryInterval = in.RetryInterval
+	return nil
+}
+
+// Convert_cilium_EnvoyConfig_To_v1alpha1_EnvoyConfig is an autogenerated conversion function.
+func Convert_cilium_EnvoyConfig_To_v1alpha1_EnvoyConfig(in *cilium.EnvoyConfig, out *EnvoyConfig, s conversion.Scope) error {
+	return autoConvert_cilium_EnvoyConfig_To_v1alpha1_EnvoyConfig(in, out, s)
+}
+
+func autoConvert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace(in *EnvoyConfigSecretsNamespace, out *cilium.EnvoyConfigSecretsNamespace, s conversion.Scope) error {
+	out.Create = in.Create
+	out.Name = in.Name
+	return nil
+}
+
+// Convert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace is an autogenerated conversion function.
+func Convert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace(in *EnvoyConfigSecretsNamespace, out *cilium.EnvoyConfigSecretsNamespace, s conversion.Scope) error {
+	return autoConvert_v1alpha1_EnvoyConfigSecretsNamespace_To_cilium_EnvoyConfigSecretsNamespace(in, out, s)
+}
+
+func autoConvert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace(in *cilium.EnvoyConfigSecretsNamespace, out *EnvoyConfigSecretsNamespace, s conversion.Scope) error {
+	out.Create = in.Create
+	out.Name = in.Name
+	return nil
+}
+
+// Convert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace is an autogenerated conversion function.
+func Convert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace(in *cilium.EnvoyConfigSecretsNamespace, out *EnvoyConfigSecretsNamespace, s conversion.Scope) error {
+	return autoConvert_cilium_EnvoyConfigSecretsNamespace_To_v1alpha1_EnvoyConfigSecretsNamespace(in, out, s)
+}
+
+func autoConvert_v1alpha1_GatewayAPI_To_cilium_GatewayAPI(in *GatewayAPI, out *cilium.GatewayAPI, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.EnableProxyProtocol = in.EnableProxyProtocol
+	out.EnableAppProtocol = in.EnableAppProtocol
+	out.EnableAlpn = in.EnableAlpn
+	out.XffNumTrustedHops = in.XffNumTrustedHops
+	out.ExternalTrafficPolicy = in.ExternalTrafficPolicy
+	if err := Convert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass(&in.GatewayClass, &out.GatewayClass, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace(&in.SecretsNamespace, &out.SecretsNamespace, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork(&in.HostNetwork, &out.HostNetwork, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_GatewayAPI_To_cilium_GatewayAPI is an autogenerated conversion function.
+func Convert_v1alpha1_GatewayAPI_To_cilium_GatewayAPI(in *GatewayAPI, out *cilium.GatewayAPI, s conversion.Scope) error {
+	return autoConvert_v1alpha1_GatewayAPI_To_cilium_GatewayAPI(in, out, s)
+}
+
+func autoConvert_cilium_GatewayAPI_To_v1alpha1_GatewayAPI(in *cilium.GatewayAPI, out *GatewayAPI, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.EnableProxyProtocol = in.EnableProxyProtocol
+	out.EnableAppProtocol = in.EnableAppProtocol
+	out.EnableAlpn = in.EnableAlpn
+	out.XffNumTrustedHops = in.XffNumTrustedHops
+	out.ExternalTrafficPolicy = in.ExternalTrafficPolicy
+	if err := Convert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass(&in.GatewayClass, &out.GatewayClass, s); err != nil {
+		return err
+	}
+	if err := Convert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace(&in.SecretsNamespace, &out.SecretsNamespace, s); err != nil {
+		return err
+	}
+	if err := Convert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork(&in.HostNetwork, &out.HostNetwork, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_cilium_GatewayAPI_To_v1alpha1_GatewayAPI is an autogenerated conversion function.
+func Convert_cilium_GatewayAPI_To_v1alpha1_GatewayAPI(in *cilium.GatewayAPI, out *GatewayAPI, s conversion.Scope) error {
+	return autoConvert_cilium_GatewayAPI_To_v1alpha1_GatewayAPI(in, out, s)
+}
+
+func autoConvert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass(in *GatewayAPIGatewayClass, out *cilium.GatewayAPIGatewayClass, s conversion.Scope) error {
+	out.Create = in.Create
+	return nil
+}
+
+// Convert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass is an autogenerated conversion function.
+func Convert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass(in *GatewayAPIGatewayClass, out *cilium.GatewayAPIGatewayClass, s conversion.Scope) error {
+	return autoConvert_v1alpha1_GatewayAPIGatewayClass_To_cilium_GatewayAPIGatewayClass(in, out, s)
+}
+
+func autoConvert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass(in *cilium.GatewayAPIGatewayClass, out *GatewayAPIGatewayClass, s conversion.Scope) error {
+	out.Create = in.Create
+	return nil
+}
+
+// Convert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass is an autogenerated conversion function.
+func Convert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass(in *cilium.GatewayAPIGatewayClass, out *GatewayAPIGatewayClass, s conversion.Scope) error {
+	return autoConvert_cilium_GatewayAPIGatewayClass_To_v1alpha1_GatewayAPIGatewayClass(in, out, s)
+}
+
+func autoConvert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork(in *GatewayAPIHostNetwork, out *cilium.GatewayAPIHostNetwork, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	if err := Convert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes(&in.Nodes, &out.Nodes, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork is an autogenerated conversion function.
+func Convert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork(in *GatewayAPIHostNetwork, out *cilium.GatewayAPIHostNetwork, s conversion.Scope) error {
+	return autoConvert_v1alpha1_GatewayAPIHostNetwork_To_cilium_GatewayAPIHostNetwork(in, out, s)
+}
+
+func autoConvert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork(in *cilium.GatewayAPIHostNetwork, out *GatewayAPIHostNetwork, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	if err := Convert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes(&in.Nodes, &out.Nodes, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork is an autogenerated conversion function.
+func Convert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork(in *cilium.GatewayAPIHostNetwork, out *GatewayAPIHostNetwork, s conversion.Scope) error {
+	return autoConvert_cilium_GatewayAPIHostNetwork_To_v1alpha1_GatewayAPIHostNetwork(in, out, s)
+}
+
+func autoConvert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes(in *GatewayAPINodes, out *cilium.GatewayAPINodes, s conversion.Scope) error {
+	out.MatchLabels = *(*map[string]string)(unsafe.Pointer(&in.MatchLabels))
+	return nil
+}
+
+// Convert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes is an autogenerated conversion function.
+func Convert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes(in *GatewayAPINodes, out *cilium.GatewayAPINodes, s conversion.Scope) error {
+	return autoConvert_v1alpha1_GatewayAPINodes_To_cilium_GatewayAPINodes(in, out, s)
+}
+
+func autoConvert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes(in *cilium.GatewayAPINodes, out *GatewayAPINodes, s conversion.Scope) error {
+	out.MatchLabels = *(*map[string]string)(unsafe.Pointer(&in.MatchLabels))
+	return nil
+}
+
+// Convert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes is an autogenerated conversion function.
+func Convert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes(in *cilium.GatewayAPINodes, out *GatewayAPINodes, s conversion.Scope) error {
+	return autoConvert_cilium_GatewayAPINodes_To_v1alpha1_GatewayAPINodes(in, out, s)
+}
+
+func autoConvert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace(in *GatewayAPISecretNamespace, out *cilium.GatewayAPISecretNamespace, s conversion.Scope) error {
+	out.Create = in.Create
+	out.Name = in.Name
+	out.Sync = in.Sync
+	return nil
+}
+
+// Convert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace is an autogenerated conversion function.
+func Convert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace(in *GatewayAPISecretNamespace, out *cilium.GatewayAPISecretNamespace, s conversion.Scope) error {
+	return autoConvert_v1alpha1_GatewayAPISecretNamespace_To_cilium_GatewayAPISecretNamespace(in, out, s)
+}
+
+func autoConvert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace(in *cilium.GatewayAPISecretNamespace, out *GatewayAPISecretNamespace, s conversion.Scope) error {
+	out.Create = in.Create
+	out.Name = in.Name
+	out.Sync = in.Sync
+	return nil
+}
+
+// Convert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace is an autogenerated conversion function.
+func Convert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace(in *cilium.GatewayAPISecretNamespace, out *GatewayAPISecretNamespace, s conversion.Scope) error {
+	return autoConvert_cilium_GatewayAPISecretNamespace_To_v1alpha1_GatewayAPISecretNamespace(in, out, s)
+}
+
 func autoConvert_v1alpha1_Hubble_To_cilium_Hubble(in *Hubble, out *cilium.Hubble, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	return nil
@@ -340,6 +598,8 @@ func autoConvert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfi
 	out.SnatToUpstreamDNS = (*cilium.SnatToUpstreamDNS)(unsafe.Pointer(in.SnatToUpstreamDNS))
 	out.SnatOutOfCluster = (*cilium.SnatOutOfCluster)(unsafe.Pointer(in.SnatOutOfCluster))
 	out.BGPControlPlane = (*cilium.BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
+	out.EnvoyConfig = (*cilium.EnvoyConfig)(unsafe.Pointer(in.EnvoyConfig))
+	out.GatewayAPI = (*cilium.GatewayAPI)(unsafe.Pointer(in.GatewayAPI))
 	return nil
 }
 
@@ -369,6 +629,8 @@ func autoConvert_cilium_NetworkConfig_To_v1alpha1_NetworkConfig(in *cilium.Netwo
 	out.SnatToUpstreamDNS = (*SnatToUpstreamDNS)(unsafe.Pointer(in.SnatToUpstreamDNS))
 	out.SnatOutOfCluster = (*SnatOutOfCluster)(unsafe.Pointer(in.SnatOutOfCluster))
 	out.BGPControlPlane = (*BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
+	out.EnvoyConfig = (*EnvoyConfig)(unsafe.Pointer(in.EnvoyConfig))
+	out.GatewayAPI = (*GatewayAPI)(unsafe.Pointer(in.GatewayAPI))
 	return nil
 }
 
