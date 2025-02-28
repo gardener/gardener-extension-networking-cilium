@@ -113,6 +113,13 @@ var defaultGlobalConfig = globalConfig{
 	},
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
+	Encryption: encryption{
+		Enabled:        false,
+		KeyFile:        "keys",
+		MountPath:      "/etc/ipsec",
+		SecretName:     "cilium-ipsec-keys",
+		NodeEncryption: false,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -295,6 +302,14 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.BGPControlPlane != nil && config.BGPControlPlane.Enabled {
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
+	}
+
+	if config.Encryption != nil && config.Encryption.Enabled {
+		globalConfig.Encryption.Enabled = config.Encryption.Enabled
+		globalConfig.Encryption.KeyFile = config.Encryption.KeyFile
+		globalConfig.Encryption.MountPath = config.Encryption.MountPath
+		globalConfig.Encryption.SecretName = config.Encryption.SecretName
+		globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
 	}
 
 	globalConfig.IPAM.Mode = ipamMode

@@ -311,6 +311,20 @@ BGPControlPlane
 <p>BGPControlPlane enables the BGP Control Plane</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>encryption</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">
+Encryption
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Encryption enables transparent network encryption for cilium</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BGPControlPlane">BGPControlPlane
@@ -426,6 +440,82 @@ bool
 </em>
 </td>
 <td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">Encryption
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>Encryption enables transparent network encryption for cilium</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>keyFile</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KeyFile is the name of the key file inside the Kubernetes secret configured via SecretName</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mountPath</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MountPath is the path where to mount the secret inside the Cilium pod</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SecretName is the name of the Kubernetes secret containing the encryption</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeEncryption</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>NodeEncryption enables encryption for pure node to node traffic</p>
 </td>
 </tr>
 </tbody>
