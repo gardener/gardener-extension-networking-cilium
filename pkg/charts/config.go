@@ -49,6 +49,7 @@ type globalConfig struct {
 	BGPControlPlane          bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash            string                                  `json:"configMapHash"`
 	ConfigMapLabelPrefixHash string                                  `json:"configMapLabelPrefixHash"`
+	Encryption               encryption                              `json:"encryption"`
 }
 
 // etcd related configuration for cilium
@@ -178,4 +179,13 @@ type snatOutOfCluster struct {
 // bgpControlPlane enables the BGP Control Plane
 type bgpControlPlane struct {
 	Enabled bool `json:"enabled"`
+}
+
+// encryption enables transparent network encryption for cilium
+type encryption struct {
+	Enabled        bool   `json:"enabled"`
+	KeyFile        string `json:"keyFile"`
+	MountPath      string `json:"mountPath"`
+	SecretName     string `json:"secretName"`
+	NodeEncryption bool   `json:"nodeEncryption"`
 }
