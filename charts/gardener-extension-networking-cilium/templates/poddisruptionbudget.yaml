@@ -12,6 +12,4 @@ spec:
     matchLabels:
       app.kubernetes.io/name: gardener-extension-networking-cilium
       app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if semverCompare ">= 1.26-0" .Capabilities.KubeVersion.Version }}
   unhealthyPodEvictionPolicy: AlwaysAllow
-{{- end }}
