@@ -14,12 +14,9 @@ import (
 
 	"github.com/gardener/gardener-extension-networking-cilium/test/templates"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/test/framework"
-	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -60,17 +57,6 @@ func testNetwork(ctx context.Context, f *framework.ShootCreationFramework) bool 
 		templates.NetworkTestNamespace,
 		f.Shoot.Spec.Kubernetes.Version,
 	}
-
-	var err error
-	f.GardenClient, err = kubernetes.NewClientFromFile("", f.ShootFramework.Config.GardenerConfig.GardenerKubeconfig,
-		kubernetes.WithClientOptions(client.Options{Scheme: kubernetes.GardenScheme}),
-		kubernetes.WithAllowedUserFields([]string{kubernetes.AuthTokenFile}),
-		kubernetes.WithDisabledCachedClient(),
-	)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-
-	f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 	resourceDir, err := filepath.Abs(filepath.Join(".."))
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
