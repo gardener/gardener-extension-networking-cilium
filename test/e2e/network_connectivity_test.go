@@ -13,11 +13,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/utils/ptr"
 
 	"github.com/gardener/gardener-extension-networking-cilium/test/templates"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
-	gardenerutils "github.com/gardener/gardener/pkg/utils/gardener"
 	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -46,26 +45,14 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 			f.Shoot.Spec.Kubernetes.Version,
 		}
 
-		var err error
-		f.GardenClient, err = kubernetes.NewClientFromFile("", f.ShootFramework.Config.GardenerConfig.GardenerKubeconfig,
-			kubernetes.WithClientOptions(client.Options{Scheme: kubernetes.GardenScheme}),
-			kubernetes.WithAllowedUserFields([]string{kubernetes.AuthTokenFile}),
-			kubernetes.WithDisabledCachedClient(),
-		)
-		Expect(err).NotTo(HaveOccurred())
-
-		shootKubeconfigSecret := &corev1.Secret{}
-		gardenClient := f.GardenClient.Client()
-		err = gardenClient.Get(ctx, client.ObjectKey{Namespace: f.Shoot.Namespace, Name: gardenerutils.ComputeShootProjectResourceName(f.Shoot.Name, gardenerutils.ShootProjectSecretSuffixKubeconfig)}, shootKubeconfigSecret)
-		Expect(err).NotTo(HaveOccurred())
-
-		f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
+		const expirationSeconds int64 = 1 * 3600 // 1h
+		shootAdminKubeconfig, err := access.RequestAdminKubeconfigForShoot(ctx, f.GardenClient, f.Shoot, ptr.To(expirationSeconds))
 		Expect(err).NotTo(HaveOccurred())
 
 		newShootKubeconfigSecret := &corev1.Secret{ObjectMeta: v1.ObjectMeta{
 			Name:      "kubeconfig",
 			Namespace: values.HelmDeployNamespace},
-			Data: map[string][]byte{"kubeconfig": shootKubeconfigSecret.Data["kubeconfig"]},
+			Data: map[string][]byte{"kubeconfig": shootAdminKubeconfig},
 		}
 		err = f.ShootFramework.ShootClient.Client().Create(ctx, newShootKubeconfigSecret)
 		Expect(err).NotTo(HaveOccurred())
