@@ -61,7 +61,6 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 					RegistryPullQPS:     pointer.Int32(10),
 					RegistryBurst:       pointer.Int32(20),
 				},
-				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{},
 				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
 					Mode:    ptr.To(gardencorev1beta1.ProxyModeIPTables),
 					Enabled: pointer.Bool(false),
