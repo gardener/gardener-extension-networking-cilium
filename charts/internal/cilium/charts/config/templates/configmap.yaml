@@ -32,8 +32,7 @@ metadata:
 data:
 
   # Identity allocation mode selects how identities are shared between cilium
-  # nodes by setting how they are stored. The options are "crd", "kvstore" or
-  # "doublewrite-readkvstore" / "doublewrite-readcrd".
+  # nodes by setting how they are stored. The options are "crd" or "kvstore".
   # - "crd" stores identities in kubernetes as CRDs (custom resource definition).
   #   These can be queried with:
   #     kubectl get ciliumid
@@ -42,9 +41,6 @@ data:
   #   backend. Upgrades from these older cilium versions should continue using
   #   the kvstore by commenting out the identity-allocation-mode below, or
   #   setting it to "kvstore".
-  # - "doublewrite" modes store identities in both the kvstore and CRDs. This is useful
-  #   for seamless migrations from the kvstore mode to the crd mode. Consult the
-  #   documentation for more information on how to perform the migration.
   identity-allocation-mode: {{ .Values.global.identityAllocationMode }}
 {{- if .Values.global.identityHeartbeatTimeout }}
   identity-heartbeat-timeout: "{{ .Values.global.identityHeartbeatTimeout }}"
@@ -239,16 +235,6 @@ data:
   bpf-lb-external-clusterip: "{{ .Values.global.bpf.lbExternalClusterip }}"
 {{- end }}
 
-{{- if .Values.global.bpf.lbSourceRangeAllTypes }}
-  bpf-lb-source-range-all-types: {{ .Values.global.bpf.lbSourceRangeAllTypes | quote }}
-{{- end }}
-{{- if .Values.global.bpf.lbAlgorithmAnnotation }}
-  bpf-lb-algorithm-annotation: {{ .Values.global.bpf.lbAlgorithmAnnotation | quote }}
-{{- end }}
-{{- if .Values.global.bpf.lbModeAnnotation }}
-  bpf-lb-mode-annotation: {{ .Values.global.bpf.lbModeAnnotation | quote }}
-{{- end }}
-
   bpf-events-drop-enabled: "true"
   bpf-events-policy-verdict-enabled: "true"
   bpf-events-trace-enabled: "true"
@@ -337,17 +323,12 @@ data:
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
   enable-tcx: "true"
   datapath-mode: "veth"
-{{- if and .Values.global.ipv4.enabled (and (not .Values.global.snatOutOfCluster.enabled) (not .Values.global.snatToUpstreamDNS.enabled )) }}
+{{- if and (not .Values.global.snatOutOfCluster.enabled) (not .Values.global.snatToUpstreamDNS.enabled ) }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 {{- end }}
   enable-masquerade-to-route-source: "false"
 
   enable-xt-socket-fallback: {{ .Values.global.enableXTSocketFallback | quote }}
-
-{{- if .Values.global.iptablesRandomFully }}
-  iptables-random-fully: {{ .Values.global.iptablesRandomFully | quote }}
-{{- end }}
-
   install-iptables-rules: {{ .Values.global.installIptablesRules | quote }}
   install-no-conntrack-iptables-rules: {{ .Values.global.installNoConntrackIptablesRules | quote }}
 
@@ -527,7 +508,6 @@ data:
 {{- if .Values.global.enableK8SNetworkpolicy }}
   enable-k8s-networkpolicy: {{ .Values.global.enableK8SNetworkpolicy | quote }}
 {{- end }}
-  enable-endpoint-lockdown-on-policy-overflow: {{ .Values.global.endpointLockdownOnMapOverflow | quote }}
 {{- if and .Values.global.pprof .Values.global.pprof.enabled }}
   pprof: {{ .Values.global.pprof.enabled | quote }}
 {{- end }}
@@ -561,9 +541,6 @@ data:
 {{- end }}
 {{- if hasKey .Values "healthChecking" }}
   enable-health-checking: {{ .Values.healthChecking | quote }}
-{{- end }}
-{{- if .Values.global.healthCheckICMPFailureThreshold }}
-  health-check-icmp-failure-threshold: {{ .Values.global.healthCheckICMPFailureThreshold | quote }}
 {{- end }}
 {{- if .Values.global.wellKnownIdentities.enabled }}
   enable-well-known-identities: "true"
@@ -624,9 +601,6 @@ data:
   disable-iptables-feeder-rules: {{ .Values.disableIptablesFeederRules | join " " | quote }}
 {{- end }}
   ipam: {{ .Values.global.ipam.mode }}
-{{- if .Values.global.ipam.multiPoolPreAllocation }}
-  ipam-multi-pool-pre-allocation: {{ .Values.global.ipam.multiPoolPreAllocation | quote }}
-{{- end }}
 {{- if (eq .Values.global.ipam.mode "kubernetes" )}}
   {{- if .Values.global.ipv4.enabled }}
   k8s-require-ipv4-pod-cidr: "true"
@@ -664,6 +638,8 @@ data:
   cgroup-root: "/run/cilium/cgroupv2"
   enable-k8s-terminating-endpoint: "true"
   enable-sctp: "false"
+  k8s-client-qps: "10"
+  k8s-client-burst: "20"
   annotate-k8s-node: "true"
   remove-cilium-node-taints: "true"
   set-cilium-node-taints: "true"
@@ -674,7 +650,7 @@ data:
   dnsproxy-socket-linger-timeout: "10"
   tofqdns-dns-reject-response-code: "refused"
   tofqdns-enable-dns-compression: "true"
-  tofqdns-endpoint-max-ip-per-hostname: "1000"
+  tofqdns-endpoint-max-ip-per-hostname: "50"
   tofqdns-idle-connection-grace-period: "0s"
   tofqdns-max-deferred-connection-deletes: "10000"
   tofqdns-proxy-response-max-delay: "100ms"
@@ -694,12 +670,9 @@ data:
   proxy-max-requests-per-connection: "0"
   proxy-max-connection-duration-seconds: "0"
   proxy-idle-timeout-seconds: "60"
-  proxy-max-concurrent-retries: "128"
-  http-retry-count: "3"
 
   external-envoy-proxy: "true"
   envoy-base-id: "0"
-  envoy-access-log-buffer-size: "4096"
 
   envoy-keep-cap-netbindservice: "false"
 
@@ -708,11 +681,6 @@ data:
 
   nat-map-stats-entries: "32"
   nat-map-stats-interval: "30s"
-  enable-internal-traffic-policy: "true"
-  enable-lb-ipam: "true"
-  enable-non-default-deny-policies: "true"
-  enable-source-ip-verification: "true"
-
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.

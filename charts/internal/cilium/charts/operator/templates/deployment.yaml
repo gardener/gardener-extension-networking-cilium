@@ -123,9 +123,6 @@ spec:
         - name: cilium-config-path
           mountPath: /tmp/cilium/config-map
           readOnly: true
-        - name: label-prefix
-          mountPath: /tmp/cilium/label-prefix
-          readOnly: true
 {{- if .Values.global.kubeConfigPath }}
         - name: kube-config
           mountPath: {{ .Values.global.kubeConfigPath }}
@@ -150,10 +147,6 @@ spec:
       - name: cilium-config-path
         configMap:
           name: cilium-config
-      - name: label-prefix
-        configMap:
-          defaultMode: 420
-          name: label-prefix-conf
 {{- if .Values.global.kubeConfigPath }}
       - hostPath:
           path: {{ .Values.global.kubeConfigPath }}

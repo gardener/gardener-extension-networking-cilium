@@ -152,13 +152,6 @@ rules:
   - delete
   - patch
 - apiGroups:
-  - cilium.io
-  resources:
-  - ciliumbgpclusterconfigs/status
-  - ciliumbgppeerconfigs/status
-  verbs:
-  - update
-- apiGroups:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
@@ -204,7 +197,6 @@ rules:
   - ciliumbgppeeringpolicies
   - ciliumbgpclusterconfigs
   - ciliumbgpnodeconfigoverrides
-  - ciliumbgppeerconfigs
   verbs:
   - get
   - list

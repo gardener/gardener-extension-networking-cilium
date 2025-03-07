@@ -38,9 +38,6 @@ global:
   # pullPolicy is the container image pull policy
   pullPolicy: IfNotPresent
 
-  # -- Configure iptables--random-fully. Disabled by default. View https://github.com/cilium/cilium/issues/13037 for more information.
-  iptablesRandomFully: true
-
   hubble:
     socketPath: "/var/run/cilium/hubble.sock"
     clusterName: default
@@ -302,23 +299,6 @@ global:
     # optimization for nodeport reverse NAT handling.
     lbExternalClusterip: "false"
 
-    # -- (bool) Enable loadBalancerSourceRanges CIDR filtering for all service
-    # types, not just LoadBalancer services. The corresponding NodePort and
-    # ClusterIP (if enabled for cluster-external traffic) will also apply the
-    # CIDR filter.
-    # @default -- `false`
-    lbSourceRangeAllTypes: false
-
-    # -- (bool) Enable the option to define the load balancing algorithm on
-    # a per-service basis through service.cilium.io/lb-algorithm annotation.
-    # @default -- `false`
-    lbAlgorithmAnnotation: false
-
-    # -- (bool) Enable the option to define the load balancing mode (SNAT or DSR)
-    # on a per-service basis through service.cilium.io/forwarding-mode annotation.
-    # @default -- `false`
-    lbModeAnnotation: false
-
   # Enable socket-based LB for E/W traffic
   bpfSocketLB:
     enabled: false
@@ -472,13 +452,8 @@ global:
 
   enableK8SNetworkpolicy: true
 
-  # -- Enable endpoint lockdown on policy map overflow.
-  endpointLockdownOnMapOverflow: false
-
   endpointHealthChecking:
     enabled: true
-  # -- Number of ICMP requests sent for each health check before marking a node or endpoint unreachable.
-  healthCheckICMPFailureThreshold: 3
 
   affinity:
     podAntiAffinity:
