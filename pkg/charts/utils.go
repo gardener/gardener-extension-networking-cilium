@@ -304,12 +304,22 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
 	}
 
-	if config.Encryption != nil && config.Encryption.Enabled {
-		globalConfig.Encryption.Enabled = config.Encryption.Enabled
-		globalConfig.Encryption.KeyFile = config.Encryption.KeyFile
-		globalConfig.Encryption.MountPath = config.Encryption.MountPath
-		globalConfig.Encryption.SecretName = config.Encryption.SecretName
-		globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
+	if config.Encryption != nil {
+		if config.Encryption.Enabled {
+			globalConfig.Encryption.Enabled = config.Encryption.Enabled
+		}
+		if config.Encryption.KeyFile != "" {
+			globalConfig.Encryption.KeyFile = config.Encryption.KeyFile
+		}
+		if config.Encryption.MountPath != "" {
+			globalConfig.Encryption.MountPath = config.Encryption.MountPath
+		}
+		if config.Encryption.SecretName != "" {
+			globalConfig.Encryption.SecretName = config.Encryption.SecretName
+		}
+		if config.Encryption.NodeEncryption {
+			globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
+		}
 	}
 
 	globalConfig.IPAM.Mode = ipamMode
