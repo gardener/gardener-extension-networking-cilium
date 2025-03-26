@@ -169,6 +169,24 @@ type Encryption struct {
 	// NodeEncryption enables encryption for pure node to node traffic
 	// +optional
 	NodeEncryption bool `json:"nodeEncryption,omitempty"`
+	// IPSec config for encryption
+	// +optional
+	IPSec *IPSec `json:"ipsec,omitempty"`
+}
+
+type IPSec struct {
+	// KeyID is the key ID to use for the encryption key
+	// +optional
+	KeyID string `json:"keyId,omitempty"`
+	// EncryptionAlgorithms is a comma separated list of encryption algorithms to use
+	// +optional
+	EncryptionAlgorithms string `json:"encryptionAlgorithms,omitempty"`
+	// PreSharedKey is a 64 character hex string, if not provided a random key will be generated
+	// +optional
+	PreSharedKey string `json:"preSharedKey,omitempty"`
+	// KeySize is the size of the encryption key in bits
+	// +optional
+	KeySize int `json:"keySize,omitempty"`
 }
 
 // +genclient

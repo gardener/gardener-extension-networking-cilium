@@ -518,6 +518,20 @@ bool
 <p>NodeEncryption enables encryption for pure node to node traffic</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>ipsec</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.IPSec">
+IPSec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IPSec config for encryption</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Hubble">Hubble
@@ -546,6 +560,72 @@ bool
 </td>
 <td>
 <p>Enabled indicates whether hubble is enabled or not.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.IPSec">IPSec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">Encryption</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>keyId</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KeyID is the key ID to use for the encryption key</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>encryptionAlgorithms</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EncryptionAlgorithms is a comma separated list of encryption algorithms to use</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>preSharedKey</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PreSharedKey is a 64 character hex string, if not provided a random key will be generated</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>keySize</code></br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KeySize is the size of the encryption key in bits</p>
 </td>
 </tr>
 </tbody>

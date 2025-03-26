@@ -168,6 +168,15 @@ type Encryption struct {
 	MountPath      string
 	SecretName     string
 	NodeEncryption bool
+	IPSec          *IPSec
+}
+
+// IPSec configuration for cilium
+type IPSec struct {
+	KeyID                string
+	EncryptionAlgorithms string
+	PreSharedKey         string
+	KeySize              int
 }
 
 // +genclient

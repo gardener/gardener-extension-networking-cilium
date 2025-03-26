@@ -188,4 +188,13 @@ type encryption struct {
 	MountPath      string `json:"mountPath"`
 	SecretName     string `json:"secretName"`
 	NodeEncryption bool   `json:"nodeEncryption"`
+	IPSec          *ipSec `json:"ipsec"`
+}
+
+// IPSec config for encryption
+type ipSec struct {
+	KeyID                string `json:"keyId"`
+	EncryptionAlgorithms string `json:"encryptionAlgorithms"`
+	PreSharedKey         string `json:"preSharedKey"`
+	KeySize              int    `json:"keySize"`
 }

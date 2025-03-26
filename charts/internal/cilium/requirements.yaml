@@ -7,4 +7,5 @@ dependencies:
     condition: requirements.hubble.enabled
   - name: hubble-relay
     condition: requirements.hubble.enabled
-
+  - name: encryption
+    condition: global.encryption.enabled

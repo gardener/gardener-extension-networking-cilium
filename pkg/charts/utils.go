@@ -119,6 +119,12 @@ var defaultGlobalConfig = globalConfig{
 		MountPath:      "/etc/ipsec",
 		SecretName:     "cilium-ipsec-keys",
 		NodeEncryption: false,
+		IPSec: &ipSec{
+			KeyID:                "3+",
+			EncryptionAlgorithms: "rfc4106(gcm(aes))",
+			PreSharedKey:         "",
+			KeySize:              128,
+		},
 	},
 }
 
@@ -319,6 +325,20 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 		if config.Encryption.NodeEncryption {
 			globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
+		}
+		if config.Encryption.IPSec != nil {
+			if config.Encryption.IPSec.KeyID != "" {
+				globalConfig.Encryption.IPSec.KeyID = config.Encryption.IPSec.KeyID
+			}
+			if config.Encryption.IPSec.EncryptionAlgorithms != "" {
+				globalConfig.Encryption.IPSec.EncryptionAlgorithms = config.Encryption.IPSec.EncryptionAlgorithms
+			}
+			if config.Encryption.IPSec.PreSharedKey != "" {
+				globalConfig.Encryption.IPSec.PreSharedKey = config.Encryption.IPSec.PreSharedKey
+			}
+			if config.Encryption.IPSec.KeySize != 0 {
+				globalConfig.Encryption.IPSec.KeySize = config.Encryption.IPSec.KeySize
+			}
 		}
 	}
 
