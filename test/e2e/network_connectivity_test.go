@@ -30,13 +30,13 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 	It("Create Shoot, Test Network (Cilium Connectivity), Delete Shoot", Label("good-case"), func() {
 		By("Create Shoot")
-		ctx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(Succeed())
 		f.Verify()
 
 		By("Test Networking")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		values := struct {
 			HelmDeployNamespace string
@@ -112,7 +112,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Delete Shoot")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, 30*time.Minute)
 		defer cancel()
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 

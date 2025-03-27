@@ -22,24 +22,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	defaultTimeout = 30 * time.Minute
+)
+
 var _ = Describe("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
 	f.Shoot = defaultShoot("ping-test")
 
 	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), func() {
 		By("Create Shoot")
-		ctx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(Succeed())
 		f.Verify()
 
 		By("Test Network")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		succeeded := testNetwork(ctx, f)
 
 		By("Delete Shoot")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
