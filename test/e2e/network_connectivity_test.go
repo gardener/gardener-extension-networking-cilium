@@ -112,7 +112,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Delete Shoot")
-		ctx, cancel = context.WithTimeout(parentCtx, 30*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
