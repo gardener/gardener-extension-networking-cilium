@@ -88,3 +88,9 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 		},
 	}
 }
+
+func encryptedShoot(generateName string) *gardencorev1beta1.Shoot {
+	encryptedShoot := defaultShoot(generateName)
+	encryptedShoot.Spec.Networking.ProviderConfig = &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true},"encryption":{"enabled":true}}`)}
+	return encryptedShoot
+}
