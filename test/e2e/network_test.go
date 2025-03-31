@@ -14,12 +14,13 @@ import (
 
 	"github.com/gardener/gardener-extension-networking-cilium/test/templates"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/test/framework"
-	"github.com/gardener/gardener/test/utils/access"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+const (
+	defaultTimeout = 30 * time.Minute
 )
 
 var _ = Describe("Network Extension Tests", Label("Network"), func() {
@@ -28,18 +29,18 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), func() {
 		By("Create Shoot")
-		ctx, cancel := context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(Succeed())
 		f.Verify()
 
 		By("Test Network")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		succeeded := testNetwork(ctx, f)
 
 		By("Delete Shoot")
-		ctx, cancel = context.WithTimeout(parentCtx, 15*time.Minute)
+		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
 		Expect(f.DeleteShootAndWaitForDeletion(ctx, f.Shoot)).To(Succeed())
 
@@ -56,17 +57,6 @@ func testNetwork(ctx context.Context, f *framework.ShootCreationFramework) bool 
 		templates.NetworkTestNamespace,
 		f.Shoot.Spec.Kubernetes.Version,
 	}
-
-	var err error
-	f.GardenClient, err = kubernetes.NewClientFromFile("", f.ShootFramework.Config.GardenerConfig.GardenerKubeconfig,
-		kubernetes.WithClientOptions(client.Options{Scheme: kubernetes.GardenScheme}),
-		kubernetes.WithAllowedUserFields([]string{kubernetes.AuthTokenFile}),
-		kubernetes.WithDisabledCachedClient(),
-	)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-
-	f.ShootFramework.ShootClient, err = access.CreateShootClientFromAdminKubeconfig(ctx, f.GardenClient, f.Shoot)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 	resourceDir, err := filepath.Abs(filepath.Join(".."))
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())

@@ -34,7 +34,7 @@ func defaultShootCreationFramework() *framework.ShootCreationFramework {
 		GardenerConfig: &framework.GardenerConfig{
 			ProjectNamespace:   projectNamespace,
 			GardenerKubeconfig: kubeconfigPath,
-			SkipAccessingShoot: true,
+			SkipAccessingShoot: false,
 			CommonConfig:       &framework.CommonConfig{},
 		},
 	})
@@ -46,6 +46,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			Name: generateName,
 			Annotations: map[string]string{
 				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds: "0",
+				v1beta1constants.ShootDisableIstioTLSTermination: "true",
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
@@ -53,8 +54,8 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			SecretBindingName: pointer.String("local"),
 			CloudProfileName:  pointer.String("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version:                     "1.26.0",
-				EnableStaticTokenKubeconfig: pointer.Bool(true),
+				Version:                     "1.30.0",
+				EnableStaticTokenKubeconfig: pointer.Bool(false),
 				Kubelet: &gardencorev1beta1.KubeletConfig{
 					SerializeImagePulls: pointer.Bool(false),
 					RegistryPullQPS:     pointer.Int32(10),
@@ -68,7 +69,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			},
 			Networking: &gardencorev1beta1.Networking{
 				Type:           pointer.String("cilium"),
-				Nodes: pointer.String("10.10.0.0/16"),
+				Nodes:          pointer.String("10.10.0.0/16"),
 				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true}}`)},
 			},
 			Provider: gardencorev1beta1.Provider{
