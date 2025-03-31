@@ -75,14 +75,14 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(shootCiliumIPSecKeysSecret).NotTo(BeNil())
 		Expect(shootCiliumIPSecKeysSecret.Data).NotTo(BeEmpty())
-		Expect(shootCiliumIPSecKeysSecret.Data["key"]).NotTo(BeEmpty())
+		Expect(shootCiliumIPSecKeysSecret.Data["keys"]).NotTo(BeEmpty())
 
 		shootCiliumConfigMap := &corev1.ConfigMap{}
 		err = f.ShootFramework.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: values.HelmDeployNamespace, Name: "cilium-config"}, shootCiliumConfigMap)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(shootCiliumConfigMap).NotTo(BeNil())
 		Expect(shootCiliumConfigMap.Data).NotTo(BeEmpty())
-		Expect(shootCiliumConfigMap.Data["enable-ipsec"]).To(BeTrue())
+		Expect(shootCiliumConfigMap.Data["enable-ipsec"]).To(Equal("true"))
 		Expect(shootCiliumConfigMap.Data["ipsec-key-file"]).To(Equal("/etc/ipsec/keys"))
 
 		resourceDir, err := filepath.Abs(filepath.Join(".."))

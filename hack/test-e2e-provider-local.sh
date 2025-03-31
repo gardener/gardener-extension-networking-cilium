@@ -28,7 +28,7 @@ echo '127.0.0.1 garden.local.gardener.cloud' >> /etc/hosts
 make kind-ha-single-zone-up
 trap '{
   cd "$repo_root/gardener"
-  export_artifacts "gardener-local"
+  export_artifacts "gardener-local-ha-single-zone"
   make kind-ha-single-zone-down
 }' EXIT
 export KUBECONFIG=$repo_root/gardener/example/gardener-local/kind/ha-single-zone/kubeconfig
