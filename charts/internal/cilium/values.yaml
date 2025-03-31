@@ -353,7 +353,7 @@ global:
     # ipsec specific configuration
     # see https://docs.cilium.io/en/stable/security/network/encryption-ipsec/ for further details
     ipsec:
-      keyId: 3+ # by using the `+`, the per-tunnel keys will be derived from the secret
+      keyId: 3 # the keyId is a number between 1 and 15. `+` sign will be added automatically, so per-tunnel keys will be derived
       encryptionAlgorithms: rfc4106(gcm(aes))
       # the preSharedKey is a 64 character hex string. If not provided, one will be generated.
       # preSharedKey: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
