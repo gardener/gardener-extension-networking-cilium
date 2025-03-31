@@ -173,7 +173,7 @@ type Encryption struct {
 
 // IPSec configuration for cilium
 type IPSec struct {
-	KeyID                string
+	KeyID                int
 	EncryptionAlgorithms string
 	PreSharedKey         string
 	KeySize              int

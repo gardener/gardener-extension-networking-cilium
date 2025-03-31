@@ -584,12 +584,12 @@ bool
 <td>
 <code>keyId</code></br>
 <em>
-string
+int
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>KeyID is the key ID to use for the encryption key</p>
+<p>KeyID is the key ID to use for the encryption key. Number between 1 and 15.</p>
 </td>
 </tr>
 <tr>

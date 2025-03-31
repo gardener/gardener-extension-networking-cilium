@@ -120,7 +120,7 @@ var defaultGlobalConfig = globalConfig{
 		SecretName:     "cilium-ipsec-keys",
 		NodeEncryption: false,
 		IPSec: &ipSec{
-			KeyID:                "3+",
+			KeyID:                3,
 			EncryptionAlgorithms: "rfc4106(gcm(aes))",
 			PreSharedKey:         "",
 			KeySize:              128,
@@ -327,7 +327,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 			globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
 		}
 		if config.Encryption.IPSec != nil {
-			if config.Encryption.IPSec.KeyID != "" {
+			if config.Encryption.IPSec.KeyID != 0 {
 				globalConfig.Encryption.IPSec.KeyID = config.Encryption.IPSec.KeyID
 			}
 			if config.Encryption.IPSec.EncryptionAlgorithms != "" {

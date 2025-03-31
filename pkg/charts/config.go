@@ -193,7 +193,7 @@ type encryption struct {
 
 // IPSec config for encryption
 type ipSec struct {
-	KeyID                string `json:"keyId"`
+	KeyID                int    `json:"keyId"`
 	EncryptionAlgorithms string `json:"encryptionAlgorithms"`
 	PreSharedKey         string `json:"preSharedKey"`
 	KeySize              int    `json:"keySize"`

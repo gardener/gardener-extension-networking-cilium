@@ -175,9 +175,9 @@ type Encryption struct {
 }
 
 type IPSec struct {
-	// KeyID is the key ID to use for the encryption key
+	// KeyID is the key ID to use for the encryption key. Number between 1 and 15.
 	// +optional
-	KeyID string `json:"keyId,omitempty"`
+	KeyID int `json:"keyId,omitempty"`
 	// EncryptionAlgorithms is a comma separated list of encryption algorithms to use
 	// +optional
 	EncryptionAlgorithms string `json:"encryptionAlgorithms,omitempty"`
