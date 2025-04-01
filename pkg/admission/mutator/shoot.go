@@ -10,7 +10,7 @@ import (
 
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -36,7 +36,7 @@ func (s *shoot) Mutate(ctx context.Context, new, old client.Object) error {
 	if shoot.Spec.Kubernetes.KubeProxy == nil {
 		shoot.Spec.Kubernetes.KubeProxy = &gardencorev1beta1.KubeProxyConfig{}
 	}
-	shoot.Spec.Kubernetes.KubeProxy.Enabled = pointer.Bool(false)
+	shoot.Spec.Kubernetes.KubeProxy.Enabled = ptr.To(false)
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -56,7 +56,7 @@ func createCiliumPredicate() predicate.Funcs {
 		}
 
 		return shoot.Spec.Networking != nil &&
-			pointer.StringDeref(shoot.Spec.Networking.Type, "") == cilium.ReleaseName
+			ptr.Deref(shoot.Spec.Networking.Type, "") == cilium.ReleaseName
 	}
 
 	return predicate.Funcs{
