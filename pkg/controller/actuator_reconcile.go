@@ -28,7 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gardener/gardener-extension-networking-cilium/charts"
@@ -111,22 +111,22 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 	if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
 		if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
 			// use vxlan as default overlay network
-			networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.VXLan)))
+			networkConfig.TunnelMode = ptr.To(ciliumv1alpha1.VXLan)
 		}
 		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(false)
+			networkConfig.IPv4NativeRoutingCIDREnabled = ptr.To(false)
 		}
 		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-			networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(false)
+			networkConfig.IPv6NativeRoutingCIDREnabled = ptr.To(false)
 		}
 	}
 	if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
-		networkConfig.TunnelMode = (*ciliumv1alpha1.TunnelMode)(pointer.String(string(ciliumv1alpha1.Disabled)))
+		networkConfig.TunnelMode = ptr.To(ciliumv1alpha1.Disabled)
 		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
-			networkConfig.IPv4NativeRoutingCIDREnabled = pointer.Bool(true)
+			networkConfig.IPv4NativeRoutingCIDREnabled = ptr.To(true)
 		}
 		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
-			networkConfig.IPv6NativeRoutingCIDREnabled = pointer.Bool(true)
+			networkConfig.IPv6NativeRoutingCIDREnabled = ptr.To(true)
 		}
 	}
 
@@ -138,7 +138,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 	}
 
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil &&
-		pointer.BoolDeref(cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled, false) &&
+		ptr.Deref(cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled, false) &&
 		cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode != nil &&
 		*cluster.Shoot.Spec.Kubernetes.KubeProxy.Mode == "IPVS" &&
 		v1beta1helper.IsNodeLocalDNSEnabled(cluster.Shoot.Spec.SystemComponents) {

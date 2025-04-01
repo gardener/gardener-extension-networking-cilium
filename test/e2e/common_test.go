@@ -14,7 +14,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
 	"k8s.io/utils/ptr"
 )
 
@@ -46,30 +45,29 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			Name: generateName,
 			Annotations: map[string]string{
 				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds: "0",
-				v1beta1constants.ShootDisableIstioTLSTermination: "true",
+				v1beta1constants.ShootDisableIstioTLSTermination:                    "true",
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
 			Region:            "local",
-			SecretBindingName: pointer.String("local"),
-			CloudProfileName:  pointer.String("local"),
+			SecretBindingName: ptr.To("local"),
+			CloudProfileName:  ptr.To("local"),
 			Kubernetes: gardencorev1beta1.Kubernetes{
 				Version:                     "1.30.0",
-				EnableStaticTokenKubeconfig: pointer.Bool(false),
+				EnableStaticTokenKubeconfig: ptr.To(false),
 				Kubelet: &gardencorev1beta1.KubeletConfig{
-					SerializeImagePulls: pointer.Bool(false),
-					RegistryPullQPS:     pointer.Int32(10),
-					RegistryBurst:       pointer.Int32(20),
+					SerializeImagePulls: ptr.To(false),
+					RegistryPullQPS:     ptr.To(int32(10)),
+					RegistryBurst:       ptr.To(int32(10)),
 				},
-				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{},
 				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
 					Mode:    ptr.To(gardencorev1beta1.ProxyModeIPTables),
-					Enabled: pointer.Bool(false),
+					Enabled: ptr.To(false),
 				},
 			},
 			Networking: &gardencorev1beta1.Networking{
-				Type:           pointer.String("cilium"),
-				Nodes:          pointer.String("10.10.0.0/16"),
+				Type:           ptr.To("cilium"),
+				Nodes:          ptr.To("10.10.0.0/16"),
 				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true}}`)},
 			},
 			Provider: gardencorev1beta1.Provider{
