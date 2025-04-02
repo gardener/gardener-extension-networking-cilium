@@ -113,6 +113,36 @@ var defaultGlobalConfig = globalConfig{
 	},
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
+	EnvoyConfig: envoyConfig{
+		Enabled: false,
+		SecretsNamespace: ciliumv1alpha1.EnvoyConfigSecretsNamespace{
+			Enabled:   true,
+			Namespace: "cilium-secrets",
+		},
+		RetryInterval: "15s",
+	},
+	GatewayAPI: gatewayAPI{
+		Enabled:               false,
+		EnableProxyProtocol:   false,
+		EnableAppProtocol:     false,
+		EnableAlpn:            false,
+		XffNumTrustedHops:     0,
+		ExternalTrafficPolicy: "Cluster",
+		GatewayClass: ciliumv1alpha1.GatewayAPIGatewayClass{
+			Create: "auto",
+		},
+		SecretsNamespace: ciliumv1alpha1.GatewayAPISecretNamespace{
+			Create: true,
+			Name:   "cilium-secrets",
+			Sync:   true,
+		},
+		HostNetwork: ciliumv1alpha1.GatewayAPIHostNetwork{
+			Enabled: false,
+			Nodes: ciliumv1alpha1.GatewayAPINodes{
+				MatchLabels: map[string]string{},
+			},
+		},
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -297,6 +327,23 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
 	}
 
+	if config.EnvoyConfig != nil && config.EnvoyConfig.Enabled {
+		globalConfig.EnvoyConfig.Enabled = config.EnvoyConfig.Enabled
+		globalConfig.EnvoyConfig.SecretsNamespace = config.EnvoyConfig.SecretsNamespace
+		globalConfig.EnvoyConfig.RetryInterval = config.EnvoyConfig.RetryInterval
+	}
+
+	if config.GatewayAPI != nil && config.GatewayAPI.Enabled {
+		globalConfig.GatewayAPI.Enabled = config.GatewayAPI.Enabled
+		globalConfig.GatewayAPI.EnableProxyProtocol = config.GatewayAPI.EnableProxyProtocol
+		globalConfig.GatewayAPI.EnableAppProtocol = config.GatewayAPI.EnableAppProtocol
+		globalConfig.GatewayAPI.EnableAlpn = config.GatewayAPI.EnableAlpn
+		globalConfig.GatewayAPI.XffNumTrustedHops = config.GatewayAPI.XffNumTrustedHops
+		globalConfig.GatewayAPI.ExternalTrafficPolicy = config.GatewayAPI.ExternalTrafficPolicy
+		globalConfig.GatewayAPI.GatewayClass = config.GatewayAPI.GatewayClass
+		globalConfig.GatewayAPI.SecretsNamespace = config.GatewayAPI.SecretsNamespace
+		globalConfig.GatewayAPI.HostNetwork = config.GatewayAPI.HostNetwork
+	}
 	globalConfig.IPAM.Mode = ipamMode
 
 	return requirementsConfig, globalConfig, nil
