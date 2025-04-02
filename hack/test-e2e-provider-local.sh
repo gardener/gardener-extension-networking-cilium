@@ -25,22 +25,21 @@ echo '172.18.255.1 api.enc-con-test.local.external.local.gardener.cloud' >> /etc
 echo '172.18.255.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
 echo '127.0.0.1 garden.local.gardener.cloud' >> /etc/hosts
 
-make kind-ha-single-zone-up
+make kind-up
 trap '{
   cd "$repo_root/gardener"
-  export_artifacts "gardener-local-ha-single-zone"
-  make kind-ha-single-zone-down
+  export_artifacts "gardener-local"
+  make kind-down
 }' EXIT
-export KUBECONFIG=$repo_root/gardener/example/gardener-local/kind/ha-single-zone/kubeconfig
-
-make gardener-ha-single-zone-up
+export KUBECONFIG=$repo_root/gardener/example/gardener-local/kind/local/kubeconfig
+make gardener-up
 
 cd $repo_root
 
 version=$(git rev-parse HEAD)
 make docker-images
 docker tag europe-docker.pkg.dev/gardener-project/public/gardener/extensions/networking-cilium:latest networking-cilium-local:$version
-kind load docker-image networking-cilium-local:$version --name gardener-local-ha-single-zone
+kind load docker-image networking-cilium-local:$version --name gardener-local
 
 mkdir -p $repo_root/tmp
 cp -f $repo_root/example/controller-registration.yaml $repo_root/tmp/controller-registration.yaml
@@ -60,4 +59,4 @@ export GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL=200ms
 ginkgo --timeout=1h --v --progress "$@" $repo_root/test/e2e/...
 
 cd "$repo_root/gardener"
-make gardener-ha-single-zone-down
+make gardener-down
