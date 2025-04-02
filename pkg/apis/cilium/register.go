@@ -37,6 +37,7 @@ var (
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&NetworkConfig{},
+		&NetworkStatus{},
 	)
 	return nil
 }
