@@ -50,9 +50,23 @@ spec:
         - --webhook-config-namespace={{ .Release.Namespace }}
         - --webhook-config-service-port={{ .Values.webhookConfig.servicePort }}
         - --webhook-config-server-port={{ tpl .Values.webhookConfig.serverPort . }}
+        - --metrics-bind-address=:{{ tpl .Values.metrics.port . }}
+        - --health-bind-address=:{{ tpl .Values.healthPort . }}
         - --gardener-version={{ .Values.gardener.version }}
         securityContext:
           allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ tpl .Values.healthPort . }}
+            scheme: HTTP
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ tpl .Values.healthPort . }}
+            scheme: HTTP
+          initialDelaySeconds: 5
         env:
         - name: LEADER_ELECTION_NAMESPACE
           valueFrom:
