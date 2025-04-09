@@ -59,6 +59,9 @@ metrics:
   enableScraping: true
   port: "{{ index .Values.usablePorts 0 }}"
 
+healthPort: "{{ index .Values.usablePorts 2 }}"
+
 usablePorts:
 - 8080  # metrics
 - 10250 # webhook server
+- 8081  # healthcheck
