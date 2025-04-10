@@ -1,15 +1,13 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: gardener-extension-networking-cilium
+  name: {{ include "name" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: gardener-extension-networking-cilium
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "labels" . | indent 4 }}
 spec:
   maxUnavailable: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: gardener-extension-networking-cilium
-      app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "labels" . | indent 6 }}
   unhealthyPodEvictionPolicy: AlwaysAllow

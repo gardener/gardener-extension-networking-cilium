@@ -22,8 +22,8 @@ import (
 
 var (
 	defaultSyncPeriod = time.Second * 30
-	// AddOptions are the default DefaultAddArgs for AddToManager.
-	AddOptions = healthcheck.DefaultAddArgs{
+	// DefaultAddOptions are the default DefaultAddArgs for AddToManager.
+	DefaultAddOptions = healthcheck.DefaultAddArgs{
 		HealthCheckConfig: healthcheckconfig.HealthCheckConfig{SyncPeriod: metav1.Duration{Duration: defaultSyncPeriod}},
 	}
 )
@@ -46,5 +46,5 @@ func RegisterHealthChecks(ctx context.Context, mgr manager.Manager, opts healthc
 
 // AddToManager adds a controller with the default Options.
 func AddToManager(ctx context.Context, mgr manager.Manager) error {
-	return RegisterHealthChecks(ctx, mgr, AddOptions)
+	return RegisterHealthChecks(ctx, mgr, DefaultAddOptions)
 }

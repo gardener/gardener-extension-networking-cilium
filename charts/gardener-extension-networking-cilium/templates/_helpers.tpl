@@ -21,3 +21,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
   {{- end }}
 {{- end }}
+
+{{- define "topologyAwareRouting.enabled" -}}
+{{- if and .Values.gardener.seed .Values.gardener.seed.spec.settings.topologyAwareRouting.enabled }}
+true
+{{- end -}}
+{{- end -}}
