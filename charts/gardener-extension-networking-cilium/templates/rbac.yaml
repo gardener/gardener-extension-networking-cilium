@@ -2,11 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: gardener-extension-networking-cilium
+  name: {{ include "name" . }}
   labels:
-    app.kubernetes.io/name: gardener-extension-networking-cilium
-    helm.sh/chart: gardener-extension-networking-cilium
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "labels" . | indent 4 }}
 rules:
 - apiGroups:
   - extensions.gardener.cloud
@@ -94,16 +92,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: gardener-extension-networking-cilium
+  name: {{ include "name" . }}
   labels:
-    app.kubernetes.io/name: gardener-extension-networking-cilium
-    helm.sh/chart: gardener-extension-networking-cilium
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "labels" . | indent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: gardener-extension-networking-cilium
+  name: {{ include "name" . }}
 subjects:
 - kind: ServiceAccount
-  name: gardener-extension-networking-cilium
+  name: {{ include "name" . }}
   namespace: {{ .Release.Namespace }}
