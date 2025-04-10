@@ -45,16 +45,34 @@ spec:
         - --webhook-config-mode=service
         {{- end }}
         - --webhook-config-namespace={{ .Release.Namespace }}
+        {{- if .Values.gardener.virtualCluster.namespace }}
+        - --webhook-config-owner-namespace={{ .Values.gardener.virtualCluster.namespace }}
+        {{- end }}
         {{- if .Values.kubeconfig }}
         - --kubeconfig=/etc/gardener-extension-admission-cilium/kubeconfig/kubeconfig
         {{- end }}
         {{- if .Values.projectedKubeconfig }}
         - --kubeconfig={{ required ".Values.projectedKubeconfig.baseMountPath is required" .Values.projectedKubeconfig.baseMountPath }}/kubeconfig
         {{- end }}
+        {{- if .Values.metricsPort }}
+        - --metrics-bind-address=:{{ .Values.metricsPort }}
+        {{- end }}
         - --health-bind-address=:{{ .Values.healthPort }}
         - --leader-election-id={{ include "leaderelectionid" . }}
         securityContext:
           allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.healthPort }}
+            scheme: HTTP
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ .Values.healthPort }}
+            scheme: HTTP
+          initialDelaySeconds: 5
         env:
         - name: LEADER_ELECTION_NAMESPACE
           valueFrom:
@@ -68,19 +86,6 @@ spec:
         - name: webhook-server
           containerPort: {{ .Values.webhookConfig.serverPort }}
           protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: {{ .Values.healthPort }}
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: {{ .Values.healthPort }}
-            scheme: HTTP
-          initialDelaySeconds: 5
 {{- if .Values.resources }}
         resources:
 {{ toYaml .Values.resources | nindent 10 }}

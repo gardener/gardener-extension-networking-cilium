@@ -1,5 +1,4 @@
 apiVersion: v1
-appVersion: "1.0"
 description: A Helm chart to deploy the gardener-extension-admission-cilium application related resources
-name: application
+name: admission-cilium-application
 version: 0.1.0
