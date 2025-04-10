@@ -5,15 +5,10 @@ image:
 
 replicaCount: 1
 resources: {}
+metricsPort: 8080
 healthPort: 8081
 vpa:
   enabled: true
-  resourcePolicy: {}
-#     minAllowed:
-#       memory: 64Mi
-#     maxAllowed:
-#       cpu: 4
-#       memory: 10G
   updatePolicy:
     updateMode: "Auto"
 webhookConfig:
@@ -21,10 +16,10 @@ webhookConfig:
 # Kubeconfig to the target cluster. In-cluster configuration will be used if not specified.
 kubeconfig:
 
-# projectedKubeconfig:
-#   baseMountPath: /var/run/secrets/gardener.cloud
-#   genericKubeconfigSecretName: generic-token-kubeconfig
-#   tokenSecretName: access-cilium-admission
+#projectedKubeconfig:
+#  baseMountPath: /var/run/secrets/gardener.cloud
+#  genericKubeconfigSecretName: generic-token-kubeconfig
+#  tokenSecretName: access-cilium-admission
 
 service:
   topologyAwareRouting:
