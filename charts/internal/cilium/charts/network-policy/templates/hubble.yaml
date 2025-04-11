@@ -1,3 +1,4 @@
+{{- if .Values.global.hubble.enabled }}
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -33,3 +34,21 @@ spec:
         - ports:
             - port: "4245"
               protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: gardener.cloud--allow-hubble-relay-to-peers
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s-app: hubble-relay
+  egress:
+    - toEntities:
+        - cluster
+      toPorts:
+        - ports:
+            - port: {{ .Values.global.hubble.peerPort }}
+              protocol: TCP
+{{- end }}
