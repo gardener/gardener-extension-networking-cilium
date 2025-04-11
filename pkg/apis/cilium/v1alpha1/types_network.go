@@ -155,6 +155,50 @@ type BGPControlPlane struct {
 	Enabled bool `json:"enabled"`
 }
 
+// EnvoyConfig enablenment for cilium
+type EnvoyConfig struct {
+	Enabled          bool                        `json:"enabled"`
+	SecretsNamespace EnvoyConfigSecretsNamespace `json:"secretsNamespace"`
+	RetryInterval    string                      `json:"retryInterval"`
+}
+
+type EnvoyConfigSecretsNamespace struct {
+	Create bool   `json:"create"`
+	Name   string `json:"name"`
+}
+
+// GatewayAPI enablement for cilium
+type GatewayAPI struct {
+	Enabled               bool                      `json:"enabled"`
+	EnableProxyProtocol   bool                      `json:"enableProxyProtocol"`
+	EnableAppProtocol     bool                      `json:"enableAppProtocol"`
+	EnableAlpn            bool                      `json:"enableAlpn"`
+	XffNumTrustedHops     int                       `json:"xffNumTrustedHops"`
+	ExternalTrafficPolicy string                    `json:"externalTrafficPolicy"`
+	GatewayClass          GatewayAPIGatewayClass    `json:"gatewayClass"`
+	SecretsNamespace      GatewayAPISecretNamespace `json:"secretsNamespace"`
+	HostNetwork           GatewayAPIHostNetwork     `json:"hostNetwork"`
+}
+
+type GatewayAPIGatewayClass struct {
+	Create string `json:"create"`
+}
+
+type GatewayAPISecretNamespace struct {
+	Create bool   `json:"create"`
+	Name   string `json:"name"`
+	Sync   bool   `json:"sync"`
+}
+
+type GatewayAPIHostNetwork struct {
+	Enabled bool            `json:"enabled"`
+	Nodes   GatewayAPINodes `json:"nodes"`
+}
+
+type GatewayAPINodes struct {
+	MatchLabels map[string]string `json:"matchLabels"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -222,4 +266,10 @@ type NetworkConfig struct {
 	// BGPControlPlane enables the BGP Control Plane
 	// +optional
 	BGPControlPlane *BGPControlPlane `json:"bgpControlPlane,omitempty"`
+	// EnvoyConfig enables the CiliumEnvoyConfig CRD
+	// +optional
+	EnvoyConfig *EnvoyConfig `json:"envoyConfig,omitempty"`
+	// GatewayAPI enables support for Gateway API in cilium
+	// +optional
+	GatewayAPI *GatewayAPI `json:"gatewayAPI,omitempty"`
 }

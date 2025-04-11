@@ -161,6 +161,51 @@ type BGPControlPlane struct {
 	Enabled bool
 }
 
+// EnvoyConfig enables CiliumEnvoyConfig CRD
+
+type EnvoyConfig struct {
+	Enabled          bool
+	SecretsNamespace EnvoyConfigSecretsNamespace
+	RetryInterval    string
+}
+
+type EnvoyConfigSecretsNamespace struct {
+	Create bool
+	Name   string
+}
+
+// GatewayAPI enables the Gateway API configuration
+type GatewayAPI struct {
+	Enabled               bool
+	EnableProxyProtocol   bool
+	EnableAppProtocol     bool
+	EnableAlpn            bool
+	XffNumTrustedHops     int
+	ExternalTrafficPolicy string
+	GatewayClass          GatewayAPIGatewayClass
+	SecretsNamespace      GatewayAPISecretNamespace
+	HostNetwork           GatewayAPIHostNetwork
+}
+
+type GatewayAPIGatewayClass struct {
+	Create string
+}
+
+type GatewayAPISecretNamespace struct {
+	Create bool
+	Name   string
+	Sync   bool
+}
+
+type GatewayAPIHostNetwork struct {
+	Enabled bool
+	Nodes   GatewayAPINodes
+}
+
+type GatewayAPINodes struct {
+	MatchLabels map[string]string
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -208,4 +253,8 @@ type NetworkConfig struct {
 	SnatOutOfCluster *SnatOutOfCluster
 	// BGPControlPlane enables the BGP Control Plane
 	BGPControlPlane *BGPControlPlane
+	// EnvoyConfig enables CiliumEnvoyConfig CRD
+	EnvoyConfig *EnvoyConfig
+	// GatewayAPI enabled the Gateway API
+	GatewayAPI *GatewayAPI
 }
