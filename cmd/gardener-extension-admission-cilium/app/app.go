@@ -15,7 +15,6 @@ import (
 	"github.com/gardener/gardener/pkg/apis/core/install"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardenerhealthz "github.com/gardener/gardener/pkg/healthz"
-	"github.com/gardener/gardener/pkg/logger"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -27,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	admissioncmd "github.com/gardener/gardener-extension-networking-cilium/pkg/admission/cmd"
@@ -35,8 +34,10 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
-// Name is a constant for the name of this component.
-const Name = "gardener-extension-admission-cilium"
+// AdmissionName is the name of the admission component.
+const AdmissionName = "admission-cilium"
+
+var log = logf.Log.WithName("gardener-extension-admission-cilium")
 
 // NewAdmissionCommand creates a new command for running a Cilium admission webhook.
 func NewAdmissionCommand(ctx context.Context) *cobra.Command {
@@ -44,9 +45,10 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 		restOpts = &controllercmd.RESTOptions{}
 		mgrOpts  = &controllercmd.ManagerOptions{
 			LeaderElection:          true,
-			LeaderElectionID:        controllercmd.LeaderElectionNameID(Name),
+			LeaderElectionID:        controllercmd.LeaderElectionNameID(AdmissionName),
 			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
 			WebhookServerPort:       443,
+			MetricsBindAddress:      ":8080",
 			HealthBindAddress:       ":8081",
 			WebhookCertDir:          "/tmp/admission-cilium-cert",
 		}
@@ -56,7 +58,7 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 		}
 		webhookSwitches = admissioncmd.GardenWebhookSwitchOptions()
 		webhookOptions  = webhookcmd.NewAddToManagerOptions(
-			Name,
+			AdmissionName,
 			"",
 			nil,
 			webhookServerOptions,
@@ -73,16 +75,10 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: fmt.Sprintf("admission-%s", cilium.Name),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			verflag.PrintAndExitIfRequested()
 
-			log, err := logger.NewZapLogger(logger.InfoLevel, logger.FormatJSON)
-			if err != nil {
-				return fmt.Errorf("error instantiating zap logger: %w", err)
-			}
-			runtimelog.SetLogger(log)
-
-			log.Info("Starting "+Name, "version", version.Get())
+			log.Info("Starting "+AdmissionName, "version", version.Get())
 
 			if gardenKubeconfig := os.Getenv("GARDEN_KUBECONFIG"); gardenKubeconfig != "" {
 				log.Info("Getting rest config for garden from GARDEN_KUBECONFIG", "path", gardenKubeconfig)
@@ -92,6 +88,7 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 			if err := aggOption.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %w", err)
 			}
+
 			util.ApplyClientConnectionConfigurationToRESTConfig(&componentbaseconfig.ClientConnectionConfiguration{
 				QPS:   100.0,
 				Burst: 130,
@@ -107,6 +104,7 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 			// are maintained ('virtual-garden').
 			var sourceClusterConfig *rest.Config
 			if sourceClusterEnabled := os.Getenv("SOURCE_CLUSTER"); sourceClusterEnabled != "" {
+				log.Info("Configuring source cluster option")
 				var err error
 				sourceClusterConfig, err = clientcmd.BuildConfigFromFlags("", os.Getenv("SOURCE_KUBECONFIG"))
 				if err != nil {
@@ -135,7 +133,6 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 
 			var sourceCluster cluster.Cluster
 			if sourceClusterConfig != nil {
-				log.Info("Configuring source cluster option")
 				sourceCluster, err = cluster.New(sourceClusterConfig, func(opts *cluster.Options) {
 					opts.Logger = log
 					opts.Cache.DefaultNamespaces = map[string]cache.Config{v1beta1constants.GardenNamespace: {}}
@@ -170,10 +167,15 @@ func NewAdmissionCommand(ctx context.Context) *cobra.Command {
 				return fmt.Errorf("could not add readycheck of webhook to manager: %w", err)
 			}
 
-			return mgr.Start(ctx)
+			if err := mgr.Start(ctx); err != nil {
+				return fmt.Errorf("error running manager: %w", err)
+			}
+
+			return nil
 		},
 	}
 
+	verflag.AddFlags(cmd.Flags())
 	aggOption.AddFlags(cmd.Flags())
 
 	return cmd
