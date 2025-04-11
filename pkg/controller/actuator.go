@@ -10,9 +10,20 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/network"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+)
+
+var (
+	// StatusTypeMeta is the TypeMeta of Cilium Status
+	StatusTypeMeta = metav1.TypeMeta{
+		APIVersion: ciliumv1alpha1.SchemeGroupVersion.String(),
+		Kind:       "NetworkStatus",
+	}
 )
 
 type actuator struct {
