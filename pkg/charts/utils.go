@@ -113,6 +113,19 @@ var defaultGlobalConfig = globalConfig{
 	},
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
+	Encryption: encryption{
+		Enabled:        false,
+		KeyFile:        "keys",
+		MountPath:      "/etc/ipsec",
+		SecretName:     "cilium-ipsec-keys",
+		NodeEncryption: false,
+		IPSec: &ipSec{
+			KeyID:                3,
+			EncryptionAlgorithms: "rfc4106(gcm(aes))",
+			PreSharedKey:         "",
+			KeySize:              128,
+		},
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -295,6 +308,38 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.BGPControlPlane != nil && config.BGPControlPlane.Enabled {
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
+	}
+
+	if config.Encryption != nil {
+		if config.Encryption.Enabled {
+			globalConfig.Encryption.Enabled = config.Encryption.Enabled
+		}
+		if config.Encryption.KeyFile != "" {
+			globalConfig.Encryption.KeyFile = config.Encryption.KeyFile
+		}
+		if config.Encryption.MountPath != "" {
+			globalConfig.Encryption.MountPath = config.Encryption.MountPath
+		}
+		if config.Encryption.SecretName != "" {
+			globalConfig.Encryption.SecretName = config.Encryption.SecretName
+		}
+		if config.Encryption.NodeEncryption {
+			globalConfig.Encryption.NodeEncryption = config.Encryption.NodeEncryption
+		}
+		if config.Encryption.IPSec != nil {
+			if config.Encryption.IPSec.KeyID != 0 {
+				globalConfig.Encryption.IPSec.KeyID = config.Encryption.IPSec.KeyID
+			}
+			if config.Encryption.IPSec.EncryptionAlgorithms != "" {
+				globalConfig.Encryption.IPSec.EncryptionAlgorithms = config.Encryption.IPSec.EncryptionAlgorithms
+			}
+			if config.Encryption.IPSec.PreSharedKey != "" {
+				globalConfig.Encryption.IPSec.PreSharedKey = config.Encryption.IPSec.PreSharedKey
+			}
+			if config.Encryption.IPSec.KeySize != 0 {
+				globalConfig.Encryption.IPSec.KeySize = config.Encryption.IPSec.KeySize
+			}
+		}
 	}
 
 	globalConfig.IPAM.Mode = ipamMode
