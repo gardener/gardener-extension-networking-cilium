@@ -34,6 +34,9 @@ spec:
         k8s-app: cilium
         app.kubernetes.io/name: cilium-agent
         app.kubernetes.io/part-of: cilium
+        networking.gardener.cloud/to-public-networks: allowed
+        networking.gardener.cloud/to-apiserver: allowed
+        networking.gardener.cloud/to-dns: allowed
     spec:
       containers:
 {{- if .Values.global.sleepAfterInit }}

@@ -23,6 +23,9 @@ spec:
         k8s-app: {{ .Chart.Name }}
         app.kubernetes.io/name: {{ .Chart.Name }}
         app.kubernetes.io/part-of: cilium
+        networking.gardener.cloud/to-public-networks: allowed
+        networking.gardener.cloud/to-apiserver: allowed
+        networking.gardener.cloud/to-dns: allowed
     spec:
       securityContext:
         fsGroup: 1001

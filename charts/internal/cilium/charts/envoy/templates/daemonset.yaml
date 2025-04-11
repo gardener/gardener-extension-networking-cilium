@@ -29,6 +29,9 @@ spec:
         k8s-app: cilium-envoy
         app.kubernetes.io/name: cilium-envoy
         app.kubernetes.io/part-of: cilium
+        networking.gardener.cloud/to-public-networks: allowed
+        networking.gardener.cloud/to-apiserver: allowed
+        networking.gardener.cloud/to-dns: allowed
     spec:
       containers:
       - name: cilium-envoy
