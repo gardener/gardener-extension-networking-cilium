@@ -1,4 +1,3 @@
-{{- if .Values.gep19Monitoring }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,4 +14,3 @@ data:
 
   hubble-dashboard-metrics-dashboard.json: |-
   {{- .Files.Get "hubble-metrics-dashboard.json" | nindent 4 }}
-{{- end }}
