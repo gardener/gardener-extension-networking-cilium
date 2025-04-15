@@ -17,8 +17,6 @@ import (
 	webhookcmd "github.com/gardener/gardener/extensions/pkg/webhook/cmd"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardenerhealthz "github.com/gardener/gardener/pkg/healthz"
-	"github.com/gardener/gardener/pkg/logger"
-	"github.com/pkg/errors"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	"github.com/spf13/cobra"
@@ -37,9 +35,6 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
 )
 
-// Name is a constant for the name of this component.
-const Name = "gardener-extension-networking-cilium"
-
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
 func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	var (
@@ -49,15 +44,16 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			LeaderElection:          true,
 			LeaderElectionID:        controllercmd.LeaderElectionNameID(cilium.Name),
 			LeaderElectionNamespace: os.Getenv("LEADER_ELECTION_NAMESPACE"),
+			WebhookServerPort:       443,
+			WebhookCertDir:          "/tmp/gardener-extensions-cert",
 			MetricsBindAddress:      ":8080",
 			HealthBindAddress:       ":8081",
 		}
+		configFileOpts = &ciliumcmd.ConfigOptions{}
+
 		// options for the networking-cilium controller
 		ciliumCtrlOpts = &controllercmd.ControllerOptions{
 			MaxConcurrentReconciles: 5,
-		}
-		reconcileOpts = &controllercmd.ReconcilerOptions{
-			IgnoreOperationAnnotation: true,
 		}
 
 		// options for the health care controller
@@ -65,21 +61,23 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			MaxConcurrentReconciles: 5,
 		}
 
+		// options for the heartbeat controller
 		heartbeatCtrlOpts = &heartbeatcmd.Options{
 			ExtensionName:        cilium.Name,
 			RenewIntervalSeconds: 30,
 			Namespace:            os.Getenv("LEADER_ELECTION_NAMESPACE"),
 		}
 
-		configFileOpts = &ciliumcmd.ConfigOptions{}
+		reconcileOpts = &controllercmd.ReconcilerOptions{}
 
 		// options for the webhook server
 		webhookServerOptions = &webhookcmd.ServerOptions{
 			Namespace: os.Getenv("WEBHOOK_CONFIG_NAMESPACE"),
 		}
 
-		webhookSwitches = ciliumcmd.WebhookSwitchOptions()
-		webhookOptions  = webhookcmd.NewAddToManagerOptions(
+		controllerSwitches = ciliumcmd.ControllerSwitchOptions()
+		webhookSwitches    = ciliumcmd.WebhookSwitchOptions()
+		webhookOptions     = webhookcmd.NewAddToManagerOptions(
 			cilium.Name,
 			ciliumcontroller.ShootWebhooksResourceName,
 			map[string]string{v1beta1constants.LabelNetworkingProvider: cilium.Type},
@@ -94,8 +92,9 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			ciliumCtrlOpts,
 			controllercmd.PrefixOption("healthcheck-", healthCheckCtrlOpts),
 			controllercmd.PrefixOption("heartbeat-", heartbeatCtrlOpts),
-			reconcileOpts,
 			configFileOpts,
+			controllerSwitches,
+			reconcileOpts,
 			webhookOptions,
 		)
 	)
@@ -103,28 +102,23 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: fmt.Sprintf("%s-controller-manager", cilium.Name),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			verflag.PrintAndExitIfRequested()
 
-			log, err := logger.NewZapLogger(logger.InfoLevel, logger.FormatJSON)
-			if err != nil {
-				return fmt.Errorf("error instantiating zap logger: %w", err)
-			}
-			runtimelog.SetLogger(log)
-
-			log.Info("Starting "+Name, "version", version.Get())
+			runtimelog.Log.Info("Starting "+cilium.Name, "version", version.Get())
 
 			if err := aggOption.Complete(); err != nil {
 				return fmt.Errorf("error completing options: %w", err)
 			}
-			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
 
 			if err := heartbeatCtrlOpts.Validate(); err != nil {
 				return err
 			}
 
-			completedMgrOpts := mgrOpts.Completed().Options()
-			completedMgrOpts.Client = client.Options{
+			util.ApplyClientConnectionConfigurationToRESTConfig(configFileOpts.Completed().Config.ClientConnection, restOpts.Completed().Config)
+
+			mopts := mgrOpts.Completed().Options()
+			mopts.Client = client.Options{
 				Cache: &client.CacheOptions{
 					DisableFor: []client.Object{
 						&corev1.Secret{},    // applied for ManagedResources
@@ -132,50 +126,46 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 					},
 				},
 			}
-
-			mgr, err := manager.New(restOpts.Completed().Config, completedMgrOpts)
+			mgr, err := manager.New(restOpts.Completed().Config, mopts)
 			if err != nil {
 				return fmt.Errorf("could not instantiate manager: %w", err)
 			}
 
-			if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
+			scheme := mgr.GetScheme()
+			if err := controller.AddToScheme(scheme); err != nil {
+				return fmt.Errorf("could not update manager scheme: %w", err)
+			}
+			if err := ciliuminstall.AddToScheme(scheme); err != nil {
+				return fmt.Errorf("could not update manager scheme: %w", err)
+			}
+			if err := monitoringv1.AddToScheme(scheme); err != nil {
+				return fmt.Errorf("could not update manager scheme: %w", err)
+			}
+			if err := monitoringv1alpha1.AddToScheme(scheme); err != nil {
 				return fmt.Errorf("could not update manager scheme: %w", err)
 			}
 
-			if err := ciliuminstall.AddToScheme(mgr.GetScheme()); err != nil {
-				return fmt.Errorf("could not update manager scheme: %w", err)
-			}
-
-			if err := monitoringv1.AddToScheme(mgr.GetScheme()); err != nil {
-				return fmt.Errorf("could not update manager scheme: %w", err)
-			}
-			if err := monitoringv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
-				return fmt.Errorf("could not update manager scheme: %w", err)
-			}
-
+			log := mgr.GetLogger()
+			log.Info("Adding controllers to manager")
+			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.DefaultAddOptions.HealthCheckConfig)
+			healthCheckCtrlOpts.Completed().Apply(&healthcheck.DefaultAddOptions.Controller)
+			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation, nil)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
-			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.AddOptions.HealthCheckConfig)
-			healthCheckCtrlOpts.Completed().Apply(&healthcheck.AddOptions.Controller)
-			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 
-			shootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil)
+			atomicShootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil)
 			if err != nil {
-				return errors.Wrap(err, "Could not add webhooks to manager")
+				return fmt.Errorf("could not add webhooks to manager: %w", err)
 			}
-			ciliumcontroller.DefaultAddOptions.ShootWebhookConfig = shootWebhookConfig
+			ciliumcontroller.DefaultAddOptions.ShootWebhookConfig = atomicShootWebhookConfig
 			ciliumcontroller.DefaultAddOptions.WebhookServerNamespace = webhookOptions.Server.Namespace
 
-			if err := ciliumcontroller.AddToManager(ctx, mgr); err != nil {
+			if err := controllerSwitches.Completed().AddToManager(ctx, mgr); err != nil {
 				return fmt.Errorf("could not add controllers to manager: %w", err)
 			}
 
-			if err := healthcheck.AddToManager(ctx, mgr); err != nil {
-				return fmt.Errorf("could not add health check controller to manager: %w", err)
-			}
-
-			if err := heartbeat.AddToManager(ctx, mgr); err != nil {
-				return fmt.Errorf("could not add heartbeat controller to manager: %w", err)
+			if err := ciliumcontroller.AddToManager(ctx, mgr); err != nil {
+				return fmt.Errorf("could not add controllers to manager: %w", err)
 			}
 
 			if err := mgr.AddReadyzCheck("informer-sync", gardenerhealthz.NewCacheSyncHealthz(mgr.GetCache())); err != nil {
@@ -198,6 +188,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
+	verflag.AddFlags(cmd.Flags())
 	aggOption.AddFlags(cmd.Flags())
 
 	return cmd
