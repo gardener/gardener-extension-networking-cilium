@@ -9,6 +9,13 @@ metricsPort: 8080
 healthPort: 8081
 vpa:
   enabled: true
+  resourcePolicy:
+    controlledValues: RequestsOnly
+#     minAllowed:
+#       memory: 64Mi
+#     maxAllowed:
+#       cpu: 4
+#       memory: 10G
   updatePolicy:
     updateMode: "Auto"
 webhookConfig:
