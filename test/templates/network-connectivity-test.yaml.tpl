@@ -14,6 +14,22 @@ spec:
     spec:
       containers:
       - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.10.0
+        name: networking-shoot-tests-cilium-port-forward
+        command: [ "sh", "-c" ]
+        args:
+          - cilium-cli hubble port-forward
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        env:
+          - name: KUBECONFIG
+            value: /etc/kubeconfig/kubeconfig
+        volumeMounts:
+          - name: shoot-kubeconfig
+            mountPath: "/etc/kubeconfig"
+            readOnly: true
+      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.10.0
         name: networking-shoot-tests-cilium
         command: ["sh", "-c"]
         args:
