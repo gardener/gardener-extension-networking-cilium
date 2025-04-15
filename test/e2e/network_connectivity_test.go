@@ -11,6 +11,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/utils/ptr"
@@ -33,6 +34,19 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		defer cancel()
 		Expect(f.CreateShootAndWaitForCreation(ctx, false)).To(Succeed())
 		f.Verify()
+
+		By("Create Deny-All Network Policy")
+		denyAllPolicy := &networkingv1.NetworkPolicy{
+			ObjectMeta: v1.ObjectMeta{Name: "deny-all", Namespace: templates.NetworkConnectivityTestNamespace},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: v1.LabelSelector{},
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress, networkingv1.PolicyTypeEgress},
+				Ingress:     []networkingv1.NetworkPolicyIngressRule{},
+				Egress:      []networkingv1.NetworkPolicyEgressRule{},
+			},
+		}
+		err := f.ShootFramework.ShootClient.Client().Create(ctx, denyAllPolicy)
+		Expect(err).NotTo(HaveOccurred())
 
 		By("Test Networking")
 		ctx, cancel = context.WithTimeout(parentCtx, defaultTimeout)
