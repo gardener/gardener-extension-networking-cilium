@@ -10,6 +10,13 @@ maxSurge: 50%
 resources: {}
 vpa:
   enabled: true
+  resourcePolicy:
+    controlledValues: RequestsOnly
+#     minAllowed:
+#       memory: 128Mi
+#     maxAllowed:
+#       cpu: 4
+#       memory: 10G
   updatePolicy:
     updateMode: "Auto"
 
