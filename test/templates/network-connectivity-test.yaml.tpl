@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         app: networking-test
+        networking.gardener.cloud/to-public-networks: allowed
+        networking.gardener.cloud/to-apiserver: allowed
+        networking.gardener.cloud/to-dns: allowed
     spec:
       containers:
       - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.10.0
