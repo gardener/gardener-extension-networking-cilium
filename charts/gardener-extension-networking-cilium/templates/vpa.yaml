@@ -5,10 +5,20 @@ metadata:
   name: {{ include "name" . }}-vpa
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if .Values.vpa.resourcePolicy }}
   resourcePolicy:
     containerPolicies:
-    - containerName: '*'
-      controlledValues: RequestsOnly
+    - containerName: {{ include "name" . }}
+      {{- with .Values.vpa.resourcePolicy.minAllowed }}
+      minAllowed: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.vpa.resourcePolicy.maxAllowed }}
+      maxAllowed: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.vpa.resourcePolicy.controlledValues }}
+      controlledValues: {{ .Values.vpa.resourcePolicy.controlledValues }}
+      {{- end }}
+  {{- end }}
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
