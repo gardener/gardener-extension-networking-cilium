@@ -7,12 +7,14 @@ package controller
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	extensionsconfig "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	"github.com/gardener/gardener/extensions/pkg/webhook"
 	extensionshootwebhook "github.com/gardener/gardener/extensions/pkg/webhook/shoot"
+	gardenv1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	gardenerkubernetes "github.com/gardener/gardener/pkg/client/kubernetes"
@@ -23,7 +25,6 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -84,7 +85,7 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 // Reconcile implements Network.Actuator.
 func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extensionsv1alpha1.Network, cluster *extensionscontroller.Cluster) error {
 	var (
-		networkConfig *ciliumv1alpha1.NetworkConfig = &ciliumv1alpha1.NetworkConfig{}
+		networkConfig = &ciliumv1alpha1.NetworkConfig{}
 		err           error
 	)
 
@@ -95,35 +96,43 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 		}
 	}
 
-	ipFamilies := sets.New[extensionsv1alpha1.IPFamily](network.Spec.IPFamilies...)
+	ipFamilies := slices.Clone(network.Spec.IPFamilies)
+
+	condition := v1beta1helper.GetCondition(cluster.Shoot.Status.Constraints, gardenv1beta1.ShootDualStackNodesMigrationReady)
+
+	if condition != nil && condition.Status != gardenv1beta1.ConditionTrue {
+		if len(ipFamilies) > 1 {
+			ipFamilies = ipFamilies[:1]
+		}
+	}
 
 	if networkConfig.Overlay != nil && networkConfig.Overlay.Enabled {
 		if networkConfig.TunnelMode == nil || networkConfig.TunnelMode != nil && *networkConfig.TunnelMode == ciliumv1alpha1.Disabled {
 			// use vxlan as default overlay network
 			networkConfig.TunnelMode = ptr.To(ciliumv1alpha1.VXLan)
 		}
-		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+		if slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv4) {
 			networkConfig.IPv4NativeRoutingCIDREnabled = ptr.To(false)
 		}
-		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+		if slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv6) {
 			networkConfig.IPv6NativeRoutingCIDREnabled = ptr.To(false)
 		}
 	}
 	if networkConfig.Overlay != nil && !networkConfig.Overlay.Enabled {
 		networkConfig.TunnelMode = ptr.To(ciliumv1alpha1.Disabled)
-		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4) {
+		if slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv4) {
 			networkConfig.IPv4NativeRoutingCIDREnabled = ptr.To(true)
 		}
-		if ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6) {
+		if slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv6) {
 			networkConfig.IPv6NativeRoutingCIDREnabled = ptr.To(true)
 		}
 	}
 
 	networkConfig.IPv4 = &ciliumv1alpha1.IPv4{
-		Enabled: ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv4),
+		Enabled: slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv4),
 	}
 	networkConfig.IPv6 = &ciliumv1alpha1.IPv6{
-		Enabled: ipFamilies.Has(extensionsv1alpha1.IPFamilyIPv6),
+		Enabled: slices.Contains(ipFamilies, extensionsv1alpha1.IPFamilyIPv6),
 	}
 
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil &&
