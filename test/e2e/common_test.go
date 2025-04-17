@@ -51,10 +51,12 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 		Spec: gardencorev1beta1.ShootSpec{
 			Region:            "local",
 			SecretBindingName: ptr.To("local"),
-			CloudProfileName:  ptr.To("local"),
+			CloudProfile: &gardencorev1beta1.CloudProfileReference{
+				Name: "local",
+				Kind: "CloudProfile",
+			},
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version:                     "1.30.0",
-				EnableStaticTokenKubeconfig: ptr.To(false),
+				Version: "1.30.0",
 				Kubelet: &gardencorev1beta1.KubeletConfig{
 					SerializeImagePulls: ptr.To(false),
 					RegistryPullQPS:     ptr.To(int32(10)),
@@ -83,6 +85,11 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 					Minimum: 2,
 					Maximum: 2,
 				}},
+			},
+			SystemComponents: &gardencorev1beta1.SystemComponents{
+				NodeLocalDNS: &gardencorev1beta1.NodeLocalDNS{
+					Enabled: true,
+				},
 			},
 		},
 	}
