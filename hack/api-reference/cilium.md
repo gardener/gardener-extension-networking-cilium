@@ -584,6 +584,21 @@ More infromation here: <a href="https://docs.cilium.io/en/v1.7/gettingstarted/ku
 <p>
 <p>LoadBalancingMode defines what load balancing mode to use for Cilium.</p>
 </p>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkStatus">NetworkStatus
+</h3>
+<p>
+<p>NetworkStatus contains information about created Network resources.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.NodePortMode">NodePortMode
 (<code>string</code> alias)</p></h3>
 <p>
