@@ -312,11 +312,6 @@ func (in *NetworkConfig) DeepCopyObject() runtime.Object {
 func (in *NetworkStatus) DeepCopyInto(out *NetworkStatus) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	if in.IPFamilies != nil {
-		in, out := &in.IPFamilies, &out.IPFamilies
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	return
 }
 

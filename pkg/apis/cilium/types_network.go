@@ -214,5 +214,4 @@ type NetworkConfig struct {
 // NetworkStatus contains information about created Network resources.
 type NetworkStatus struct {
 	metav1.TypeMeta
-	IPFamilies []string
 }

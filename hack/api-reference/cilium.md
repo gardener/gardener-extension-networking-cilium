@@ -597,16 +597,6 @@ More infromation here: <a href="https://docs.cilium.io/en/v1.7/gettingstarted/ku
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>
-<code>ipFamilies</code></br>
-<em>
-[]string
-</em>
-</td>
-<td>
-</td>
-</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.NodePortMode">NodePortMode
