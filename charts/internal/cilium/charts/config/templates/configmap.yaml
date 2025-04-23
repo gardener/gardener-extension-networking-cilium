@@ -249,6 +249,7 @@ data:
   bpf-lb-mode-annotation: {{ .Values.global.bpf.lbModeAnnotation | quote }}
 {{- end }}
 
+  bpf-distributed-lru: "false"
   bpf-events-drop-enabled: "true"
   bpf-events-policy-verdict-enabled: "true"
   bpf-events-trace-enabled: "true"
@@ -306,8 +307,10 @@ data:
   routing-mode: "tunnel"
   tunnel-protocol: "geneve"
 {{- end }}
+  # -- Configure VXLAN and Geneve tunnel source port range hint.
+  # @default -- 0-0 to let the kernel driver decide the range
+  tunnel-source-port-range: "0-0"
   service-no-backend-response: "reject"
-
 
 {{- if .Values.global.eni }}
   enable-endpoint-routes: "true"
@@ -584,7 +587,6 @@ data:
 {{- end }}
 
 {{- if .Values.global.hubble.enabled }}
-  # Enable Hubble gRPC service.
   enable-hubble: {{ .Values.global.hubble.enabled  | quote }}
   # UNIX domain socket for Hubble server to listen to.
   hubble-socket-path:  {{ .Values.global.hubble.socketPath | quote }}
