@@ -42,35 +42,72 @@ rules:
   - gardener-extension-heartbeat
   verbs:
   - get
+  - patch
   - update
 - apiGroups:
   - resources.gardener.cloud
   resources:
   - managedresources
   verbs:
-  - list
   - create
-  - delete
+  - get
+  - list
   - watch
   - patch
   - update
-  - get
+  - delete
 - apiGroups:
   - ""
-  - monitoring.coreos.com
   resources:
   - namespaces
-  - events
-  - secrets
-  - configmaps
-  - scrapeconfigs
-  - prometheusrules
   verbs:
   - get
   - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  - configmaps
+  verbs:
   - create
+  - get
+  - list
   - patch
   - update
+  - delete
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - scrapeconfigs
+  - prometheusrules
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - scrapeconfigs
+  resourceNames:
+  - shoot-cilium-agent
+  - shoot-cilium-hubble
+  - shoot-cilium-operator
+  verbs:
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheusrules
+  resourceNames:
+  - shoot-cilium-agent
+  verbs:
+  - update
+  - patch
   - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
