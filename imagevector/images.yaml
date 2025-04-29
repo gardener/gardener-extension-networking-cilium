@@ -21,7 +21,7 @@ images:
   - name: cilium-envoy
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium-envoy
-    tag: v1.31.5-1739264036-958bef243c6c66fcfd73ca319f2eb49fff1eb2ae
+    tag: v1.32.5-1744305768-f9ddca7dcd91f7ca25a505560e655c47d3dec2cf
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -33,10 +33,10 @@ images:
         availability_requirement: 'low'
     - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
       value:
-      # https://github.com/cilium/proxy: v1.17.1 -> v1.31.5
-      # https://www.envoyproxy.io/docs/envoy/v1.31.5/intro/arch_overview/security/external_deps
+      # https://github.com/cilium/proxy: v1.17.3 -> v1.32.5
+      # https://www.envoyproxy.io/docs/envoy/v1.32.5/intro/arch_overview/security/external_deps
       - name: 'c-ares'
-        version: '1.20.1'
+        version: '1.21.0'
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
