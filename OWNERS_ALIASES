@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  networking-cilium-reviewers:
+  - domdom82
+  - axel7born
+  - DockToFuture
+  - ScheererJ
+  networking-cilium-approvers:
+  - domdom82
+  - axel7born
+  - DockToFuture
+  - ScheererJ
