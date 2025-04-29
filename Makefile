@@ -100,6 +100,7 @@ check: $(GOIMPORTS) $(GOLANGCI_LINT) $(HELM)
 generate: $(VGOPATH) $(CONTROLLER_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(MOCKGEN) $(YQ)
 	@REPO_ROOT=$(REPO_ROOT) VGOPATH=$(VGOPATH) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(GARDENER_HACK_DIR)/generate-sequential.sh ./charts/... ./cmd/... ./pkg/...
 	$(MAKE) format
+	@./hack/generate-renovate-ignore-deps.sh
 
 .PHONY: format
 format: $(GOIMPORTS) $(GOIMPORTSREVISER)
