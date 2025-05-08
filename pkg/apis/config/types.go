@@ -5,7 +5,6 @@
 package config
 
 import (
-	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	componentbaseconfig "k8s.io/component-base/config/v1alpha1"
 )
@@ -17,6 +16,4 @@ type ControllerConfiguration struct {
 	// ClientConnection specifies the kubeconfig file and client connection
 	// settings for the proxy server to use when communicating with the apiserver.
 	ClientConnection *componentbaseconfig.ClientConnectionConfiguration
-	// HealthCheckConfig is the config for the health check controller
-	HealthCheckConfig *healthcheckconfig.HealthCheckConfig
 }

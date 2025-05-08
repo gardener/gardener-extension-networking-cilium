@@ -32,7 +32,6 @@ import (
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 	ciliumcmd "github.com/gardener/gardener-extension-networking-cilium/pkg/cmd"
 	ciliumcontroller "github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/healthcheck"
 )
 
 // NewControllerManagerCommand creates a new command for running a Cilium controller.
@@ -147,8 +146,6 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 
 			log := mgr.GetLogger()
 			log.Info("Adding controllers to manager")
-			configFileOpts.Completed().ApplyHealthCheckConfig(&healthcheck.DefaultAddOptions.HealthCheckConfig)
-			healthCheckCtrlOpts.Completed().Apply(&healthcheck.DefaultAddOptions.Controller)
 			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
 			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation, nil)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
