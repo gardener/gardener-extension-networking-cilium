@@ -75,6 +75,7 @@ gardener:
 #     settings:
 #       topologyAwareRouting:
 #         enabled: false
+# autonomousShootCluster: false
 
 usablePorts:
 - 8080  # metrics
