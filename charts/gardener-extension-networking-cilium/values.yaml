@@ -25,8 +25,6 @@ healthPort: "{{ index .Values.usablePorts 2 }}"
 
 controllers:
   concurrentSyncs: 5
-  healthcheck:
-    concurrentSyncs: 5
   heartbeat:
     renewIntervalSeconds: 30
   ignoreOperationAnnotation: false
