@@ -176,7 +176,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 
 	configMapLabelPrefix, err := getConfigMap(ctx, a.client, cluster, "label-prefix-conf")
 	if err != nil {
-		return fmt.Errorf("error getting cilium configMap: %w", err)
+		return fmt.Errorf("error getting cilium label prefix configMap: %w", err)
 	}
 
 	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap), getConfigMapHash(configMapLabelPrefix))
@@ -203,7 +203,10 @@ func getConfigMap(ctx context.Context, cl client.Client, cluster *extensionscont
 	}
 	_, shootClient, err := util.NewClientForShoot(ctx, cl, cluster.ObjectMeta.Name, client.Options{}, extensionsconfig.RESTOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not create shoot client: %w", err)
+		// No need to report the error as this is anyway only best effort. Some scenarios, e.g. autonomous shoot clusters,
+		// might not have the gardener secret and hence cannot construct the shoot client here.
+		// RenderCiliumChart(...) has the real fallback logic in case the config map was not found/changed.
+		return &corev1.ConfigMap{}, nil
 	}
 	configmap := &corev1.ConfigMap{}
 	_ = shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: name}, configmap)
