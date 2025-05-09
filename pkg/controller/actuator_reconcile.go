@@ -176,7 +176,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 
 	configMapLabelPrefix, err := getConfigMap(ctx, a.client, cluster, "label-prefix-conf")
 	if err != nil {
-		return fmt.Errorf("error getting cilium configMap: %w", err)
+		return fmt.Errorf("error getting cilium label prefix configMap: %w", err)
 	}
 
 	ciliumChart, err := chartspkg.RenderCiliumChart(chartRenderer, networkConfig, network, cluster, getIPAMMode(configMap), getConfigMapHash(configMap), getConfigMapHash(configMapLabelPrefix))
