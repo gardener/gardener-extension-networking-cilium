@@ -52,6 +52,10 @@ gardener-extension-networking-cilium:
       version:
         preprocess: 'inject-commit-hash'
       publish:
+        oci-builder: docker-buildx
+        platforms:
+        - linux/amd64
+        - linux/arm64
         dockerimages:
           gardener-extension-networking-cilium:
             image: 'europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/networking-cilium'
