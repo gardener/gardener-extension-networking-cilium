@@ -161,6 +161,24 @@ type BGPControlPlane struct {
 	Enabled bool
 }
 
+// Encryption enables transparent network encryption for cilium
+type Encryption struct {
+	Enabled        bool
+	KeyFile        string
+	MountPath      string
+	SecretName     string
+	NodeEncryption bool
+	IPSec          *IPSec
+}
+
+// IPSec configuration for cilium
+type IPSec struct {
+	KeyID                int
+	EncryptionAlgorithms string
+	PreSharedKey         string
+	KeySize              int
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -208,6 +226,8 @@ type NetworkConfig struct {
 	SnatOutOfCluster *SnatOutOfCluster
 	// BGPControlPlane enables the BGP Control Plane
 	BGPControlPlane *BGPControlPlane
+	// Encryption configuration
+	Encryption *Encryption
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
