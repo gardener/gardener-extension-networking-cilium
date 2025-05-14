@@ -38,20 +38,6 @@ Kubernetes v1alpha1.ClientConnectionConfiguration
 settings for the proxy server to use when communicating with the apiserver.</p>
 </td>
 </tr>
-<tr>
-<td>
-<code>healthCheckConfig</code></br>
-<em>
-<a href="https://github.com/gardener/gardener/extensions/pkg/apis/config">
-github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1.HealthCheckConfig
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>HealthCheckConfig is the config for the health check controller</p>
-</td>
-</tr>
 </tbody>
 </table>
 <hr/>

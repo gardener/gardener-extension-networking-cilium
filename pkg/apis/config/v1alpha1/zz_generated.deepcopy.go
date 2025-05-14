@@ -10,7 +10,6 @@
 package v1alpha1
 
 import (
-	apisconfigv1alpha1 "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 )
@@ -23,11 +22,6 @@ func (in *ControllerConfiguration) DeepCopyInto(out *ControllerConfiguration) {
 		in, out := &in.ClientConnection, &out.ClientConnection
 		*out = new(configv1alpha1.ClientConnectionConfiguration)
 		**out = **in
-	}
-	if in.HealthCheckConfig != nil {
-		in, out := &in.HealthCheckConfig, &out.HealthCheckConfig
-		*out = new(apisconfigv1alpha1.HealthCheckConfig)
-		(*in).DeepCopyInto(*out)
 	}
 	return
 }
