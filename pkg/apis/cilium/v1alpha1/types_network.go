@@ -219,6 +219,15 @@ type NetworkConfig struct {
 	// SnatOutOfCluster enables the masquerading of packets outside of the cluster
 	// +optional
 	SnatOutOfCluster *SnatOutOfCluster `json:"snatOutOfCluster,omitempty"`
+	// EnableIPv4Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	// +optional
+	EnableIPv4Masquerade *bool `json:"enableIpv4Masquerade,omitempty"`
+	// EnableIPv6Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	// +optional
+	EnableIPv6Masquerade *bool `json:"enableIpv6Masquerade,omitempty"`
+	// EnableBPFMasquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	// +optional
+	EnableBPFMasquerade *bool `json:"enableBPFMasquerade,omitempty"`
 	// BGPControlPlane enables the BGP Control Plane
 	// +optional
 	BGPControlPlane *BGPControlPlane `json:"bgpControlPlane,omitempty"`

@@ -250,6 +250,21 @@ func (in *NetworkConfig) DeepCopyInto(out *NetworkConfig) {
 		*out = new(SnatOutOfCluster)
 		**out = **in
 	}
+	if in.EnableIPv4Masquerade != nil {
+		in, out := &in.EnableIPv4Masquerade, &out.EnableIPv4Masquerade
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableIPv6Masquerade != nil {
+		in, out := &in.EnableIPv6Masquerade, &out.EnableIPv6Masquerade
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableBPFMasquerade != nil {
+		in, out := &in.EnableBPFMasquerade, &out.EnableBPFMasquerade
+		*out = new(bool)
+		**out = **in
+	}
 	if in.BGPControlPlane != nil {
 		in, out := &in.BGPControlPlane, &out.BGPControlPlane
 		*out = new(BGPControlPlane)
