@@ -107,6 +107,9 @@ var defaultGlobalConfig = globalConfig{
 	SnatOutOfCluster: snatOutOfCluster{
 		Enabled: false,
 	},
+	EnableIPv4Masquerade: true,
+	EnableIPv6Masquerade: false,
+	EnableBPFMasquerade:  true,
 	AutoDirectNodeRoutes: false,
 	BGPControlPlane: bgpControlPlane{
 		Enabled: false,
@@ -289,6 +292,18 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.SnatOutOfCluster != nil && config.SnatOutOfCluster.Enabled {
 		globalConfig.SnatOutOfCluster.Enabled = config.SnatOutOfCluster.Enabled
+	}
+
+	if config.EnableIPv4Masquerade != nil {
+		globalConfig.EnableIPv4Masquerade = *config.EnableIPv4Masquerade
+	}
+
+	if config.EnableIPv6Masquerade != nil {
+		globalConfig.EnableIPv6Masquerade = *config.EnableIPv6Masquerade
+	}
+
+	if config.EnableBPFMasquerade != nil {
+		globalConfig.EnableBPFMasquerade = *config.EnableBPFMasquerade
 	}
 
 	if config.Overlay != nil && !config.Overlay.Enabled && config.Overlay.CreatePodRoutes != nil {

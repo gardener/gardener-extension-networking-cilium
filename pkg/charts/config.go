@@ -45,6 +45,9 @@ type globalConfig struct {
 	IPAM                     ipam                                    `json:"ipam"`
 	SnatToUpstreamDNS        snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 	SnatOutOfCluster         snatOutOfCluster                        `json:"snatOutOfCluster"`
+	EnableIPv4Masquerade     bool                                    `json:"enableIpv4Masquerade"`
+	EnableIPv6Masquerade     bool                                    `json:"enableIpv6Masquerade"`
+	EnableBPFMasquerade      bool                                    `json:"enableBPFMasquerade"`
 	AutoDirectNodeRoutes     bool                                    `json:"autoDirectNodeRoutes"`
 	BGPControlPlane          bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash            string                                  `json:"configMapHash"`
