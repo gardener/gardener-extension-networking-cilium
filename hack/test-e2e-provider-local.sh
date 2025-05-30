@@ -21,6 +21,7 @@ source "$repo_root/gardener/hack/ci-common.sh"
 
 echo '172.18.255.1 api.ping-test.local.external.local.gardener.cloud' >> /etc/hosts
 echo '172.18.255.1 api.con-test.local.external.local.gardener.cloud' >> /etc/hosts
+echo '172.18.255.1 api.enc-con-test.local.external.local.gardener.cloud' >> /etc/hosts
 echo '172.18.255.1 api.e2e-force-del.local.external.local.gardener.cloud' >> /etc/hosts
 echo '127.0.0.1 garden.local.gardener.cloud' >> /etc/hosts
 

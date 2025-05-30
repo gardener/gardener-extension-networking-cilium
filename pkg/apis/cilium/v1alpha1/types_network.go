@@ -155,6 +155,40 @@ type BGPControlPlane struct {
 	Enabled bool `json:"enabled"`
 }
 
+// Encryption enables transparent network encryption for cilium
+type Encryption struct {
+	Enabled bool `json:"enabled"`
+	// KeyFile is the name of the key file inside the Kubernetes secret configured via SecretName
+	// +optional
+	KeyFile string `json:"keyFile,omitempty"`
+	// MountPath is the path where to mount the secret inside the Cilium pod
+	// +optional
+	MountPath string `json:"mountPath,omitempty"`
+	// SecretName is the name of the Kubernetes secret containing the encryption
+	SecretName string `json:"secretName,omitempty"`
+	// NodeEncryption enables encryption for pure node to node traffic
+	// +optional
+	NodeEncryption bool `json:"nodeEncryption,omitempty"`
+	// IPSec config for encryption
+	// +optional
+	IPSec *IPSec `json:"ipsec,omitempty"`
+}
+
+type IPSec struct {
+	// KeyID is the key ID to use for the encryption key. Number between 1 and 15.
+	// +optional
+	KeyID int `json:"keyId,omitempty"`
+	// EncryptionAlgorithms is a comma separated list of encryption algorithms to use
+	// +optional
+	EncryptionAlgorithms string `json:"encryptionAlgorithms,omitempty"`
+	// PreSharedKey is a 64 character hex string, if not provided a random key will be generated
+	// +optional
+	PreSharedKey string `json:"preSharedKey,omitempty"`
+	// KeySize is the size of the encryption key in bits
+	// +optional
+	KeySize int `json:"keySize,omitempty"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -222,6 +256,9 @@ type NetworkConfig struct {
 	// BGPControlPlane enables the BGP Control Plane
 	// +optional
 	BGPControlPlane *BGPControlPlane `json:"bgpControlPlane,omitempty"`
+	// Encryption enables transparent network encryption for cilium
+	// +optional
+	Encryption *Encryption `json:"encryption,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
