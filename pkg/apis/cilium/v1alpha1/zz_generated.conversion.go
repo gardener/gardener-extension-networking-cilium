@@ -349,6 +349,9 @@ func autoConvert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfi
 	out.Overlay = (*cilium.Overlay)(unsafe.Pointer(in.Overlay))
 	out.SnatToUpstreamDNS = (*cilium.SnatToUpstreamDNS)(unsafe.Pointer(in.SnatToUpstreamDNS))
 	out.SnatOutOfCluster = (*cilium.SnatOutOfCluster)(unsafe.Pointer(in.SnatOutOfCluster))
+	out.EnableIPv4Masquerade = (*bool)(unsafe.Pointer(in.EnableIPv4Masquerade))
+	out.EnableIPv6Masquerade = (*bool)(unsafe.Pointer(in.EnableIPv6Masquerade))
+	out.EnableBPFMasquerade = (*bool)(unsafe.Pointer(in.EnableBPFMasquerade))
 	out.BGPControlPlane = (*cilium.BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
 	return nil
 }
@@ -378,6 +381,9 @@ func autoConvert_cilium_NetworkConfig_To_v1alpha1_NetworkConfig(in *cilium.Netwo
 	out.Overlay = (*Overlay)(unsafe.Pointer(in.Overlay))
 	out.SnatToUpstreamDNS = (*SnatToUpstreamDNS)(unsafe.Pointer(in.SnatToUpstreamDNS))
 	out.SnatOutOfCluster = (*SnatOutOfCluster)(unsafe.Pointer(in.SnatOutOfCluster))
+	out.EnableIPv4Masquerade = (*bool)(unsafe.Pointer(in.EnableIPv4Masquerade))
+	out.EnableIPv6Masquerade = (*bool)(unsafe.Pointer(in.EnableIPv6Masquerade))
+	out.EnableBPFMasquerade = (*bool)(unsafe.Pointer(in.EnableBPFMasquerade))
 	out.BGPControlPlane = (*BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
 	return nil
 }
