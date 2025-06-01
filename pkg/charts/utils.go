@@ -152,15 +152,17 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.NodeCIDR = *cluster.Shoot.Spec.Networking.Nodes
 	}
 
-	//As the cilium operator can only run once per node, calculate if there can be enough nodes within the shoot to run the HA mode
+	// The Cilium operator runs once per node. To safely enable HA, we must check guaranteed capacity (Minimum)
 	if cluster != nil && cluster.Shoot != nil {
 		countOfApplicableWorkerNodes := 0
 
-		//Iterate over all worker groups of the targeted shoot and calculate the maximum available nodes
+		// Iterate over all worker groups and accumulate the guaranteed (minimum) count.
+		// HA requires two or more guaranteed nodes; anything less won’t reliably support a secondary operator instance.
 		for _, k := range cluster.Shoot.Spec.Provider.Workers {
-			countOfApplicableWorkerNodes += int(k.Maximum)
+			countOfApplicableWorkerNodes += int(k.Minimum)
 		}
 
+		// If we can’t guarantee at least two nodes, don’t enable HA.
 		if countOfApplicableWorkerNodes < 2 {
 			globalConfig.OperatorHighAvailability.Enabled = false
 		}
