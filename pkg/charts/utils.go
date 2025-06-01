@@ -157,7 +157,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		countOfApplicableWorkerNodes := 0
 
 		// Iterate over all worker groups and accumulate the guaranteed (minimum) count.
-		// HA requires two or more guaranteed nodes; anything less won’t reliably support a secondary operator instance.
+		// HA requires two or more guaranteed nodes. Anything less won’t reliably support a secondary operator instance.
 		for _, k := range cluster.Shoot.Spec.Provider.Workers {
 			countOfApplicableWorkerNodes += int(k.Minimum)
 		}
