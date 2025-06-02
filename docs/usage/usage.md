@@ -75,3 +75,19 @@ spec:
 ```
 
 If you would like to see a provider specific shoot example, please check out the documentation of the well-known extensions. A list of them can be found [here](https://github.com/gardener/gardener/tree/master/extensions#infrastructure-provider).
+
+## High Availabilty
+
+The cilium-operator operates in high availability (HA) mode when the worker group in the shoot specification is configured with a minimum of at least two nodes as shown in the following example:
+
+```
+spec:
+  provider:
+    workers:
+      - ...
+        maximum: 5
+        minimum: 2
+...
+```
+
+ This setup prevents unnecessary node spin-ups and reduces the compute costs in single-node clusters.
