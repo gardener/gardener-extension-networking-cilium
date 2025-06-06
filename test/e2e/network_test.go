@@ -29,7 +29,7 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
 	f.Shoot = defaultShoot("ping-test")
 
-	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), func() {
+	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), Serial, func() {
 		By("Create Shoot")
 		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
