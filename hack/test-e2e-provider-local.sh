@@ -55,7 +55,7 @@ export GOMEGA_DEFAULT_EVENTUALLY_POLLING_INTERVAL=200ms
 export GOMEGA_DEFAULT_CONSISTENTLY_DURATION=5s
 export GOMEGA_DEFAULT_CONSISTENTLY_POLLING_INTERVAL=200ms
 
-ginkgo --timeout=1h --v --progress "$@" $repo_root/test/e2e/...
+ginkgo --timeout=2h --v --progress "$@" $repo_root/test/e2e/...
 
 cd "$repo_root/gardener"
 make gardener-down

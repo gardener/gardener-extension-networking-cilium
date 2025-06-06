@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Network Extension Tests", Label("Network"), func() {
+var _ = Describe("Network Extension Tests", Label("Network"), Serial, func() {
 	f := defaultShootCreationFramework()
 	f.Shoot = defaultShoot("e2e-force-del")
 
