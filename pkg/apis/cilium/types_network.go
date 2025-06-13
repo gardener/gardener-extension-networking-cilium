@@ -206,6 +206,12 @@ type NetworkConfig struct {
 	SnatToUpstreamDNS *SnatToUpstreamDNS
 	// SnatOutOfCluster enables the masquerading of packets outside of the cluster
 	SnatOutOfCluster *SnatOutOfCluster
+	// EnableIPv4Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	EnableIPv4Masquerade *bool
+	// EnableIPv6Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	EnableIPv6Masquerade *bool
+	// EnableBPFMasquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled
+	EnableBPFMasquerade *bool
 	// BGPControlPlane enables the BGP Control Plane
 	BGPControlPlane *BGPControlPlane
 }
