@@ -332,7 +332,7 @@ data:
 
   enable-ipv4-big-tcp: {{ .Values.global.enableIpv4BigTCP | quote }}
 {{- if .Values.global.ipv4.enabled }}
-  enable-ipv4-masquerade: "true"
+  enable-ipv4-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
 {{- else }}
   enable-ipv4-masquerade: "false"
 {{- end }}
