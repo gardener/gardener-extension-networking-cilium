@@ -299,6 +299,42 @@ SnatOutOfCluster
 </tr>
 <tr>
 <td>
+<code>enableIpv4Masquerade</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableIPv4Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableIpv6Masquerade</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableIPv6Masquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableBPFMasquerade</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableBPFMasquerade masquerades packets from endpoints leaving the host with BPF instead of iptables if Snat is not enabled</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>bgpControlPlane</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.BGPControlPlane">

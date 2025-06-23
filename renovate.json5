@@ -93,7 +93,6 @@
     "github.com/google/btree",
     "github.com/google/gnostic-models",
     "github.com/google/go-cmp",
-    "github.com/google/gofuzz",
     "github.com/google/pprof",
     "github.com/google/uuid",
     "github.com/gorilla/websocket",
