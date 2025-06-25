@@ -491,7 +491,7 @@ bool
 </em>
 </td>
 <td>
-<p>Enabled indicates whether hubble is enabled or not.</p>
+<p>Enabled defines whether hubble will be enabled for the cluster.</p>
 </td>
 </tr>
 </tbody>
