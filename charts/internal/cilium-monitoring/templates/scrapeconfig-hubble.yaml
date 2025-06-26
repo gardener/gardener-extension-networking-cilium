@@ -25,7 +25,7 @@ spec:
     namespaces:
       names:
       - kube-system
-    role: endpoints
+    role: Endpoints
     tlsConfig:
       # This is needed because we do not fetch the correct cluster CA bundle right now
       insecureSkipVerify: true
