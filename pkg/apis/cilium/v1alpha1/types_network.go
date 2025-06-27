@@ -80,7 +80,7 @@ const (
 
 // Hubble enablement for cilium
 type Hubble struct {
-	// Enabled indicates whether hubble is enabled or not.
+	// Enabled defines whether hubble will be enabled for the cluster.
 	Enabled bool `json:"enabled"`
 }
 

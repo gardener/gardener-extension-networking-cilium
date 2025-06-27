@@ -86,6 +86,7 @@
     "github.com/go-openapi/jsonreference",
     "github.com/go-openapi/swag",
     "github.com/go-task/slim-sprig/v3",
+    "github.com/go-test/deep",
     "github.com/gobuffalo/flect",
     "github.com/gobwas/glob",
     "github.com/gogo/protobuf",
