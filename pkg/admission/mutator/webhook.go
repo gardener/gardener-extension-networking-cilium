@@ -23,7 +23,7 @@ const (
 	Name = "mutator"
 )
 
-var logger = log.Log.WithName("cilium-validator-webhook")
+var logger = log.Log.WithName("cilium-mutator-webhook")
 
 // New creates a new webhook that validates Shoot resources.
 func New(mgr manager.Manager) (*extensionswebhook.Webhook, error) {

@@ -66,6 +66,7 @@ const (
 type NodePortMode string
 
 const (
+	// Hybrid defines the hybrid nodeport mode.
 	Hybird NodePortMode = "hybrid"
 )
 
@@ -76,17 +77,6 @@ const (
 	// Kubernetes defines the kubernetes CRD store type
 	Kubernetes Store = "kubernetes"
 )
-
-// InstallIPTableRules configuration for cilium
-type InstallIPTableRules struct {
-	Enabled bool
-}
-
-// ExternalIPs configuration for cilium
-type ExternalIP struct {
-	// ExternalIPenabled is used to define whether ExternalIP address is required or not.
-	Enabled bool
-}
 
 // Hubble enablement for cilium
 type Hubble struct {
@@ -113,6 +103,7 @@ type BPFSocketLBHostnsOnly struct {
 
 // CNI configuration for cilium
 type CNI struct {
+	// false indicates that cilium will not overwrite its CNI configuration.
 	Exclusive bool
 }
 
