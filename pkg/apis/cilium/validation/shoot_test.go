@@ -56,7 +56,7 @@ var _ = Describe("Shoot validation", func() {
 			BeEmpty()),
 		Entry("should succeed for dual-stack (v4/v6)", &core.Networking{Type: ptr.To(cilium.Type), IPFamilies: []core.IPFamily{core.IPFamilyIPv4, core.IPFamilyIPv6}},
 			BeEmpty()),
-		Entry("should succeed for dual-stack (v6/v64", &core.Networking{Type: ptr.To(cilium.Type), IPFamilies: []core.IPFamily{core.IPFamilyIPv6, core.IPFamilyIPv4}},
+		Entry("should succeed for dual-stack (v6/v4", &core.Networking{Type: ptr.To(cilium.Type), IPFamilies: []core.IPFamily{core.IPFamilyIPv6, core.IPFamilyIPv4}},
 			BeEmpty()),
 	)
 })

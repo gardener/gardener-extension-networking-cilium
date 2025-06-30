@@ -34,10 +34,6 @@ func NewShootValidator(mgr manager.Manager) extensionswebhook.Validator {
 	}
 }
 
-func NewValidator() extensionswebhook.Validator {
-	return &shoot{}
-}
-
 type shoot struct {
 	client         client.Client
 	decoder        runtime.Decoder
