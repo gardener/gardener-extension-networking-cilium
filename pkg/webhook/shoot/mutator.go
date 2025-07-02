@@ -7,7 +7,7 @@ package shoot
 import (
 	"context"
 	"fmt"
-	"regexp"
+	"strings"
 
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	"github.com/go-logr/logr"
@@ -40,12 +40,9 @@ func (m *mutator) Mutate(ctx context.Context, new, _ client.Object) error {
 		return nil
 	}
 
-	var regexNodeLocalDNS = regexp.MustCompile(`^node-local-dns-.*`)
-
 	switch x := new.(type) {
 	case *corev1.ConfigMap:
-		switch regexNodeLocalDNS.MatchString(x.Name) {
-		case true:
+		if strings.HasPrefix(x.Name, "node-local-dns-") {
 			logMutation(logger, x.Kind, x.Namespace, x.Name)
 			return m.mutateNodeLocalDNSConfigMap(ctx, x)
 		}
