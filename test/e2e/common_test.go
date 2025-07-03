@@ -12,6 +12,8 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/test/framework"
 	. "github.com/onsi/ginkgo/v2"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/ptr"
@@ -46,6 +48,8 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			Annotations: map[string]string{
 				v1beta1constants.AnnotationShootCloudConfigExecutionMaxDelaySeconds: "0",
 				v1beta1constants.ShootDisableIstioTLSTermination:                    "true",
+				v1beta1constants.ShootAlphaControlPlaneScaleDownDisabled:            "true",
+				v1beta1constants.ShootAlphaControlPlaneVPNVPAUpdateDisabled:         "true",
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
@@ -65,6 +69,17 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 				KubeProxy: &gardencorev1beta1.KubeProxyConfig{
 					Mode:    ptr.To(gardencorev1beta1.ProxyModeIPTables),
 					Enabled: ptr.To(false),
+				},
+				VerticalPodAutoscaler: &gardencorev1beta1.VerticalPodAutoscaler{
+					Enabled: false,
+				},
+				KubeAPIServer: &gardencorev1beta1.KubeAPIServerConfig{
+					Autoscaling: &gardencorev1beta1.ControlPlaneAutoscaling{
+						MinAllowed: map[corev1.ResourceName]resource.Quantity{
+							corev1.ResourceCPU:    resource.MustParse("250m"),
+							corev1.ResourceMemory: resource.MustParse("500Mi"),
+						},
+					},
 				},
 			},
 			Networking: &gardencorev1beta1.Networking{
