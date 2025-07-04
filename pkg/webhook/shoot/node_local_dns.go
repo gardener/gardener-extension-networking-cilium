@@ -7,7 +7,9 @@ package shoot
 import (
 	"context"
 	"regexp"
+	"strings"
 
+	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -33,6 +35,10 @@ func (m *mutator) mutateNodeLocalDNSDaemonSet(ctx context.Context, daemonset *ap
 	ciliumArgs := []string{"-skipteardown=true", "-setupinterface=false", "-setupiptables=false"}
 	for k, v := range daemonset.Spec.Template.Spec.Containers {
 		if v.Name == "node-cache" {
+			for _, arg := range ciliumArgs {
+				prefixes := strings.Split(arg, "=")
+				daemonset.Spec.Template.Spec.Containers[k].Args = extensionswebhook.EnsureNoStringWithPrefix(daemonset.Spec.Template.Spec.Containers[k].Args, prefixes[0])
+			}
 			daemonset.Spec.Template.Spec.Containers[k].Args = append(daemonset.Spec.Template.Spec.Containers[k].Args, ciliumArgs...)
 			daemonset.Spec.Template.Spec.Containers[k].LivenessProbe.HTTPGet.Host = ""
 			break
