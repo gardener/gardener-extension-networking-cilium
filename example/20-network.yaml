@@ -28,7 +28,7 @@ spec:
       dns:
         domain: foo.bar.example.com
       kubernetes:
-        version: 1.28.4
+        version: 1.32.0
 ---
 apiVersion: extensions.gardener.cloud/v1alpha1
 kind: Network
