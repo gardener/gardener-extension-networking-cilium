@@ -147,7 +147,7 @@ jobs:
                   value: |
                     we use gosec (linter) for SAST scans
                     see: https://github.com/securego/gosec
-             - name: test-results
+            - name: test-results
               relation: local
               access:
                 type: localBlob
