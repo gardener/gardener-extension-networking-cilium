@@ -17,8 +17,8 @@ spec:
         metadata:
           labels:
             k8s-app: hubble-generate-certs
-          networking.gardener.cloud/to-public-networks: allowed
-          networking.gardener.cloud/to-dns: allowed
+            networking.gardener.cloud/to-public-networks: allowed
+            networking.gardener.cloud/to-dns: allowed
         spec:
           securityContext:
             seccompProfile:
