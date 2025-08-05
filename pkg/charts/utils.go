@@ -6,6 +6,7 @@ package charts
 
 import (
 	"fmt"
+	"net/netip"
 	"net/url"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
@@ -284,7 +285,11 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		if cluster.Shoot.Status.Networking.Pods == nil {
 			return requirementsConfig, globalConfig, fmt.Errorf("pods cidr required for setting ipv6 native routing cidr was not yet set")
 		}
-		globalConfig.IPv6NativeRoutingCIDR = cluster.Shoot.Status.Networking.Pods[0]
+		ipv6Pods, err := firstIPv6Range(cluster.Shoot.Status.Networking.Pods)
+		if err != nil {
+			return requirementsConfig, globalConfig, fmt.Errorf("failed to parse pods cidrs for setting ipv6 native routing cidr: %w", err)
+		}
+		globalConfig.IPv6NativeRoutingCIDR = ipv6Pods
 	}
 
 	if config.SnatToUpstreamDNS != nil && config.SnatToUpstreamDNS.Enabled {
@@ -340,4 +345,17 @@ func getK8sServiceHost(cluster *extensionscontroller.Cluster) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("external address not found among advertised adresses")
+}
+
+func firstIPv6Range(cidrs []string) (string, error) {
+	for i, cidr := range cidrs {
+		prefix, err := netip.ParsePrefix(cidr)
+		if err != nil {
+			return "", fmt.Errorf("error while parsing pod cidr (%s, index %d): %w", cidr, i, err)
+		}
+		if prefix.Addr().Is6() {
+			return cidr, nil
+		}
+	}
+	return "", fmt.Errorf("no valid pod IPv6 range found in %v", cidrs)
 }
