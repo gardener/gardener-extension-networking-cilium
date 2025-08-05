@@ -34,10 +34,6 @@ spec:
     - __name__
     action: keep
     regex: ^(hubble_flows_processed_total|hubble_drop_total|hubble_port_distribution_total|hubble_tcp_flags_total|hubble_icmp_total)$
-  - sourceLabels:
-    - namespace
-    action: keep
-    regex: kube-system
   relabelings:
   - action: replace
     replacement: hubble-metrics
