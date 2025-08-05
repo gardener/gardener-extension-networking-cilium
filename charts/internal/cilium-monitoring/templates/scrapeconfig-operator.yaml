@@ -34,10 +34,6 @@ spec:
     - __name__
     action: keep
     regex: ^(cilium_operator_process_cpu_seconds_total|cilium_operator_process_resident_memory_bytes)$
-  - sourceLabels:
-    - namespace
-    action: keep
-    regex: kube-system
   relabelings:
   - action: replace
     replacement: cilium-operator-metrics
