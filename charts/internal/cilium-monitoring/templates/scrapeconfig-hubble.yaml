@@ -55,7 +55,7 @@ spec:
     replacement: kube-apiserver:443
   - sourceLabels: [__meta_kubernetes_pod_name]
     separator: ;
-    regex: (.+);(.+)
+    regex: (.+)
     targetLabel: __metrics_path__
     replacement: /api/v1/namespaces/kube-system/pods/${1}:9091/proxy/metrics
     action: replace
