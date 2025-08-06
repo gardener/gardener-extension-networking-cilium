@@ -35,10 +35,10 @@ func (a *actuator) updateProviderStatus(
 		100,
 		"Cilium was configured successfully")
 	var ipFamilies []extensionsv1alpha1.IPFamily
-	if config.IPv4 != nil {
+	if config.IPv4 != nil && config.IPv4.Enabled {
 		ipFamilies = append(ipFamilies, extensionsv1alpha1.IPFamilyIPv4)
 	}
-	if config.IPv6 != nil {
+	if config.IPv6 != nil && config.IPv6.Enabled {
 		ipFamilies = append(ipFamilies, extensionsv1alpha1.IPFamilyIPv6)
 	}
 	network.Status.IPFamilies = ipFamilies
