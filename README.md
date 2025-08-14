@@ -1,6 +1,7 @@
 # [Gardener Extension for cilium Networking](https://gardener.cloud)
+
 [![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-extension-networking-cilium)](https://api.reuse.software/info/github.com/gardener/gardener-extension-networking-cilium)
-[![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener/pipelines/gardener-extension-networking-cilium-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener/pipelines/gardener-extension-networking-cilium-master/jobs/master-head-update-job)
+[![Build](https://github.com/gardener/gardener-extension-networking-cilium/actions/workflows/non-release.yaml/badge.svg)](https://github.com/gardener/gardener-extension-networking-cilium/actions/workflows/non-release.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-networking-cilium)](https://goreportcard.com/report/github.com/gardener/gardener-extension-networking-cilium)
 
 This controller operates on the [`Network`](https://github.com/gardener/gardener/blob/master/docs/proposals/03-networking-extensibility.md#gardener-network-extension) resource in the `extensions.gardener.cloud/v1alpha1` API group. It manages those objects that are requesting [cilium Networking](https://cilium.io/) configuration (`.spec.type=cilium`):
