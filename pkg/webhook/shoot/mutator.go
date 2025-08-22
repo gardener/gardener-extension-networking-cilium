@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	"github.com/go-logr/logr"
@@ -51,8 +52,8 @@ func (m *mutator) Mutate(ctx context.Context, new, _ client.Object) error {
 		}
 
 	case *appsv1.DaemonSet:
-		switch x.Name {
-		case "node-local-dns":
+		// Global daemonset is called "node-local-dns", worker pool specific daemonsets are called "node-local-dns-<worker-pool-name>".
+		if strings.HasPrefix(x.Name, "node-local-dns") {
 			logMutation(logger, x.Kind, x.Namespace, x.Name)
 			return m.mutateNodeLocalDNSDaemonSet(ctx, x)
 		}
