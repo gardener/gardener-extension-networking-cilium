@@ -1,0 +1,6 @@
+apiVersion: operator.gardener.cloud/v1alpha1
+kind: Extension
+metadata:
+  name: networking-cilium
+  annotations:
+    security.gardener.cloud/pod-security-enforce: baseline
