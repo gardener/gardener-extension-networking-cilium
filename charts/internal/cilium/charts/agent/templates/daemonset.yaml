@@ -84,6 +84,8 @@ spec:
             httpHeaders:
             - name: "brief"
               value: "true"
+            - name: "require-k8s-connectivity"
+              value: "false"
 {{- end }}
           failureThreshold: 10
           periodSeconds: 30
