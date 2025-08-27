@@ -53,6 +53,7 @@ type globalConfig struct {
 	BGPControlPlane                     bgpControlPlane                         `json:"bgpControlPlane"`
 	ConfigMapHash                       string                                  `json:"configMapHash"`
 	ConfigMapLabelPrefixHash            string                                  `json:"configMapLabelPrefixHash"`
+	PolicyAuditMode                     bool                                    `json:"policyAuditMode"`
 }
 
 // etcd related configuration for cilium

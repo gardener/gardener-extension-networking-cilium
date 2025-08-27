@@ -231,6 +231,9 @@ type NetworkConfig struct {
 	// BGPControlPlane enables the BGP Control Plane
 	// +optional
 	BGPControlPlane *BGPControlPlane `json:"bgpControlPlane,omitempty"`
+	// PolicyAuditMode enables non-drop mode for installed policies
+	// +optional
+	PolicyAuditMode *bool `json:"policyAuditMode,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

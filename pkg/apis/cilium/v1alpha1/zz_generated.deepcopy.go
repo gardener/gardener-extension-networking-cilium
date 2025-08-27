@@ -270,6 +270,11 @@ func (in *NetworkConfig) DeepCopyInto(out *NetworkConfig) {
 		*out = new(BGPControlPlane)
 		**out = **in
 	}
+	if in.PolicyAuditMode != nil {
+		in, out := &in.PolicyAuditMode, &out.PolicyAuditMode
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

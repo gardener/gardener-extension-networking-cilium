@@ -578,8 +578,8 @@ data:
 {{- if hasKey .Values "synchronizeK8sNodes" }}
   synchronize-k8s-nodes: {{ .Values.synchronizeK8sNodes | quote }}
 {{- end }}
-{{- if .Values.policyAuditMode }}
-  policy-audit-mode: {{ .Values.policyAuditMode | quote }}
+{{- if .Values.global.policyAuditMode }}
+  policy-audit-mode: {{ .Values.global.policyAuditMode | quote }}
 {{- end }}
 
 {{- if ne $defaultOperatorApiServeAddr "localhost:9234" }}
