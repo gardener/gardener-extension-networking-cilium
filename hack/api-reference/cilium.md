@@ -347,6 +347,18 @@ BGPControlPlane
 <p>BGPControlPlane enables the BGP Control Plane</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>policyAuditMode</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PolicyAuditMode enables non-drop mode for installed policies</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BGPControlPlane">BGPControlPlane
