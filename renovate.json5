@@ -6,6 +6,9 @@
   ],
   "labels": ["kind/enhancement"],
   "postUpdateOptions": ["gomodTidy"],
+  postUpgradeTasks: {
+    commands: ['make generate'],
+  },
   "customManagers": [
     {
       // Generic detection of container images in images.yaml via container registry.
