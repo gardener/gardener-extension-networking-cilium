@@ -50,6 +50,13 @@ The egress gateway feature is only supported in gardener with an overlay network
 
 The `snatToUpstreamDNS.enabled` field describes whether the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
 
+The `policyAuditMode` field describes whether the [policy audit mode](https://docs.cilium.io/en/latest/security/policy-creation/#enable-policy-audit-mode-entire-daemon) is enabled for the entire Cilium Daemon or not (default). When enabled, this will log all dropped packets due to policy enforcement. Policy audit mode can be enabled on the shoot by adding the following configuration:
+```yaml
+apiVersion: cilium.networking.extensions.gardener.cloud/v1alpha1
+kind: NetworkConfig
+policyAuditMode: true
+```
+
 ## Example `Shoot` manifest
 
 Please find below an example `Shoot` manifest with cilium networking configuration:
