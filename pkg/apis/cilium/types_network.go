@@ -205,6 +205,8 @@ type NetworkConfig struct {
 	EnableBPFMasquerade *bool
 	// BGPControlPlane enables the BGP Control Plane
 	BGPControlPlane *BGPControlPlane
+	// PolicyAuditMode enables non-drop mode for installed policies
+	PolicyAuditMode *bool
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
