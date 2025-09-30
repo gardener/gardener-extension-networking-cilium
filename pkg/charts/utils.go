@@ -117,6 +117,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
+	PolicyAuditMode:          false,
 }
 
 func newGlobalConfig() globalConfig {
@@ -310,6 +311,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.EnableBPFMasquerade != nil {
 		globalConfig.EnableBPFMasquerade = *config.EnableBPFMasquerade
+	}
+
+	if config.PolicyAuditMode != nil {
+		globalConfig.PolicyAuditMode = *config.PolicyAuditMode
 	}
 
 	if config.Overlay != nil && !config.Overlay.Enabled && config.Overlay.CreatePodRoutes != nil {
