@@ -40,7 +40,6 @@ spec:
               # the values used in past runs by inspecting the completed pod.
               args:
                 - "--ca-generate=true"
-                - "--ca-reuse-secret"
                 - "--ca-secret-namespace=kube-system"
                 - "--ca-secret-name=cilium-ca"
                 - "--ca-common-name=Cilium CA"
