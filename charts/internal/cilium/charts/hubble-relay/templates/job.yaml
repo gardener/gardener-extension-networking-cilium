@@ -12,6 +12,7 @@ metadata:
     app.kubernetes.io/name: hubble-generate-certs
     app.kubernetes.io/part-of: cilium
 spec:
+  backoffLimit: 10
   template:
     metadata:
       labels:
