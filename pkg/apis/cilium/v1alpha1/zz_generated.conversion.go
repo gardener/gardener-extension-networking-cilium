@@ -390,7 +390,6 @@ func autoConvert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfi
 	out.EnableBPFMasquerade = (*bool)(unsafe.Pointer(in.EnableBPFMasquerade))
 	out.BGPControlPlane = (*cilium.BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
 	out.PolicyAuditMode = (*bool)(unsafe.Pointer(in.PolicyAuditMode))
-	// WARNING: in.Encryption requires manual conversion: does not exist in peer-type
 	out.Encryption = (*cilium.Encryption)(unsafe.Pointer(in.Encryption))
 	return nil
 }

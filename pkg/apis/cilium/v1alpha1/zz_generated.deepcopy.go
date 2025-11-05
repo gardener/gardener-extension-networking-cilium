@@ -289,6 +289,8 @@ func (in *NetworkConfig) DeepCopyInto(out *NetworkConfig) {
 	if in.PolicyAuditMode != nil {
 		in, out := &in.PolicyAuditMode, &out.PolicyAuditMode
 		*out = new(bool)
+		**out = **in
+	}
 	if in.Encryption != nil {
 		in, out := &in.Encryption, &out.Encryption
 		*out = new(Encryption)

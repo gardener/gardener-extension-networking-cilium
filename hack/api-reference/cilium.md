@@ -352,6 +352,15 @@ BGPControlPlane
 <code>policyAuditMode</code></br>
 <em>
 bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PolicyAuditMode enables non-drop mode for installed policies</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>encryption</code></br>
 <em>
 <a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">
@@ -361,7 +370,6 @@ Encryption
 </td>
 <td>
 <em>(Optional)</em>
-<p>PolicyAuditMode enables non-drop mode for installed policies</p>
 <p>Encryption handles traffic encryption configuration</p>
 </td>
 </tr>

@@ -6,6 +6,7 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -20,14 +21,14 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/test/templates"
 )
 
-var _ = Describe("Network Extension Tests", Label("Network"), func() {
+var _ = DescribeTable("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
-	f.Shoot = defaultShoot("con-test")
-
-	It("Create Shoot, Test Network (Cilium Connectivity), Delete Shoot", Label("good-case"), func() {
+	DescribeTable("Create Shoot, Test Network (Cilium Connectivity), Delete Shoot", Label("good-case"), func(shootSuffix, config *ciliumv1alpha1.NetworkConfig) {
+		f.Shoot = defaultShoot(fmt.Sprintf("con-%s", shootSuffix), config)
 		By("Create Shoot")
 		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
@@ -62,9 +63,11 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 		shootAdminKubeconfig, err := access.RequestAdminKubeconfigForShoot(ctx, f.GardenClient, f.Shoot, ptr.To(expirationSeconds))
 		Expect(err).NotTo(HaveOccurred())
 
-		newShootKubeconfigSecret := &corev1.Secret{ObjectMeta: v1.ObjectMeta{
-			Name:      "kubeconfig",
-			Namespace: values.HelmDeployNamespace},
+		newShootKubeconfigSecret := &corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "kubeconfig",
+				Namespace: values.HelmDeployNamespace,
+			},
 			Data: map[string][]byte{"kubeconfig": shootAdminKubeconfig},
 		}
 		err = f.ShootFramework.ShootClient.Client().Create(ctx, newShootKubeconfigSecret)
@@ -119,5 +122,8 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		By("Network Test (Cilium Connectivity) status")
 		Expect(succeeded).To(BeTrue())
-	})
+	},
+		Entry("default config", "default", defaultOverlayCiliumConfig()),
+		Entry("wireguard config", "wg", wireguardCiliumConfig()),
+	)
 })

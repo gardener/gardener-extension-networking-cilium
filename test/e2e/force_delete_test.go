@@ -7,15 +7,15 @@ package e2e_test
 import (
 	"context"
 
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Network Extension Tests", Label("Network"), func() {
+var _ = DescribeTable("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
-	f.Shoot = defaultShoot("e2e-force-del")
-
-	It("Create Shoot, Test Network, Force Delete Shoot", Label("force-delete"), func() {
+	DescribeTable("Create Shoot, Test Network, Force Delete Shoot", Label("force-delete"), func(shootSuffix string, config *ciliumv1alpha1.NetworkConfig) {
+		f.Shoot = defaultShoot("forcedel-%s", config)
 		By("Create Shoot")
 		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
@@ -33,5 +33,8 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		By("Network Test status")
 		Expect(succeeded).To(BeTrue())
-	})
+	},
+		Entry("overlay config", "dft", defaultOverlayCiliumConfig()),
+		Entry("wireguard config", "wg", wireguardCiliumConfig()),
+	)
 })
