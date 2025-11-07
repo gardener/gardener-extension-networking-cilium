@@ -5,3 +5,10 @@ main-source:
         policy: skip
         comment: |
           we use gosec for sast scanning. See attached log.
+
+labels:
+  - name: cloud.gardener.cnudie/responsibles
+    value:
+      - type: githubTeam
+        teamname: gardener/gardener-extension-networking-cilium-maintainers
+        github_hostname: github.com
