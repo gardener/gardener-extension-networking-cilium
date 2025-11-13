@@ -118,6 +118,10 @@ var defaultGlobalConfig = globalConfig{
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
 	PolicyAuditMode:          false,
+	Encryption: encryption{
+		NodeEncryption: false,
+		Enabled:        false,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -325,9 +329,56 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
 	}
 
+	err := applyEncryptionConfig(&globalConfig, config)
+	if err != nil {
+		return requirementsConfig, globalConfig, fmt.Errorf("applying encryption config: %w", err)
+	}
+
 	globalConfig.IPAM.Mode = ipamMode
 
 	return requirementsConfig, globalConfig, nil
+}
+
+func applyEncryptionConfig(globalCfg *globalConfig, config *ciliumv1alpha1.NetworkConfig) error {
+	if config.Encryption == nil {
+		return nil
+	}
+
+	enc := encryption{
+		Enabled:        config.Encryption.Enabled,
+		Mode:           string(config.Encryption.Mode),
+		NodeEncryption: config.Encryption.NodeTrafficEncryption,
+	}
+
+	if config.Encryption.Mode == ciliumv1alpha1.EncryptionModeWireguard && config.Encryption.StrictMode {
+		strictMode := encryptionWireguardStrictMode{
+			Enabled: true,
+		}
+		// Allow dynamic lookup of remote node identities.
+		// This is required when tunneling is used or direct routing is used and the node CIDR and pod CIDR overlap.
+		// Ref: https://github.com/cilium/cilium/blob/f74a0deeb2c554d7f43a45e75b2559dc83582859/install/kubernetes/cilium/values.yaml#L1081-L1082
+		if globalCfg.Tunnel != ciliumv1alpha1.Disabled {
+			strictMode.AllowRemoteNodeIdentities = true
+		}
+		if config.Overlay != nil && !config.Overlay.Enabled {
+			if globalCfg.PodCIDR != "" && globalCfg.NodeCIDR != "" {
+				podPrefix, err := netip.ParsePrefix(globalCfg.PodCIDR)
+				if err != nil {
+					return fmt.Errorf("podCIDR %s is not a valid netip.Prefix: %w", globalCfg.PodCIDR, err)
+				}
+				nodePrefix, err := netip.ParsePrefix(globalCfg.NodeCIDR)
+				if err != nil {
+					return fmt.Errorf("nodeCIDR %s is not a valid netip.Prefix: %w", globalCfg.NodeCIDR, err)
+				}
+				if podPrefix.Overlaps(nodePrefix) {
+					strictMode.AllowRemoteNodeIdentities = true
+				}
+			}
+		}
+		enc.Wireguard.StrictMode = strictMode
+	}
+	globalCfg.Encryption = enc
+	return nil
 }
 
 func getK8sServiceHost(cluster *extensionscontroller.Cluster) (string, error) {

@@ -6,6 +6,7 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	"github.com/gardener/gardener-extension-networking-cilium/test/templates"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/test/framework"
@@ -27,9 +29,8 @@ const (
 
 var _ = Describe("Network Extension Tests", Label("Network"), func() {
 	f := defaultShootCreationFramework()
-	f.Shoot = defaultShoot("ping-test")
-
-	It("Create Shoot, Test Network (Ping), Delete Shoot", Label("good-case"), func() {
+	DescribeTable("Create Shoot, Test Network (Ping), Delete Shoot", func(shootSuffix string, config *ciliumv1alpha1.NetworkConfig) {
+		f.Shoot = defaultShoot(fmt.Sprintf("ping-%s", shootSuffix), config)
 		By("Create Shoot")
 		ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
 		defer cancel()
@@ -61,7 +62,10 @@ var _ = Describe("Network Extension Tests", Label("Network"), func() {
 
 		By("Network Test (Ping) status")
 		Expect(succeeded).To(BeTrue())
-	})
+	},
+		Entry("default config", "default", defaultOverlayCiliumConfig()),
+		Entry("wireguard config", "wg", wireguardCiliumConfig()),
+	)
 })
 
 func testNetwork(ctx context.Context, f *framework.ShootCreationFramework) bool {

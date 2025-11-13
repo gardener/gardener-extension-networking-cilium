@@ -109,4 +109,14 @@ var _ = Describe("Network validation", func() {
 		Entry("should succeed", "dev-1234", field.NewPath("device"),
 			BeEmpty()),
 	)
+	DescribeTable("#ValidateEncryption",
+		func(enc *apiscilium.Encryption, matcher gomegatypes.GomegaMatcher) {
+			Expect(validation.ValidateEncryption(enc, field.NewPath("encryption"))).To(matcher)
+		},
+
+		Entry("should succeed if encryption is not enabled", &apiscilium.Encryption{Enabled: false}, BeEmpty()),
+		Entry("should error if encryption mode is ipsec but strict mode is used", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionModeIPSec, StrictMode: true},
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")}))),
+		),
+	)
 })

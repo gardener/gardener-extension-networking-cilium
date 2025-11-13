@@ -155,6 +155,24 @@ type BGPControlPlane struct {
 	Enabled bool `json:"enabled"`
 }
 
+type EncryptionMode string
+
+const (
+	EncryptionModeWireguard EncryptionMode = "wireguard"
+	EncryptionModeIPSec     EncryptionMode = "ipsec"
+)
+
+type Encryption struct {
+	Mode                  EncryptionMode `json:"mode"`
+	Enabled               bool           `json:"enabled"`
+	NodeTrafficEncryption bool           `json:"nodeToNodeEnabled"`
+
+	// StrictMode enables StrictMode encryption.
+	// Must be used with Mode "wireguard"
+	// See https://docs.cilium.io/en/stable/security/network/encryption/#egress-traffic-to-not-yet-discovered-remote-endpoints-may-be-unencrypted for more information
+	StrictMode bool `json:"strictMode"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -234,6 +252,9 @@ type NetworkConfig struct {
 	// PolicyAuditMode enables non-drop mode for installed policies
 	// +optional
 	PolicyAuditMode *bool `json:"policyAuditMode,omitempty"`
+	// Encryption handles traffic encryption configuration
+	// +optional
+	Encryption *Encryption `json:"encryption,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

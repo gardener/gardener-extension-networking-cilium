@@ -359,6 +359,20 @@ bool
 <p>PolicyAuditMode enables non-drop mode for installed policies</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>encryption</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">
+Encryption
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Encryption handles traffic encryption configuration</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.BGPControlPlane">BGPControlPlane
@@ -478,6 +492,77 @@ bool
 </tr>
 </tbody>
 </table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">Encryption
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>mode</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.EncryptionMode">
+EncryptionMode
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>nodeToNodeEnabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>strictMode</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>StrictMode enables StrictMode encryption.
+Must be used with Mode &ldquo;wireguard&rdquo;
+See <a href="https://docs.cilium.io/en/stable/security/network/encryption/#egress-traffic-to-not-yet-discovered-remote-endpoints-may-be-unencrypted">https://docs.cilium.io/en/stable/security/network/encryption/#egress-traffic-to-not-yet-discovered-remote-endpoints-may-be-unencrypted</a> for more information</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.EncryptionMode">EncryptionMode
+(<code>string</code> alias)</p></h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption">Encryption</a>)
+</p>
+<p>
+</p>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.Hubble">Hubble
 </h3>
 <p>
