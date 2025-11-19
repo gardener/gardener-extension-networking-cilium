@@ -42,10 +42,12 @@ func (m *mutator) mutateNodeLocalDNSDaemonSet(ctx context.Context, daemonset *ap
 			daemonset.Spec.Template.Spec.Containers[k].Args = append(daemonset.Spec.Template.Spec.Containers[k].Args, ciliumArgs...)
 			daemonset.Spec.Template.Spec.Containers[k].LivenessProbe.HTTPGet.Host = ""
 		}
+	}
+	for k, v := range daemonset.Spec.Template.Spec.InitContainers {
 		if v.Name == "coredns-config-adapter" {
-			for i, arg := range daemonset.Spec.Template.Spec.Containers[k].Args {
+			for i, arg := range daemonset.Spec.Template.Spec.InitContainers[k].Args {
 				if strings.Contains(arg, "bind=") {
-					daemonset.Spec.Template.Spec.Containers[k].Args[i] = "-bind=bind 0.0.0.0"
+					daemonset.Spec.Template.Spec.InitContainers[k].Args[i] = "-bind=bind 0.0.0.0"
 				}
 			}
 		}
