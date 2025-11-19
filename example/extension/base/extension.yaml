@@ -8,15 +8,15 @@ spec:
       runtimeCluster:
         helm:
           ociRepository:
-            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-cilium-runtime:v1.45.2
+            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-cilium-runtime:v1.45.3-dev
       virtualCluster:
         helm:
           ociRepository:
-            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-cilium-application:v1.45.2
+            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-cilium-application:v1.45.3-dev
     extension:
       helm:
         ociRepository:
-          ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/networking-cilium:v1.45.2
+          ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/networking-cilium:v1.45.3-dev
   resources:
   - kind: Network
     type: cilium
