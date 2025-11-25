@@ -8,6 +8,7 @@ import (
 	"context"
 	"os"
 
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/test/framework"
@@ -16,11 +17,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/utils/ptr"
 )
 
 var (
 	parentCtx context.Context
+	encoder   runtime.Encoder = &jsonserializer.Serializer{}
 )
 
 var _ = BeforeEach(func() {
@@ -41,7 +44,31 @@ func defaultShootCreationFramework() *framework.ShootCreationFramework {
 	})
 }
 
-func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
+func defaultOverlayCiliumConfig() *ciliumv1alpha1.NetworkConfig {
+	return &ciliumv1alpha1.NetworkConfig{
+		Hubble: &ciliumv1alpha1.Hubble{
+			Enabled: true,
+		},
+		Overlay: &ciliumv1alpha1.Overlay{
+			Enabled: true,
+		},
+	}
+}
+
+func wireguardCiliumConfig() *ciliumv1alpha1.NetworkConfig {
+	config := defaultOverlayCiliumConfig()
+	config.Encryption = &ciliumv1alpha1.Encryption{
+		Enabled: true,
+		Mode:    ciliumv1alpha1.EncryptionModeWireguard,
+	}
+	return config
+}
+
+func defaultShoot(generateName string, ciliumConfig *ciliumv1alpha1.NetworkConfig) *gardencorev1beta1.Shoot {
+	rawConfig, err := runtime.Encode(encoder, ciliumConfig)
+	if err != nil {
+		panic(err)
+	}
 	return &gardencorev1beta1.Shoot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: generateName,
@@ -85,7 +112,7 @@ func defaultShoot(generateName string) *gardencorev1beta1.Shoot {
 			Networking: &gardencorev1beta1.Networking{
 				Type:           ptr.To("cilium"),
 				Nodes:          ptr.To("10.0.0.0/16"),
-				ProviderConfig: &runtime.RawExtension{Raw: []byte(`{"apiVersion":"cilium.networking.extensions.gardener.cloud/v1alpha1","kind":"NetworkConfig","hubble":{"enabled":true},"overlay":{"enabled":true}}`)},
+				ProviderConfig: &runtime.RawExtension{Raw: rawConfig},
 			},
 			Provider: gardencorev1beta1.Provider{
 				Type: "local",

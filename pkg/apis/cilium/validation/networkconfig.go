@@ -16,8 +16,10 @@ import (
 	apiscilium "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 )
 
-const deviceFormat = "[^/\\s]{1,15}"
-const deviceMaxLength = 15
+const (
+	deviceFormat    = "[^/\\s]{1,15}"
+	deviceMaxLength = 15
+)
 
 var deviceRegexp = regexp.MustCompile("^" + deviceFormat + "$")
 
@@ -53,6 +55,10 @@ func ValidateNetworkConfig(networkConfig *apiscilium.NetworkConfig, fldPath *fie
 	allowedLoadBalancingModes := sets.New[apiscilium.LoadBalancingMode](apiscilium.SNAT, apiscilium.DSR, apiscilium.Hybrid)
 	if networkConfig.LoadBalancingMode != nil && !allowedLoadBalancingModes.Has(*networkConfig.LoadBalancingMode) {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("loadBalancingMode"), *networkConfig.LoadBalancingMode, fmt.Sprintf("unsupported value %q for loadBalancingMode, supported values are [%q, %q, %q]", *networkConfig.LoadBalancingMode, apiscilium.SNAT, apiscilium.DSR, apiscilium.Hybrid)))
+	}
+
+	if networkConfig.Encryption != nil {
+		allErrs = append(allErrs, ValidateEncryption(networkConfig.Encryption, fldPath.Child("encryption"))...)
 	}
 
 	return allErrs
@@ -96,5 +102,18 @@ func ValidateDevice(device string, fldPath *field.Path) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fldPath, device, fmt.Sprintf("device name must match the pattern %q", deviceFormat)))
 	}
 
+	return allErrs
+}
+
+func ValidateEncryption(enc *apiscilium.Encryption, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if !enc.Enabled {
+		return allErrs
+	}
+	if enc.StrictMode {
+		if enc.Mode != apiscilium.EncryptionModeWireguard {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("mode"), enc.Mode, "strict mode can only be used with wireguard as encyption mode"))
+		}
+	}
 	return allErrs
 }
