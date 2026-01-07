@@ -16,7 +16,7 @@ spec:
         networking.gardener.cloud/to-dns: allowed
     spec:
       containers:
-      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.10.0
+      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.11.0
         name: networking-shoot-tests-cilium
         command: ["sh", "-c"]
         args:
