@@ -26,6 +26,7 @@ echo '172.18.255.1 api.con-wg.local.external.local.gardener.cloud' >> /etc/hosts
 echo '172.18.255.1 api.forcedel-dft.local.external.local.gardener.cloud' >> /etc/hosts
 echo '172.18.255.1 api.forcedel-wg.local.external.local.gardener.cloud' >> /etc/hosts
 echo '127.0.0.1 garden.local.gardener.cloud' >> /etc/hosts
+echo '127.0.0.1 registry.local.gardener.cloud' >> /etc/hosts
 
 make kind-up
 trap '{
