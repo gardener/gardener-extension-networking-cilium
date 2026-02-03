@@ -80,6 +80,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			cilium.Name,
 			ciliumcontroller.ShootWebhooksResourceName,
 			map[string]string{v1beta1constants.LabelNetworkingProvider: cilium.Type},
+			generalOpts,
 			webhookServerOptions,
 			webhookSwitches,
 		)
@@ -150,7 +151,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation, nil)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
 
-			atomicShootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil, generalOpts.Completed().SelfHostedShootCluster)
+			atomicShootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil)
 			if err != nil {
 				return fmt.Errorf("could not add webhooks to manager: %w", err)
 			}
