@@ -8324,7 +8324,7 @@
     ]
   },
   "timezone": "utc",
-  "title": "Cilium v1.12 Agent Metrics",
+  "title": "Cilium Agent Metrics",
   "uid": "dtas",
   "version": 3
 }
