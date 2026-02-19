@@ -6,5 +6,3 @@ maxUnavailable: 2
 resources:
   requests:
     memory: 200Mi
-  limits:
-    memory: 1Gi
