@@ -5,5 +5,3 @@ synchronizeK8sNodes: true
 resources:
   requests:
     memory: 150Mi
-  limits:
-    memory: 1Gi
