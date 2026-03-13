@@ -7,7 +7,7 @@
   "labels": ["kind/enhancement"],
   "postUpdateOptions": ["gomodTidy"],
   postUpgradeTasks: {
-    commands: ['make generate'],
+    commands: ['make generate MODE="sequential"'],
   },
   "customManagers": [
     {
