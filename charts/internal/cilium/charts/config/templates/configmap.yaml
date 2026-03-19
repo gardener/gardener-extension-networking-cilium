@@ -668,6 +668,19 @@ data:
   enable-bgp-control-plane: "false"
 {{- end }}
 
+{{- if .Values.global.l2announcements.enabled }}
+  # Enable L2 announcements
+  enable-l2-announcements: {{ .Values.global.l2announcements.enabled | quote }}
+  {{- if .Values.global.l2announcements.leaseDuration }}
+  l2-announcements-lease-duration: {{ .Values.global.l2announcements.leaseDuration | quote }}
+  {{- end}}
+  {{- if .Values.global.l2announcements.leaseRenewDeadline }}
+  l2-announcements-renew-deadline: {{ .Values.global.l2announcements.leaseRenewDeadline | quote }}
+  {{- end}}
+  {{- if .Values.global.l2announcements.leaseRetryPeriod }}
+  l2-announcements-retry-period: {{ .Values.global.l2announcements.leaseRetryPeriod | quote }}
+  {{- end}}
+{{- end}}
   egress-gateway-reconciliation-trigger-interval: "1s"
   enable-vtep: "false"
   vtep-endpoint: ""
