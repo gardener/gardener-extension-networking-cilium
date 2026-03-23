@@ -233,6 +233,20 @@ LoadBalancingMode
 </tr>
 <tr>
 <td>
+<code>l2Announcements</code></br>
+<em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.L2Announcements">
+L2Announcements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>L2Announcements enables the L2 announcements feature</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>ipv4NativeRoutingCIDREnabled</code></br>
 <em>
 bool
@@ -708,6 +722,79 @@ int32
 <p>KubeProxyReplacementMode defines which mode should kube-proxy run in.
 More infromation here: <a href="https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/">https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/</a></p>
 </p>
+<h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.L2Announcements">L2Announcements
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#cilium.networking.extensions.gardener.cloud/v1alpha1.NetworkConfig">NetworkConfig</a>)
+</p>
+<p>
+<p>L2Announcements enables the L2 announcements feature.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled defines whether L2 announcements is enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>leaseDuration</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#duration-v1-meta">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LeaseDuration is the maximum duration of the lease.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>leaseRenewDeadline</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#duration-v1-meta">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LeaseRenewDeadline is the duration that the current leader will retry
+refreshing the lease before giving up.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>leaseRetryPeriod</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#duration-v1-meta">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LeaseRetryPeriod is the duration the clients should wait between retries.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="cilium.networking.extensions.gardener.cloud/v1alpha1.LoadBalancingMode">LoadBalancingMode
 (<code>string</code> alias)</p></h3>
 <p>
