@@ -670,7 +670,7 @@ data:
 
 {{- if .Values.global.l2announcements.enabled }}
   # Enable L2 announcements
-  enable-l2-announcements: {{ .Values.global.l2announcements.enabled | quote }}
+  enable-l2-announcements: "true"
   {{- if .Values.global.l2announcements.leaseDuration }}
   l2-announcements-lease-duration: {{ .Values.global.l2announcements.leaseDuration | quote }}
   {{- end}}
