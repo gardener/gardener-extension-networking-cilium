@@ -43,6 +43,19 @@ const (
 	Hybrid LoadBalancingMode = "hybrid"
 )
 
+// L2Announcements enables the L2 announcements feature.
+type L2Announcements struct {
+	// Enabled defines whether L2 announcements is enabled.
+	Enabled bool
+	// LeaseDuration is the maximum duration of the lease.
+	LeaseDuration *metav1.Duration
+	// LeaseRenewDeadline is the duration that the current leader will retry
+	// refreshing the lease before giving up.
+	LeaseRenewDeadline *metav1.Duration
+	// LeaseRetryPeriod is the duration the clients should wait between retries.
+	LeaseRetryPeriod *metav1.Duration
+}
+
 // KubeProxyReplacementMode defines which mode should kube-proxy run in.
 // More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
 type KubeProxyReplacementMode string
@@ -204,6 +217,8 @@ type NetworkConfig struct {
 	DirectRoutingDevice *string
 	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
 	LoadBalancingMode *LoadBalancingMode
+	// L2Announcements enables the L2 announcements feature
+	L2Announcements *L2Announcements
 	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
 	IPv4NativeRoutingCIDREnabled *bool
 	// IPv6NativeRoutingCIDRMode will set the ipv6 native routing cidr from the network configs node's cidr if enabled.

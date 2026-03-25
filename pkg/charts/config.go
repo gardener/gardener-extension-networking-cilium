@@ -44,6 +44,7 @@ type globalConfig struct {
 	Devices                             []string                                `json:"devices"`
 	BPF                                 bpf                                     `json:"bpf"`
 	IPAM                                ipam                                    `json:"ipam"`
+	L2Announcements                     l2Announcements                         `json:"l2announcements"`
 	SnatToUpstreamDNS                   snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
 	SnatOutOfCluster                    snatOutOfCluster                        `json:"snatOutOfCluster"`
 	EnableIPv4Masquerade                bool                                    `json:"enableIpv4Masquerade"`
@@ -169,6 +170,13 @@ type bpf struct {
 
 type ipam struct {
 	Mode string `json:"mode"`
+}
+
+type l2Announcements struct {
+	Enabled            bool   `json:"enabled"`
+	LeaseDuration      string `json:"leaseDuration,omitempty"`
+	LeaseRenewDeadline string `json:"leaseRenewDeadline,omitempty"`
+	LeaseRetryPeriod   string `json:"leaseRetryPeriod,omitempty"`
 }
 
 // snatToUpstreamDNS enables the masquerading of packets to the upstream dns server

@@ -122,3 +122,15 @@ rules:
   - ciliumbgpnodeconfigs/status
   verbs:
   - patch
+{{- if .Values.global.l2announcements.enabled }}
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - update
+  - list
+  - delete
+{{- end }}

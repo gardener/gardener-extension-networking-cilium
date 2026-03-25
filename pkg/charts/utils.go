@@ -102,6 +102,9 @@ var defaultGlobalConfig = globalConfig{
 	IPAM: ipam{
 		Mode: "kubernetes",
 	},
+	L2Announcements: l2Announcements{
+		Enabled: false,
+	},
 	SnatToUpstreamDNS: snatToUpstreamDNS{
 		Enabled: false,
 	},
@@ -274,6 +277,19 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if config.LoadBalancingMode != nil {
 		globalConfig.BPF = bpf{
 			LoadBalancingMode: *config.LoadBalancingMode,
+		}
+	}
+
+	if config.L2Announcements != nil {
+		globalConfig.L2Announcements.Enabled = config.L2Announcements.Enabled
+		if config.L2Announcements.LeaseDuration != nil {
+			globalConfig.L2Announcements.LeaseDuration = config.L2Announcements.LeaseDuration.Duration.String()
+		}
+		if config.L2Announcements.LeaseRenewDeadline != nil {
+			globalConfig.L2Announcements.LeaseRenewDeadline = config.L2Announcements.LeaseRenewDeadline.Duration.String()
+		}
+		if config.L2Announcements.LeaseRetryPeriod != nil {
+			globalConfig.L2Announcements.LeaseRetryPeriod = config.L2Announcements.LeaseRetryPeriod.Duration.String()
 		}
 	}
 
