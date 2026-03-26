@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -e 
-
-"$(dirname $0)"/hack/set_dependency_version
