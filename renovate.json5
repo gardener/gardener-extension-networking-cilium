@@ -33,6 +33,14 @@
       "matchPackagePatterns": ["golang"],
     },
     {
+      // Group gardener updates in one PR.
+      groupName: "gardener",
+      matchManagers: ["gomod"],
+      matchPackageNames: [
+        '/^github\\.com/gardener/',
+      ],
+    },
+    {
       // Ignore paths which most likely create false positives.
       "matchFileNames": [
         "chart/**",
