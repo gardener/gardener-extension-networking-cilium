@@ -16,11 +16,12 @@ extract_dependencies() {
 }
 
 echo "🪧 Generating ignoreDeps section for 'renovate.json5'"
-echo "🛜 Downloading the latest 'go.mod' from gardener/gardener..."
+gardener_version=$(grep 'github.com/gardener/gardener ' go.mod | awk '{print $2}')
+echo "🛜 Downloading 'go.mod' from gardener/gardener@${gardener_version}..."
 
 # Only the dependencies in a `go.mod` file are indented with a tab.
 extension_go_mod=$(grep -P '^\t' go.mod) # Uses Perl-style regular expressions to match a tab at the beginning of a line.
-gardener_go_mod=$(curl -s https://raw.githubusercontent.com/gardener/gardener/refs/heads/master/go.mod | grep -P '^\t')
+gardener_go_mod=$(curl -s "https://raw.githubusercontent.com/gardener/gardener/refs/tags/${gardener_version}/go.mod" | grep -P '^\t')
 
 extension_dependencies=()
 gardener_dependencies=()
