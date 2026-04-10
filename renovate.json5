@@ -54,6 +54,7 @@
   // The following list of dependencies to ignore is updated by `make generate`.
   // DO NOT EDIT THIS SECTION MANUALLY.
   ignoreDeps: [
+    "github.com/ahmetb/gen-crd-api-reference-docs",
     "github.com/gardener/gardener/pkg/apis",
     "github.com/go-logr/logr",
     "github.com/onsi/ginkgo/v2",
@@ -257,7 +258,9 @@
     "k8s.io/autoscaler/vertical-pod-autoscaler",
     "k8s.io/cluster-bootstrap",
     "k8s.io/component-helpers",
+    "k8s.io/gengo",
     "k8s.io/gengo/v2",
+    "k8s.io/klog",
     "k8s.io/klog/v2",
     "k8s.io/kube-aggregator",
     "k8s.io/kube-openapi",
