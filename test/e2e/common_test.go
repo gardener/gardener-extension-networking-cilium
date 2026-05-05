@@ -87,7 +87,7 @@ func defaultShoot(generateName string, ciliumConfig *ciliumv1alpha1.NetworkConfi
 				Kind: "CloudProfile",
 			},
 			Kubernetes: gardencorev1beta1.Kubernetes{
-				Version: "1.30.0",
+				Version: "1.32.0",
 				Kubelet: &gardencorev1beta1.KubeletConfig{
 					SerializeImagePulls: ptr.To(false),
 					RegistryPullQPS:     ptr.To(int32(10)),
