@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/part-of: cilium
     app.kubernetes.io/name: cilium-envoy
 spec:
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       k8s-app: cilium-envoy
