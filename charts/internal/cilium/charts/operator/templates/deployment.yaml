@@ -12,6 +12,7 @@ metadata:
     high-availability-config.resources.gardener.cloud/type: controller
     {{- end }}
 spec:
+  revisionHistoryLimit: 2
   # See docs on ServerCapabilities.LeasesResourceLock in file pkg/k8s/version/version.go
   # for more details.
   replicas: 1
