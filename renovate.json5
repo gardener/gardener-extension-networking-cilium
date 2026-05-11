@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dependencyDashboard": true,
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "github>gardener/ci-infra//config/renovate/automerge-with-tide.json5"
   ],
   "labels": ["kind/enhancement"],
   "postUpdateOptions": ["gomodTidy"],
@@ -25,12 +26,14 @@
       "groupName": "cilium images",
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["quay\\.io\/cilium\/.+"],
+      "automerge": false
     },
     {
       // Group golang updates in one PR.
       "groupName": "golang",
       "matchDatasources": ["docker", "go-version"],
       "matchPackagePatterns": ["golang"],
+      "automerge": true
     },
     {
       // Group gardener updates in one PR.
@@ -39,6 +42,7 @@
       matchPackageNames: [
         '/^github\\.com/gardener/',
       ],
+      "automerge": true
     },
     {
       // Ignore paths which most likely create false positives.
