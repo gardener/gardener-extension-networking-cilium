@@ -1,4 +1,4 @@
-# [Gardener Extension for cilium Networking](https://gardener.cloud)
+# Gardener Extension for cilium Networking
 
 [![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-extension-networking-cilium)](https://api.reuse.software/info/github.com/gardener/gardener-extension-networking-cilium)
 [![Build](https://github.com/gardener/gardener-extension-networking-cilium/actions/workflows/non-release.yaml/badge.svg)](https://github.com/gardener/gardener-extension-networking-cilium/actions/workflows/non-release.yaml)
