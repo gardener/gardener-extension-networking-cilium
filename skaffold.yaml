@@ -1,0 +1,123 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: networking-cilium
+build:
+  insecureRegistries:
+    - registry.local.gardener.cloud:5001
+  tagPolicy:
+    customTemplate:
+      template: "{{.version}}-{{.sha}}"
+      components:
+        - name: version
+          envTemplate:
+            template: "{{.EXTENSION_VERSION}}"
+        - name: sha
+          gitCommit:
+            variant: AbbrevCommitSha
+  artifacts:
+    - image: local-skaffold/gardener-extension-networking-cilium
+      ko:
+        dependencies:
+          paths:
+            - charts
+            - charts/internal
+            - cmd/gardener-extension-networking-cilium
+            - cmd/gardener-extension-networking-cilium/app
+            - imagevector
+            - imagevector/images.yaml
+            - pkg/apis/cilium
+            - pkg/apis/cilium/install
+            - pkg/apis/cilium/v1alpha1
+            - pkg/apis/cilium/validation
+            - pkg/apis/config
+            - pkg/apis/config/install
+            - pkg/apis/config/loader
+            - pkg/apis/config/v1alpha1
+            - pkg/charts
+            - pkg/cilium
+            - pkg/cmd
+            - pkg/controller
+            - pkg/webhook/shoot
+            - VERSION
+        ldflags:
+          - '{{.LD_FLAGS}}'
+        main: ./cmd/gardener-extension-networking-cilium
+    - image: local-skaffold/gardener-extension-admission-cilium
+      ko:
+        dependencies:
+          paths:
+            - charts
+            - charts/internal
+            - cmd/gardener-extension-admission-cilium
+            - cmd/gardener-extension-admission-cilium/app
+            - imagevector
+            - imagevector/images.yaml
+            - pkg/admission/cmd
+            - pkg/admission/validator
+            - pkg/apis
+            - pkg/apis/cilium
+            - pkg/apis/cilium/install
+            - pkg/apis/cilium/validation
+            - pkg/apis/cilium/v1alpha1
+            - pkg/apis/config
+            - pkg/apis/config/install
+            - pkg/apis/config/loader
+            - pkg/apis/config/v1alpha1
+            - pkg/cmd
+            - pkg/controller
+            - VERSION
+        ldflags:
+          - '{{.LD_FLAGS}}'
+        main: ./cmd/gardener-extension-admission-cilium
+    - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-extension
+      custom:
+        buildCommand: |
+          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-networking-cilium .skaffoldImage
+        dependencies:
+          paths:
+            - charts/gardener-extension-networking-cilium
+            - charts/gardener-extension-networking-cilium/templates
+      requires:
+        - image: local-skaffold/gardener-extension-networking-cilium
+          alias: IMG
+    - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-admission-application
+      custom:
+        buildCommand: |
+          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/application .skaffoldImage
+        dependencies:
+          paths:
+            - charts/gardener-extension-admission-cilium/charts/application
+            - charts/gardener-extension-admission-cilium/charts/application/templates
+      requires:
+        - image: local-skaffold/gardener-extension-admission-cilium
+          alias: IMG
+    - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-admission-runtime
+      custom:
+        buildCommand: |
+          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/runtime .skaffoldImage
+        dependencies:
+          paths:
+            - charts/gardener-extension-admission-cilium/charts/runtime
+            - charts/gardener-extension-admission-cilium/charts/runtime/templates
+      requires:
+        - image: local-skaffold/gardener-extension-admission-cilium
+          alias: IMG
+resourceSelector:
+  allow:
+    # instruct skaffold to inject the built image reference into the image fields in our Extension object
+    - groupKind: Extension.operator.gardener.cloud
+      image:
+        - .spec.deployment.extension.helm.ociRepository.ref
+        - .spec.deployment.extension.values.image.ref
+        - .spec.deployment.admission.runtimeCluster.helm.ociRepository.ref
+        - .spec.deployment.admission.values.image.ref
+        - .spec.deployment.admission.virtualCluster.helm.ociRepository.ref
+manifests:
+  kustomize:
+    paths:
+      - dev/extension
+deploy:
+  kubectl:
+    flags:
+      apply: [--force-conflicts, --server-side]
