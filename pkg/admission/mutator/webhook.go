@@ -30,7 +30,6 @@ func New(mgr manager.Manager) (*extensionswebhook.Webhook, error) {
 	logger.Info("Setting up webhook", "name", Name)
 
 	return extensionswebhook.New(mgr, extensionswebhook.Args{
-		Provider:   cilium.Name,
 		Name:       Name,
 		Path:       "/webhooks/mutate",
 		Predicates: []predicate.Predicate{createCiliumPredicate()},

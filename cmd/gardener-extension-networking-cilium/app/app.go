@@ -148,7 +148,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			log := mgr.GetLogger()
 			log.Info("Adding controllers to manager")
 			heartbeatCtrlOpts.Completed().Apply(&heartbeat.DefaultAddOptions)
-			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation, nil)
+			reconcileOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.IgnoreOperationAnnotation)
 			ciliumCtrlOpts.Completed().Apply(&ciliumcontroller.DefaultAddOptions.Controller)
 
 			atomicShootWebhookConfig, err := webhookOptions.Completed().AddToManager(ctx, mgr, nil)
