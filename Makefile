@@ -4,6 +4,7 @@
 
 ENSURE_GARDENER_MOD         := $(shell go get github.com/gardener/gardener@$$(go list -m -f "{{.Version}}" github.com/gardener/gardener))
 GARDENER_HACK_DIR           := $(shell go list -m -f "{{.Dir}}" github.com/gardener/gardener)/hack
+GARDENER_DEV_SETUP_DIR      := $(shell go list -m -f "{{.Dir}}" github.com/gardener/gardener)/dev-setup
 EXTENSION_PREFIX            := gardener-extension
 NAME                        := networking-cilium
 ADMISSION_NAME              := admission-cilium
@@ -94,9 +95,10 @@ check-generate:
 check: $(GOIMPORTS) $(GOLANGCI_LINT) $(HELM)
 	@REPO_ROOT=$(REPO_ROOT) bash $(GARDENER_HACK_DIR)/check.sh --golangci-lint-config=./.golangci.yaml ./cmd/... ./pkg/...
 	@REPO_ROOT=$(REPO_ROOT) bash $(GARDENER_HACK_DIR)/check-charts.sh ./charts
+	@GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) $(REPO_ROOT)/hack/check-skaffold-deps.sh
 
 .PHONY: generate
-generate: $(CONTROLLER_GEN) $(EXTENSION_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(KUSTOMIZE) $(MOCKGEN) $(YQ)
+generate: $(CONTROLLER_GEN) $(EXTENSION_GEN) $(CRD_REF_DOCS) $(HELM) $(KUSTOMIZE) $(MOCKGEN) $(YQ)
 	@go mod download
 	@REPO_ROOT=$(REPO_ROOT) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(GARDENER_HACK_DIR)/generate-sequential.sh ./charts/... ./cmd/... ./example/... ./pkg/...
 	@REPO_ROOT=$(REPO_ROOT) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) $(REPO_ROOT)/hack/update-codegen.sh
@@ -142,3 +144,17 @@ verify-extended: check-generate check format test-cov test-cov-clean sast-report
 .PHONY: test-e2e-local
 test-e2e-local: $(KIND) $(YQ) $(GINKGO)
 	@$(REPO_ROOT)/hack/test-e2e-provider-local.sh --procs=3
+
+.PHONY: extension-up
+extension-up: export EXTENSION_VERSION = $(VERSION)
+extension-up: export SKAFFOLD_DEFAULT_REPO = registry.local.gardener.cloud:5001
+extension-up: export SKAFFOLD_PUSH = true
+extension-up: export LD_FLAGS = $(shell bash $(GARDENER_HACK_DIR)/get-build-ld-flags.sh k8s.io/component-base $(REPO_ROOT)/VERSION gardener-extension-networking-cilium)
+extension-up: export EXTENSION_GARDENER_DEV_SETUP_DIR = $(GARDENER_DEV_SETUP_DIR)
+extension-up: $(SKAFFOLD) $(HELM) $(KUBECTL)
+	$(REPO_ROOT)/hack/prepare-dev-extension.sh
+	$(SKAFFOLD) run --cache-artifacts=true
+
+.PHONY: extension-down
+extension-down:
+	$(SKAFFOLD) delete
