@@ -1,11 +1,10 @@
 {{- $scope := $ }}
 {{- if .Values.global.selfhostedShoot }}
-{{- $scope := set $scope "role" "worker" }}
-{{- end }}
+{{- $scope := set $scope "role" "controlplane" }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: cilium
+  name: cilium-controlplane
   namespace: {{ .Release.Namespace }}
   labels:
     node.gardener.cloud/critical-component: "true"
@@ -15,3 +14,4 @@ metadata:
     app.kubernetes.io/name: cilium-agent
 spec:
 {{- include "agent.daemonset-spec" $scope  | nindent 2 }}
+{{- end }}

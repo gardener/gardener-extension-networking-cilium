@@ -56,6 +56,7 @@ type globalConfig struct {
 	ConfigMapLabelPrefixHash            string                                  `json:"configMapLabelPrefixHash"`
 	PolicyAuditMode                     bool                                    `json:"policyAuditMode"`
 	Encryption                          encryption                              `json:"encryption"`
+	SelfHostedShoot                     bool                                    `json:"selfhostedShoot"`
 }
 
 // etcd related configuration for cilium
