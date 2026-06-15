@@ -153,7 +153,7 @@ extension-up: export LD_FLAGS = $(shell bash $(GARDENER_HACK_DIR)/get-build-ld-f
 extension-up: export EXTENSION_GARDENER_DEV_SETUP_DIR = $(GARDENER_DEV_SETUP_DIR)
 extension-up: $(SKAFFOLD) $(HELM) $(KUBECTL)
 	$(REPO_ROOT)/hack/prepare-dev-extension.sh
-	$(SKAFFOLD) run --cache-artifacts=true
+	GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) $(SKAFFOLD) run --cache-artifacts=true
 
 .PHONY: extension-down
 extension-down:
