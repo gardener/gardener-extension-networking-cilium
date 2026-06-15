@@ -57,10 +57,6 @@ spec:
         fsGroup: 1
         supplementalGroups:
         - 1
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-          - ALL
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -103,12 +99,15 @@ spec:
           hostPort: {{ .Values.global.operatorPrometheus.port }}
           name: prometheus
           protocol: TCP
+        - name: health
+          containerPort: 9234
+          hostPort: 9234
 {{- end }}
         livenessProbe:
           httpGet:
             host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
-            port: 9234
+            port: health
             scheme: HTTP
           initialDelaySeconds: 60
           periodSeconds: 10
@@ -117,7 +116,7 @@ spec:
           httpGet:
             host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
             path: /healthz
-            port: 9234
+            port: health
             scheme: HTTP
           initialDelaySeconds: 0
           periodSeconds: 5
@@ -141,6 +140,9 @@ spec:
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         terminationMessagePolicy: FallbackToLogsOnError
       hostNetwork: true
       restartPolicy: Always
@@ -148,7 +150,16 @@ spec:
       serviceAccountName: cilium-operator
       automountServiceAccountToken: true
       tolerations:
-      - operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.cilium.io/agent-not-ready
+        operator: Exists
       volumes:
         # To read the configuration from the config map
       - name: cilium-config-path

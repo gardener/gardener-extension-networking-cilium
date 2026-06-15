@@ -107,6 +107,8 @@ data:
     sync-host-ips
     sync-lb-maps-with-k8s-services
 
+  metrics-sampling-interval: "5m"
+
 
 {{- if .Values.global.operatorPrometheus.enabled }}
   # If you want metrics enabled in cilium-operator, set the port for
@@ -221,6 +223,9 @@ data:
   # policy map (per endpoint)
   bpf-policy-map-max: "{{ .Values.global.bpf.policyMapMax }}"
 {{- end }}
+  # bpf-policy-stats-map-max specifies the maximum number of entries in global
+  # policy stats map
+  bpf-policy-stats-map-max: "65536"
 {{- if .Values.global.bpf.lbMapMax }}
   # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
   # backend and affinity maps.
@@ -285,10 +290,10 @@ data:
   preallocate-bpf-maps: "{{ .Values.global.bpf.preallocateMaps }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
-  cluster-name: {{ .Values.global.cluster.name }}
+  cluster-name: {{ .Values.global.cluster.name | quote }}
 
 {{- if .Values.global.cluster.id }}
-  # Unique ID of the cluster. Must be unique across all conneted clusters and
+  # Unique ID of the cluster. Must be unique across all connected clusters and
   # in the range of 1 and 255. Only relevant when building a mesh of clusters.
   cluster-id: "{{ .Values.global.cluster.id }}"
 {{- end }}
@@ -361,6 +366,7 @@ data:
   enable-local-redirect-policy: {{ .Values.global.localRedirectPolicy.enabled | quote }}
 {{- end }}
   enable-runtime-device-detection: "true"
+  enable-no-service-endpoints-routable: "true"
 
   # DNS Polling periodically issues a DNS lookup for each `matchName` from
   # cilium-agent. The result is used to regenerate endpoint policy.
@@ -475,6 +481,7 @@ data:
 {{- if .Values.global.kubeProxyReplacement }}
   kube-proxy-replacement:  {{ .Values.global.kubeProxyReplacement | quote }}
 {{- end }}
+  policy-deny-response: "none"
 {{- if ne .Values.global.kubeProxyReplacement "disabled" }}
   kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
 {{- end }}
@@ -523,8 +530,8 @@ data:
   enable-health-check-loadbalancer-ip: "false"
   node-port-bind-protection: {{ .Values.global.nodePort.bindProtection | quote }}
   enable-auto-protect-node-port-range: {{ .Values.global.nodePort.autoProtectPortRange | quote }}
-  enable-service-topology: {{ .Values.global.loadBalancer.serviceTopology | quote }}
   enable-svc-source-range-check: {{ .Values.global.enableSvcSrcRangeCheck | quote }}
+  enable-service-topology: {{ .Values.global.loadBalancer.serviceTopology | quote }}
 {{- end }}
 {{- if hasKey .Values "sessionAffinity" }}
   enable-session-affinity: {{ .Values.sessionAffinity | quote }}
@@ -690,13 +697,14 @@ data:
   procfs: "/host/proc"
   bpf-root: "/sys/fs/bpf"
   cgroup-root: "/run/cilium/cgroupv2"
-  enable-k8s-terminating-endpoint: "true"
   enable-sctp: "false"
   annotate-k8s-node: "true"
   remove-cilium-node-taints: "true"
   set-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
-  unmanaged-pod-watcher-interval: "15"
+  unmanaged-pod-watcher-interval: "15s"
+  identity-management-mode: "agent"
+  packetization-layer-pmtud-mode: "blackhole"
   # default DNS proxy to transparent mode in non-chaining modes
   dnsproxy-enable-transparent-mode: "true"
   dnsproxy-socket-linger-timeout: "10"
@@ -706,11 +714,12 @@ data:
   tofqdns-idle-connection-grace-period: "0s"
   tofqdns-max-deferred-connection-deletes: "10000"
   tofqdns-proxy-response-max-delay: "100ms"
+  tofqdns-preallocate-identities:  "true"
   agent-not-ready-taint-key: "node.cilium.io/agent-not-ready"
 
   label-prefix-file: "/tmp/cilium/label-prefix/label-prefix"
 
-  mesh-auth-enabled: "true"
+  mesh-auth-enabled: "false"
   mesh-auth-queue-size: "1024"
   mesh-auth-rotated-identities-queue-size: "1024"
   mesh-auth-gc-interval: "5m0s"
@@ -723,7 +732,12 @@ data:
   proxy-max-connection-duration-seconds: "0"
   proxy-idle-timeout-seconds: "60"
   proxy-max-concurrent-retries: "128"
+  proxy-max-active-downstream-connections: "50000"
+  proxy-use-original-source-address: "true"
+  proxy-cluster-max-connections: "1024"
+  proxy-cluster-max-requests: "1024"
   http-retry-count: "3"
+  http-stream-idle-timeout: "300"
 
   external-envoy-proxy: "true"
   envoy-base-id: "0"
@@ -733,13 +747,17 @@ data:
 
   clustermesh-enable-endpoint-sync: "false"
   clustermesh-enable-mcs-api: "false"
+  clustermesh-cache-ttl: "0s"
+  clustermesh-mcs-api-install-crds: "true"
+  policy-default-local-cluster: "true"
 
   nat-map-stats-entries: "32"
   nat-map-stats-interval: "30s"
-  enable-internal-traffic-policy: "true"
   enable-lb-ipam: "true"
   enable-non-default-deny-policies: "true"
   enable-source-ip-verification: "true"
+  enable-dynamic-config: "true"
+  enable-drift-checker: "true"
 
 
 {{- if hasKey .Values "blacklistConflictingRoutes" }}

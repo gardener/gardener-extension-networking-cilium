@@ -37,6 +37,8 @@ spec:
             runAsGroup: 65532
             runAsNonRoot: true
             runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
           image: {{ index .Values.global.images "hubble-relay" }}
           imagePullPolicy: {{ .Values.global.pullPolicy }}
           command:

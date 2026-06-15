@@ -4,7 +4,7 @@ kind: Job
 metadata:
   annotations:
     resources.gardener.cloud/delete-on-invalid-update: "true"
-  name: hubble-generate-certs
+  name: hubble-generate-certs-2
   namespace: {{ .Release.Namespace }}
   labels:
     k8s-app: hubble-generate-certs
@@ -37,6 +37,7 @@ spec:
           # the values used in past runs by inspecting the completed pod.
           args:
             - "--ca-generate=true"
+            - "--ca-reuse-secret"
             - "--ca-secret-namespace=kube-system"
             - "--ca-secret-name=cilium-ca"
             - "--ca-common-name=Cilium CA"

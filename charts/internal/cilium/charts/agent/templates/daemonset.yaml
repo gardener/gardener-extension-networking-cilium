@@ -30,6 +30,7 @@ spec:
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: "unconfined"
         container.apparmor.security.beta.kubernetes.io/mount-cgroup: "unconfined"
         container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: "unconfined"
+        kubectl.kubernetes.io/default-container: cilium-agent
       labels:
         node.gardener.cloud/critical-component: "true"
         k8s-app: cilium
@@ -65,7 +66,7 @@ spec:
             httpHeaders:
             - name: "brief"
               value: "true"
-          failureThreshold: 105
+          failureThreshold: 300
           periodSeconds: 2
           successThreshold: 1
           initialDelaySeconds: 5
@@ -133,6 +134,10 @@ spec:
             resourceFieldRef:
               resource: limits.memory
               divisor: '1'
+        - name: KUBE_CLIENT_BACKOFF_BASE
+          value: "1"
+        - name: KUBE_CLIENT_BACKOFF_DURATION
+          value: "120"
         image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
 {{- if .Values.global.cni.install }}
@@ -150,6 +155,10 @@ spec:
         - containerPort: {{ .Values.global.prometheus.port }}
           hostPort: {{ .Values.global.prometheus.port }}
           name: prometheus
+          protocol: TCP
+        - name: health
+          containerPort: 9879
+          hostPort: 9879
           protocol: TCP
 {{- end }}
 {{- if .Values.global.hubble.metrics.enabled }}
@@ -375,7 +384,7 @@ spec:
           - name: BIN_PATH
             value: /opt/cni/bin
         command:
-          - sh
+          - bash
           - -ec
           # The statically linked Go program binary is invoked to avoid any
           # dependency on utilities like sh and mount that can be missing on certain
@@ -386,7 +395,6 @@ spec:
             cp /usr/bin/cilium-mount /hostbin/cilium-mount;
             nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
             rm /hostbin/cilium-mount
-        image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
           - name: hostproc
@@ -417,7 +425,7 @@ spec:
         - name: BIN_PATH
           value: /opt/cni/bin
         command:
-        - sh
+        - bash
         - -ec
         # The statically linked Go program binary is invoked to avoid any
         # dependency on utilities like sh that can be missing on certain
@@ -522,6 +530,7 @@ spec:
               # If available, SYS_ADMIN can be removed.
               #- PERFMON
               #- BPF
+              - SYSLOG
             drop:
               - ALL
         volumeMounts:
