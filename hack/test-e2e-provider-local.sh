@@ -38,19 +38,8 @@ echo ">>>>>>>>>>>>>>>>>>>> extension-up"
 make extension-up
 echo "<<<<<<<<<<<<<<<<<<<< extension-up done"
 
-echo ">>>>>>>>>>>>>>>>>>>> build-cilium-cli-image"
-# Use the latest stable cilium-cli release.
 cilium_cli_version=$(curl -fsSL https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
-
-# Push to the local registry so shoot worker nodes can pull it.
-cilium_cli_image="registry.local.gardener.cloud:5001/cilium-cli:${cilium_cli_version}"
-docker build \
-  --build-arg CILIUM_CLI_VERSION="$cilium_cli_version" \
-  -t "$cilium_cli_image" \
-  "$repo_root/test/cilium-cli"
-docker push "$cilium_cli_image"
-export CILIUM_CLI_IMAGE="$cilium_cli_image"
-echo "<<<<<<<<<<<<<<<<<<<< build-cilium-cli-image done"
+export CILIUM_CLI_IMAGE="quay.io/cilium/cilium-cli:${cilium_cli_version}"
 
 export KUBECONFIG=$repo_root/gardener/dev-setup/kubeconfigs/virtual-garden/kubeconfig
 export REPO_ROOT=$repo_root
