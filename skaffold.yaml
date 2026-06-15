@@ -73,7 +73,7 @@ build:
     - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-extension
       custom:
         buildCommand: |
-          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-networking-cilium .skaffoldImage
+          bash {{.GARDENER_HACK_DIR}}/push-helm.sh charts/gardener-extension-networking-cilium .skaffoldImage
         dependencies:
           paths:
             - charts/gardener-extension-networking-cilium
@@ -84,7 +84,7 @@ build:
     - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-admission-application
       custom:
         buildCommand: |
-          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/application .skaffoldImage
+          bash {{.GARDENER_HACK_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/application .skaffoldImage
         dependencies:
           paths:
             - charts/gardener-extension-admission-cilium/charts/application
@@ -95,7 +95,7 @@ build:
     - image: local-skaffold/gardener-extension-networking-cilium/charts/cilium-admission-runtime
       custom:
         buildCommand: |
-          bash {{.EXTENSION_GARDENER_DEV_SETUP_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/runtime .skaffoldImage
+          bash {{.GARDENER_HACK_DIR}}/push-helm.sh charts/gardener-extension-admission-cilium/charts/runtime .skaffoldImage
         dependencies:
           paths:
             - charts/gardener-extension-admission-cilium/charts/runtime
