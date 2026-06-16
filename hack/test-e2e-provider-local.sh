@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# trigger test run - delete later -4
 set -o nounset
 set -o pipefail
 set -o errexit
@@ -11,12 +12,12 @@ set -o errexit
 repo_root="$(readlink -f $(dirname ${0})/..)"
 
 if [[ ! -d "$repo_root/gardener" ]]; then
-  git clone https://github.com/gardener/gardener.git
+  git clone https://github.com/axel7born/gardener.git
 fi
 
-gardener_version=$(go list -m -f '{{.Version}}' github.com/gardener/gardener)
+# gardener_version=$(go list -m -f '{{.Version}}' github.com/gardener/gardener)
 cd "$repo_root/gardener"
-git checkout "$gardener_version"
+git checkout "enh/machine-pod-apparmor-unconfined"
 source "$repo_root/gardener/hack/ci-common.sh"
 
 echo ">>>>>>>>>>>>>>>>>>>> kind-up"
