@@ -16,11 +16,14 @@ spec:
         networking.gardener.cloud/to-dns: allowed
     spec:
       containers:
-      - image: europe-docker.pkg.dev/gardener-project/releases/gardener/cilium-cli:1.11.0
+      - image: {{ .CiliumCLIImage }}
         name: networking-shoot-tests-cilium
-        command: ["sh", "-c"]
+        command: ["/usr/local/bin/cilium"]
         args:
-        - cilium-cli connectivity test --test '!to-entities-world,!to-fqdns,!client-egress-l7,!client-egress-l7-named-port,!client-egress-tls-sni,!check-log-errors,!pod-to-pod-encryption,!pod-to-pod-with-l7-policy-encryption,!node-to-node-encryption'
+        - connectivity
+        - test
+        - --test
+        - "!to-entities-world,!to-fqdns,!client-egress-l7,!client-egress-l7-named-port,!client-egress-tls-sni,!check-log-errors,!pod-to-pod-encryption,!pod-to-pod-with-l7-policy-encryption,!node-to-node-encryption"
         securityContext:
           capabilities:
             add:

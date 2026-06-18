@@ -7,6 +7,7 @@ package e2e_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -54,9 +55,11 @@ var _ = DescribeTableSubtree("Network Extension Tests", Label("Network"), func(s
 		values := struct {
 			HelmDeployNamespace string
 			KubeVersion         string
+			CiliumCLIImage      string
 		}{
 			templates.NetworkConnectivityTestNamespace,
 			f.Shoot.Spec.Kubernetes.Version,
+			os.Getenv("CILIUM_CLI_IMAGE"),
 		}
 
 		const expirationSeconds int64 = 1 * 3600 // 1h

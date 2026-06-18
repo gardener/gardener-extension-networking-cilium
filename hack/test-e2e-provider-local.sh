@@ -38,6 +38,10 @@ echo ">>>>>>>>>>>>>>>>>>>> extension-up"
 make extension-up
 echo "<<<<<<<<<<<<<<<<<<<< extension-up done"
 
+# Pin to a tested version. Check https://github.com/cilium/cilium-cli#releases for compatibility with the deployed cilium agent version.
+cilium_cli_version="v0.19.4"
+export CILIUM_CLI_IMAGE="quay.io/cilium/cilium-cli:${cilium_cli_version}"
+
 export KUBECONFIG=$repo_root/gardener/dev-setup/kubeconfigs/virtual-garden/kubeconfig
 export REPO_ROOT=$repo_root
 
