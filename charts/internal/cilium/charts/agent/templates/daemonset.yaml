@@ -395,6 +395,7 @@ spec:
             cp /usr/bin/cilium-mount /hostbin/cilium-mount;
             nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
             rm /hostbin/cilium-mount
+        image: {{ index .Values.global.images "cilium-agent" }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
           - name: hostproc
