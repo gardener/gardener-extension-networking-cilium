@@ -476,8 +476,11 @@ global:
       clusterPoolIPv6PodCIDR: "fd00::/104"
       clusterPoolIPv6MaskSize: 120
 
+  # The EnableL2NeighDiscovery flag was removed in v1.18 as part of replacing the old neighbor subsystem.
+  # L2 neighbor discovery is now handled automatically by the new subsystem when needed (e.g. when XDP is in use).
+  # See: https://github.com/cilium/cilium/commit/ae12c40e4dab35deeda941ed55f7b0c7ecc5980b
   l2NeighDiscovery:
-    enabled: true
+    enabled: false
 
   # Configure L2 announcements
   l2announcements:
