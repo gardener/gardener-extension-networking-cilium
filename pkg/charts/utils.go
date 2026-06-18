@@ -164,6 +164,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.NodeCIDR = *cluster.Shoot.Spec.Networking.Nodes
 	}
 
+	if cluster != nil && cluster.Shoot != nil {
+		globalConfig.SelfHostedShoot = helper.IsShootSelfHosted(cluster.Shoot.Spec.Provider.Workers)
+	}
+
 	// The Cilium operator runs once per node. To safely enable HA, we must check guaranteed capacity (Minimum)
 	if cluster != nil && cluster.Shoot != nil {
 		countOfApplicableWorkerNodes := 0

@@ -1,0 +1,796 @@
+{{- define "agent.daemonset-spec" -}}
+revisionHistoryLimit: 2
+selector:
+  matchLabels:
+    k8s-app: cilium
+{{- if not ( eq .role "") }}
+    node.gardener.cloud/role: {{ .role }}
+{{- end }}
+template:
+  metadata:
+    annotations:
+      checksum/configmap-cilium: "{{ .Values.global.configMapHash }}"
+      checksum/configmap-label-prefix: "{{ .Values.global.configMapLabelPrefixHash }}"
+{{- if and .Values.global.prometheus.enabled (not .Values.global.prometheus.serviceMonitor.enabled) }}
+      prometheus.io/port: "{{ .Values.global.prometheus.port }}"
+      prometheus.io/scrape: "true"
+{{- end }}
+      # Set app AppArmor's profile to "unconfined". The value of this annotation
+      # can be modified as long users know which profiles they have available
+      # in AppArmor.
+      container.apparmor.security.beta.kubernetes.io/cilium-agent: "unconfined"
+      container.apparmor.security.beta.kubernetes.io/clean-cilium-state: "unconfined"
+      container.apparmor.security.beta.kubernetes.io/mount-cgroup: "unconfined"
+      container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: "unconfined"
+      kubectl.kubernetes.io/default-container: cilium-agent
+    labels:
+      node.gardener.cloud/critical-component: "true"
+    {{- if not ( eq .role "" ) }}
+      node.gardener.cloud/role: {{ .role }}
+    {{- end }}
+      k8s-app: cilium
+      app.kubernetes.io/name: cilium-agent
+      app.kubernetes.io/part-of: cilium
+      networking.gardener.cloud/to-public-networks: allowed
+      networking.gardener.cloud/to-apiserver: allowed
+      networking.gardener.cloud/to-dns: allowed
+  spec:
+    containers:
+{{- if $.Values.global.sleepAfterInit }}
+    - command: [ "/bin/bash", "-c", "--" ]
+      args: [ "while true; do sleep 30; done;" ]
+      livenessProbe:
+        exec:
+          command:
+          - "true"
+      readinessProbe:
+        exec:
+          command:
+          - "true"
+{{- else }}
+    - args:
+      - --config-dir=/tmp/cilium/config-map
+      command:
+      - cilium-agent
+      startupProbe:
+        httpGet:
+          host: {{ if $.Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
+          path: /healthz
+          port: {{ $.Values.global.agent.healthPort }}
+          scheme: HTTP
+          httpHeaders:
+          - name: "brief"
+            value: "true"
+        failureThreshold: 300
+        periodSeconds: 2
+        successThreshold: 1
+        initialDelaySeconds: 5
+      livenessProbe:
+{{- if $.Values.keepDeprecatedProbes }}
+        exec:
+          command:
+          - cilium
+          - status
+          - --brief
+{{- else }}
+        httpGet:
+          host: {{ if $.Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
+          path: /healthz
+          port: {{ $.Values.global.agent.healthPort }}
+          scheme: HTTP
+          httpHeaders:
+          - name: "brief"
+            value: "true"
+          - name: "require-k8s-connectivity"
+            value: "false"
+{{- end }}
+        failureThreshold: 10
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 5
+      readinessProbe:
+{{- if .Values.keepDeprecatedProbes }}
+        exec:
+          command:
+          - cilium
+          - status
+          - --brief
+{{- else }}
+        httpGet:
+          host: {{ if .Values.global.ipv4.enabled }}"127.0.0.1"{{ else }}"::1"{{ end }}
+          path: /healthz
+          port: {{ .Values.global.agent.healthPort }}
+          scheme: HTTP
+          httpHeaders:
+          - name: "brief"
+            value: "true"
+{{- end }}
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 30
+        successThreshold: 1
+        timeoutSeconds: 5
+{{- end }}
+      env:
+      {{- if eq .role "controlplane" }}
+      {{- include "cilium.selfhosted-controlplane-k8s-service-env" . | nindent 6 }}
+      {{- end }}
+      - name: K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: CILIUM_K8S_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: CILIUM_CLUSTERMESH_CONFIG
+        value: /var/lib/cilium/clustermesh/
+      - name: GOMEMLIMIT
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.memory
+            divisor: '1'
+      - name: KUBE_CLIENT_BACKOFF_BASE
+        value: "1"
+      - name: KUBE_CLIENT_BACKOFF_DURATION
+        value: "120"
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: {{ .Values.global.pullPolicy }}
+{{- if .Values.global.cni.install }}
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - /cni-uninstall.sh
+{{- end }}
+      resources:
+        {{- toYaml .Values.resources | trim | nindent 10 }}
+      name: cilium-agent
+{{- if .Values.global.prometheus.enabled }}
+      ports:
+      - containerPort: {{ .Values.global.prometheus.port }}
+        hostPort: {{ .Values.global.prometheus.port }}
+        name: prometheus
+        protocol: TCP
+      - name: health
+        containerPort: 9879
+        hostPort: 9879
+        protocol: TCP
+{{- end }}
+{{- if .Values.global.hubble.metrics.enabled }}
+      - containerPort: {{ .Values.global.hubble.metrics.port }}
+        hostPort: {{ .Values.global.hubble.metrics.port }}
+        name: hubble-metrics
+        protocol: TCP
+      - name: peer-service
+        containerPort: {{ .Values.global.hubble.peerPort }}
+        hostPort: {{ .Values.global.hubble.peerPort }}
+        protocol: TCP
+{{- end }}
+      securityContext:
+        seLinuxOptions:
+          level: s0
+          # Running with spc_t since we have removed the privileged mode.
+          # Users can change it to a different type as long as they have the
+          # type available on the system.
+          type: spc_t
+        capabilities:
+          add:
+          {{- with .Values.global.securityContext.capabilities.ciliumAgent }}
+          {{- toYaml . | nindent 14 }}
+          {{- end }}
+          drop:
+            - ALL
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - name: envoy-sockets
+        mountPath: /var/run/cilium/envoy/sockets
+        readOnly: false
+      # Unprivileged containers need to mount /proc/sys/net from the host
+      # to have write access
+      - mountPath: /host/proc/sys/net
+        name: host-proc-sys-net
+      # Unprivileged containers need to mount /proc/sys/kernel from the host
+      # to have write access
+      - mountPath: /host/proc/sys/kernel
+        name: host-proc-sys-kernel
+      - name: bpf-maps
+        mountPath: /sys/fs/bpf
+        # Unprivileged containers can't set mount propagation to bidirectional
+        # in this case we will mount the bpf fs from an init container that
+        # is privileged and set the mount propagation from host to container
+        # in Cilium.
+        mountPropagation: HostToContainer
+      - name: cilium-run
+        mountPath: /var/run/cilium
+      - name: cilium-netns
+        mountPath: /var/run/cilium/netns
+        mountPropagation: HostToContainer
+      - name: etc-cni-netd
+        mountPath: {{ .Values.global.cni.hostConfDirMountPath }}
+      - name: clustermesh-secrets
+        mountPath: /var/lib/cilium/clustermesh
+        readOnly: true
+      - name: cilium-config-path
+        mountPath: /tmp/cilium/config-map
+        readOnly: true
+      - name: label-prefix
+        mountPath: /tmp/cilium/label-prefix
+        readOnly: true
+{{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
+      - name: ip-masq-agent
+        mountPath: /etc/config
+        readOnly: true
+{{- end }}
+{{- if .Values.global.cni.configMap }}
+      - name: cni-configuration
+        mountPath: {{ .Values.global.cni.confFileMountPath }}
+        readOnly: true
+{{- end }}
+        # Needed to be able to load kernel modules
+      - name: lib-modules
+        mountPath: /lib/modules
+        readOnly: true
+      - name: xtables-lock
+        mountPath: /run/xtables.lock
+      - name: hubble-tls
+        mountPath: /var/lib/cilium/tls/hubble
+        readOnly: true
+{{- if and .Values.global.encryption.enabled (eq .Values.global.encryption.mode "ipsec") }}
+      - name: cilium-ipsec-secrets
+        mountPath: {{ .Values.global.encryption.mountPath }}
+{{- end }}
+{{- if .Values.global.kubeConfigPath }}
+      - name: kube-config
+        mountPath: {{ .Values.global.kubeConfigPath }}
+        readOnly: true
+{{- end}}
+{{- if .Values.monitor.enabled }}
+    - name: cilium-monitor
+      command: ["cilium"]
+      args:
+      - monitor
+{{- range $type := .Values.monitor.eventTypes }}
+      - --type={{ $type }}
+{{- end }}
+      image: "{{ index .Values.global.images "cilium-agent" }}"
+      imagePullPolicy: {{ .Values.global.pullPolicy }}
+      volumeMounts:
+      - mountPath: /var/run/cilium
+        name: cilium-run
+      resources:
+        {{- toYaml .Values.monitor.resources | trim | nindent 10 }}
+{{- end }}
+    # Masquerade traffic to upstream DNS server
+{{- if .Values.global.snatToUpstreamDNS.enabled }}
+    - name: add-snat-rule-to-upstream-dns
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+            - NET_ADMIN
+      env:
+      - name: POD_CIDR
+        value: {{ .Values.global.podCIDR }}
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi
+      command:
+      - /bin/sh
+      - -c
+      - |
+        trap 'echo Received SIGTERM, exiting...' TERM
+        (while true; do
+          sleep 15
+          for i in $(cat /etc/resolv.conf | grep nameserver | awk '{print $2}' ); do
+            iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment "cilium masquerade non-cluster" -j MASQUERADE 2>/dev/null || iptables -t nat -I CILIUM_POST_nat 1 -s ${POD_CIDR} -d $i/32 ! -o cilium_+ -m comment --comment "cilium masquerade non-cluster" -j MASQUERADE
+          done
+          sleep 45
+        done)&
+        wait
+{{- end }}
+    # Masquerade traffic outside of pod cidr range and node cidr range
+{{- if .Values.global.snatOutOfCluster.enabled }}
+    - name: add-snat-rule-to-outside-world
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+            - NET_ADMIN
+      env:
+      - name: POD_CIDR
+        value: {{ .Values.global.podCIDR }}
+      - name: NODE_CIDR
+        value: {{ .Values.global.nodeCIDR }}
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi
+      command:
+      - /bin/sh
+      - -c
+      - |
+        trap 'echo Received SIGTERM, exiting...' TERM
+        (while true; do
+          sleep 15
+          iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d ${POD_CIDR} -j RETURN 2>/dev/null || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d ${POD_CIDR} -j RETURN
+          iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d ${NODE_CIDR} -j RETURN 2>/dev/null  || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d ${NODE_CIDR} -j RETURN
+          iptables -t nat -C CILIUM_POST_nat -s ${POD_CIDR} -d 0.0.0.0/0 ! -o cilium_+ -m comment --comment "cilium masquerade non-cluster" -j MASQUERADE || iptables -t nat -A CILIUM_POST_nat -s ${POD_CIDR} -d 0.0.0.0/0 ! -o cilium_+ -m comment --comment "cilium masquerade non-cluster" -j MASQUERADE
+          sleep 45
+        done)&
+        wait
+{{- end }}
+    initContainers:
+    # Disable source validation / rp_filter.
+    - name: disable-rp-filter
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      command:
+      - bash
+      - -c
+      - "echo 'net.ipv4.conf.all.rp_filter=0' > /host/etc/sysctl.d/99-cilium-rp-filter.conf"
+      volumeMounts:
+      - name: host-etc
+        mountPath: /host/etc
+      securityContext:
+        allowPrivilegeEscalation: false
+        seLinuxOptions:
+          level: s0
+          # Running with spc_t since we have removed the privileged mode.
+          # Users can change it to a different type as long as they have the
+          # type available on the system.
+          type: spc_t
+        capabilities:
+          drop:
+            - ALL
+    - name: config
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      command:
+      - cilium-dbg
+      - build-config
+      securityContext:
+        allowPrivilegeEscalation: false
+      env:
+      {{ include "cilium.selfhosted-controlplane-k8s-service-env" . | nindent 6 }}
+      - name: K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: CILIUM_K8S_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      volumeMounts:
+      - name: tmp
+        mountPath: /tmp
+      terminationMessagePolicy: FallbackToLogsOnError
+    # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
+    # We use nsenter command with host's cgroup and mount namespaces enabled.
+    - name: mount-cgroup
+      env:
+        - name: CGROUP_ROOT
+          value: /run/cilium/cgroupv2
+        - name: BIN_PATH
+          value: /opt/cni/bin
+      command:
+        - bash
+        - -ec
+        # The statically linked Go program binary is invoked to avoid any
+        # dependency on utilities like sh and mount that can be missing on certain
+        # distros installed on the underlying host. Copy the binary to the
+        # same directory where we install cilium cni plugin so that exec permissions
+        # are available.
+        - |
+          cp /usr/bin/cilium-mount /hostbin/cilium-mount;
+          nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT;
+          rm /hostbin/cilium-mount
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: hostproc
+          mountPath: /hostproc
+        - name: cni-path
+          mountPath: /hostbin
+      terminationMessagePolicy: FallbackToLogsOnError
+      securityContext:
+        seLinuxOptions:
+          level: s0
+          # Running with spc_t since we have removed the privileged mode.
+          # Users can change it to a different type as long as they have the
+          # type available on the system.
+          type: spc_t
+        capabilities:
+          drop:
+            - ALL
+          add:
+            # Only used for 'mount' cgroup
+            - SYS_ADMIN
+            # Used for nsenter
+            - SYS_CHROOT
+            - SYS_PTRACE
+    - name: apply-sysctl-overwrites
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: BIN_PATH
+        value: /opt/cni/bin
+      command:
+      - sh
+      - -ec
+      # The statically linked Go program binary is invoked to avoid any
+      # dependency on utilities like sh that can be missing on certain
+      # distros installed on the underlying host. Copy the binary to the
+      # same directory where we install cilium cni plugin so that exec permissions
+      # are available.
+      - |
+        cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;
+        nsenter --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-sysctlfix";
+        rm /hostbin/cilium-sysctlfix
+      volumeMounts:
+      - name: hostproc
+        mountPath: /hostproc
+      - name: cni-path
+        mountPath: /hostbin
+      terminationMessagePolicy: FallbackToLogsOnError
+      securityContext:
+        seLinuxOptions:
+          level: s0
+          # Running with spc_t since we have removed the privileged mode.
+          # Users can change it to a different type as long as they have the
+          # type available on the system.
+          type: spc_t
+        capabilities:
+          drop:
+            - ALL
+          add:
+            # Required in order to access host's /etc/sysctl.d dir
+            - SYS_ADMIN
+            # Used for nsenter
+            - SYS_CHROOT
+            - SYS_PTRACE
+    # Mount the bpf fs if it is not mounted. We will perform this task
+    # from a privileged container because the mount propagation bidirectional
+    # only works from privileged containers.
+    - name: mount-bpf-fs
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      args:
+      - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
+      command:
+      - /bin/bash
+      - -c
+      - --
+      terminationMessagePolicy: FallbackToLogsOnError
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: bpf-maps
+        mountPath: /sys/fs/bpf
+        mountPropagation: Bidirectional
+    - name: clean-cilium-state
+      command:
+      - /init-container.sh
+      env:
+      - name: CILIUM_ALL_STATE
+        valueFrom:
+          configMapKeyRef:
+            name: cilium-config
+            key: clean-cilium-state
+            optional: true
+      - name: CILIUM_BPF_STATE
+        valueFrom:
+          configMapKeyRef:
+            name: cilium-config
+            key: clean-cilium-bpf-state
+            optional: true
+      - name: WRITE_CNI_CONF_WHEN_READY
+        valueFrom:
+          configMapKeyRef:
+            name: cilium-config
+            key: write-cni-conf-when-ready
+            optional: true
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: {{ .Values.global.pullPolicy }}
+      terminationMessagePolicy: FallbackToLogsOnError
+      securityContext:
+        seLinuxOptions:
+          level: s0
+          # Running with spc_t since we have removed the privileged mode.
+          # Users can change it to a different type as long as they have the
+          # type available on the system.
+          type: spc_t
+        capabilities:
+          # Most of the capabilities here are the same ones used in the
+          # cilium-agent's container because this container can be used to
+          # uninstall all Cilium resources, and therefore it is likely that
+          # will need the same capabilities.
+          add:
+            # Used since cilium modifies routing tables, etc...
+            - NET_ADMIN
+            # Used in iptables. Consider removing once we are iptables-free
+            - SYS_MODULE
+            # We need it for now but might not need it for >= 5.11 specially
+            # for the 'SYS_RESOURCE'.
+            # In >= 5.8 there's already BPF and PERMON capabilities
+            - SYS_ADMIN
+            # Could be an alternative for the SYS_ADMIN for the RLIMIT_NPROC
+            - SYS_RESOURCE
+            # Both PERFMON and BPF requires kernel 5.8, container runtime
+            # cri-o >= v1.22.0 or containerd >= v1.5.0.
+            # If available, SYS_ADMIN can be removed.
+            #- PERFMON
+            #- BPF
+            - SYSLOG
+          drop:
+            - ALL
+      volumeMounts:
+{{- /* CRI-O already mounts the BPF filesystem */ -}}
+{{- if not (eq .Values.global.containerRuntime.integration "crio") }}
+      - name: bpf-maps
+        mountPath: /sys/fs/bpf
+{{- end }}
+      # Required to mount cgroup filesystem from the host to cilium agent pod
+      - name: cilium-cgroup
+        mountPath: /run/cilium/cgroupv2
+        mountPropagation: HostToContainer
+      - name: cilium-run
+        mountPath: /var/run/cilium
+      resources:
+        {{- toYaml .Values.initResources | trim | nindent 10 }}
+      # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
+    - name: install-cni-binaries
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: IfNotPresent
+      command:
+        - "/install-plugin.sh"
+      resources:
+        {{- toYaml .Values.initResources | trim | nindent 10 }}
+      securityContext:
+        allowPrivilegeEscalation: false
+        seLinuxOptions:
+          level: s0
+          type: spc_t
+        capabilities:
+          drop:
+            - ALL
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+        - name: cni-path
+          mountPath: /host/opt/cni/bin
+{{- if eq .Values.global.kubeProxyReplacement "strict" }}
+    # Clean up kube-proxy iptable rules in case cilium is running as kube-proxy replacement
+{{- if not (eq .Values.kubeProxyCleanup "kube-proxy") }}
+    - command:
+      - bash
+      - -c
+      # Recommended way to clean up according to cilium docs (https://docs.cilium.io/en/latest/gettingstarted/kubeproxy-free/)
+      #- "iptables-restore <(iptables-save | grep -v KUBE)"
+      # Unfortunately, the above is not directly working due to etc/alternatives issue with cilium container image
+      # Therefore, we use the equivalent below, which adds also log output
+      - "iptables-save | grep -v KUBE > /saved-iptables-without-KUBE; echo 'IPTables without KUBE:'; cat /saved-iptables-without-KUBE; echo 'iptables-restore:'; iptables-restore --verbose /saved-iptables-without-KUBE"
+      image: {{ index .Values.global.images "cilium-agent" }}
+      imagePullPolicy: {{ .Values.global.pullPolicy }}
+      name: cilium-kube-proxy-clean-up
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - NET_ADMIN
+{{- else }}
+    - command:
+      - /usr/local/bin/kube-proxy
+      - --cleanup
+      - --v=2
+      image: {{ index .Values.global.images "kube-proxy" }}
+      imagePullPolicy: {{ .Values.global.pullPolicy }}
+      name: kube-proxy-clean-up
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
+        privileged: true
+{{- end }}
+{{- end }}
+    restartPolicy: Always
+{{- if and (eq .Release.Namespace "kube-system") (or (gt .Capabilities.KubeVersion.Minor "10") (gt .Capabilities.KubeVersion.Major "1"))}}
+    priorityClassName: system-node-critical
+{{- end }}
+    securityContext:
+      fsGroup: 1
+      supplementalGroups:
+      - 1
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccountName: "cilium"
+    automountServiceAccountToken: true
+    terminationGracePeriodSeconds: 1
+    hostNetwork: true
+{{- if .Values.global.affinity }}
+    affinity:
+{{ toYaml .Values.global.affinity | indent 6 }}
+  {{- if not ( eq .role "" ) }}
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+            {{- if eq .role "controlplane" }}
+              operator: Exists
+            {{- else if eq .role "worker" }}
+              operator: DoesNotExist
+            {{- end }}
+  {{- end }}
+{{- end }}
+    nodeSelector:
+      kubernetes.io/os: linux
+    tolerations:
+      - operator: Exists
+    volumes:
+      # For sharing configuration between the "config" initContainer and the agent
+    - name: tmp
+      emptyDir: {}
+      # To keep state between restarts / upgrades
+    - name: cilium-run
+      hostPath:
+        path: {{ .Values.global.daemon.runPath }}
+        type: DirectoryOrCreate
+      # To exec into pod network namespaces
+    - name: cilium-netns
+      hostPath:
+        path: /var/run/netns
+        type: DirectoryOrCreate
+{{- /* CRI-O already mounts the BPF filesystem */ -}}
+{{- if not (eq .Values.global.containerRuntime.integration "crio") }}
+      # To keep state between restarts / upgrades for bpf maps
+    - name: bpf-maps
+      hostPath:
+        path: /sys/fs/bpf
+        type: DirectoryOrCreate
+{{- end }}
+    # To mount cgroup2 filesystem on the host or apply sysctlfix
+    - name: hostproc
+      hostPath:
+        path: /proc
+        type: Directory
+    # To keep state between restarts / upgrades for cgroup2 filesystem
+    - name: cilium-cgroup
+      hostPath:
+        path: /run/cilium/cgroupv2
+        type: DirectoryOrCreate
+    # To install cilium cni plugin in the host
+    - name: cni-path
+      hostPath:
+        path:  {{ .Values.global.cni.binPath }}
+        type: DirectoryOrCreate
+      # To install cilium cni configuration in the host
+    - name: etc-cni-netd
+      hostPath:
+        path: {{ .Values.global.cni.confPath }}
+        type: DirectoryOrCreate
+      # To be able to load kernel modules
+    - name: lib-modules
+      hostPath:
+        path: /lib/modules
+      # To access iptables concurrently with other processes (e.g. kube-proxy)
+    - name: xtables-lock
+      hostPath:
+        path: /run/xtables.lock
+        type: FileOrCreate
+    # Sharing socket with Cilium Envoy on the same node by using a host path
+    - name: envoy-sockets
+      hostPath:
+        path: "/var/run/cilium/envoy/sockets"
+        type: DirectoryOrCreate
+{{- if .Values.global.kubeConfigPath }}
+    - name: kube-config
+      hostPath:
+        path: {{ .Values.global.kubeConfigPath }}
+        type: FileOrCreate
+{{- end }}
+    # To mount /etc directory
+    - name: host-etc
+      hostPath:
+        path: /etc
+        type: Directory
+      # To read the clustermesh configuration
+    - name: clustermesh-secrets
+      projected:
+        # note: the leading zero means this number is in octal representation: do not remove it
+        defaultMode: 0400
+        sources:
+        - secret:
+            name: cilium-clustermesh
+            optional: true
+            # note: items are not explicitly listed here, since the entries of this secret
+            # depend on the peers configured, and that would cause a restart of all agents
+            # at every addition/removal. Leaving the field empty makes each secret entry
+            # to be automatically projected into the volume as a file whose name is the key.
+        - secret:
+            name: clustermesh-apiserver-remote-cert
+            optional: true
+            items:
+            - key: tls.key
+              path: common-etcd-client.key
+            - key: tls.crt
+              path: common-etcd-client.crt
+            - key: ca.crt
+              path: common-etcd-client-ca.crt
+        # note: we configure the volume for the kvstoremesh-specific certificate
+        # regardless of whether KVStoreMesh is enabled or not, so that it can be
+        # automatically mounted in case KVStoreMesh gets subsequently enabled,
+        # without requiring an agent restart.
+        - secret:
+            name: clustermesh-apiserver-local-cert
+            optional: true
+            items:
+            - key: tls.key
+              path: local-etcd-client.key
+            - key: tls.crt
+              path: local-etcd-client.crt
+            - key: ca.crt
+              path: local-etcd-client-ca.crt
+      # To read the configuration from the config map
+    - name: cilium-config-path
+      configMap:
+        name: cilium-config
+    - name: label-prefix
+      configMap:
+        defaultMode: 420
+        name: label-prefix-conf
+    - name: host-proc-sys-net
+      hostPath:
+        path: /proc/sys/net
+        type: Directory
+    - name: host-proc-sys-kernel
+      hostPath:
+        path: /proc/sys/kernel
+        type: Directory
+    - name: hubble-tls
+      projected:
+        # note: the leading zero means this number is in octal representation: do not remove it
+        defaultMode: 0400
+        sources:
+        - secret:
+            name: hubble-server-certs
+            optional: true
+            items:
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+              - key: ca.crt
+                path: client-ca.crt
+{{- if and .Values.global.ipMasqAgent .Values.global.ipMasqAgent.enabled }}
+    - configMap:
+        name: ip-masq-agent
+        optional: true
+        items:
+          - key: config
+            path: ip-masq-agent
+      name: ip-masq-agent
+{{- end }}
+{{- if and .Values.global.encryption.enabled (eq .Values.global.encryption.mode "ipsec") }}
+    - name: cilium-ipsec-secrets
+      secret:
+        secretName: {{ .Values.global.encryption.ipsec.secretName }}
+{{- end }}
+{{- if .Values.global.cni.configMap }}
+    - name: cni-configuration
+      configMap:
+        name: {{ .Values.global.cni.configMap }}
+{{- end }}
+updateStrategy:
+  rollingUpdate:
+    maxUnavailable: {{ .Values.maxUnavailable }}
+  type: RollingUpdate
+{{- end -}}
