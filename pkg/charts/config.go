@@ -56,6 +56,7 @@ type globalConfig struct {
 	ConfigMapLabelPrefixHash            string                                  `json:"configMapLabelPrefixHash"`
 	PolicyAuditMode                     bool                                    `json:"policyAuditMode"`
 	Encryption                          encryption                              `json:"encryption"`
+	Hubble                              hubbleConfig                            `json:"hubble"`
 }
 
 // etcd related configuration for cilium
@@ -208,4 +209,8 @@ type encryptionWireguard struct {
 type encryptionWireguardStrictMode struct {
 	Enabled                   bool `json:"enabled"`
 	AllowRemoteNodeIdentities bool `json:"allowRemoteNodeIdentities"`
+}
+
+type hubbleConfig struct {
+	Enabled bool `json:"enabled"`
 }
