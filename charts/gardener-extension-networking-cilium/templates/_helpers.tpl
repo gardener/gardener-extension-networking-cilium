@@ -15,7 +15,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{-  define "image" -}}
-  {{- if hasPrefix "sha256:" .Values.image.tag }}
+  {{- if .Values.image.ref }}
+  {{- .Values.image.ref }}
+  {{- else if hasPrefix "sha256:" .Values.image.tag }}
   {{- printf "%s@%s" .Values.image.repository .Values.image.tag }}
   {{- else }}
   {{- printf "%s:%s" .Values.image.repository .Values.image.tag }}

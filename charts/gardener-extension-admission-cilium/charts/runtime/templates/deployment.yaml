@@ -35,8 +35,7 @@ spec:
       - name: {{ include "name" . }}
         image: {{ include "image" .Values.image }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - /gardener-extension-admission-cilium
+        args:
         - --webhook-config-server-port={{ .Values.webhookConfig.serverPort }}
         {{- if .Values.gardener.virtualCluster.enabled }}
         - --webhook-config-mode=url
