@@ -8,6 +8,7 @@ import (
 	"context"
 	"os"
 
+	ciliuminstall "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/install"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -17,14 +18,21 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	jsonserializer "k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/utils/ptr"
 )
 
 var (
 	parentCtx context.Context
-	encoder   runtime.Encoder = &jsonserializer.Serializer{}
+	encoder   runtime.Encoder
 )
+
+func init() {
+	scheme := runtime.NewScheme()
+	utilruntime.Must(ciliuminstall.AddToScheme(scheme))
+	encoder = serializer.NewCodecFactory(scheme).LegacyCodec(ciliumv1alpha1.SchemeGroupVersion)
+}
 
 var _ = BeforeEach(func() {
 	parentCtx = context.Background()
