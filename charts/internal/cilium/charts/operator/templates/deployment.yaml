@@ -160,6 +160,8 @@ spec:
         operator: Exists
       - key: node.cilium.io/agent-not-ready
         operator: Exists
+      - key: node.gardener.cloud/critical-components-not-ready
+        operator: Exists
       volumes:
         # To read the configuration from the config map
       - name: cilium-config-path

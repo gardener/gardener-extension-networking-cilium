@@ -44,8 +44,7 @@ spec:
       - name: {{ include "name" . }}
         image: {{ include "image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - /gardener-extension-networking-cilium
+        args:
         - --max-concurrent-reconciles={{ .Values.controllers.concurrentSyncs }}
         - --heartbeat-namespace={{ .Release.Namespace }} 
         - --heartbeat-renew-interval-seconds={{ .Values.controllers.heartbeat.renewIntervalSeconds }}
