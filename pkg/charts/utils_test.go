@@ -1,6 +1,9 @@
 package charts
 
 import (
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/extensions"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -41,6 +44,29 @@ var _ = Describe("#applyEncryptionConfig", func() {
 				}
 				Expect(applyEncryptionConfig(cfg, config)).ShouldNot(HaveOccurred())
 				Expect(cfg.Encryption.Wireguard.StrictMode.AllowRemoteNodeIdentities).To(BeTrue())
+			})
+		})
+	})
+})
+
+var _ = Describe("#generateChartValues", func() {
+	Describe("hubble", func() {
+		var config *ciliumv1alpha1.NetworkConfig
+		cluster := &extensions.Cluster{
+			Shoot: &gardencorev1beta1.Shoot{},
+		}
+		BeforeEach(func() {
+			config = &ciliumv1alpha1.NetworkConfig{}
+		})
+		Describe("reflect hubble of NetworkConfig in both requirementsConfig and globalConfig", func() {
+			It("should be disabled in requirementsConfig and globalConfig", func() {
+				config.Hubble = &ciliumv1alpha1.Hubble{
+					Enabled: false,
+				}
+				requirementCfg, globalCfg, err := generateChartValues(config, &extensionsv1alpha1.Network{}, cluster, "", "", "")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(requirementCfg.Hubble.Enabled).To(Equal(config.Hubble.Enabled), "requirementsConfig mismatch")
+				Expect(globalCfg.Hubble.Enabled).To(Equal(config.Hubble.Enabled), "globalConfig mismatch")
 			})
 		})
 	})

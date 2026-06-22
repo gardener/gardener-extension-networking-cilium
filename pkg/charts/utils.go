@@ -125,6 +125,9 @@ var defaultGlobalConfig = globalConfig{
 		NodeEncryption: false,
 		Enabled:        false,
 	},
+	Hubble: hubbleConfig{
+		Enabled: false,
+	},
 }
 
 func newGlobalConfig() globalConfig {
@@ -214,9 +217,9 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		return requirementsConfig, globalConfig, nil
 	}
 
-	// If Hubble enabled
-	if config.Hubble != nil && config.Hubble.Enabled {
+	if config.Hubble != nil {
 		requirementsConfig.Hubble.Enabled = config.Hubble.Enabled
+		globalConfig.Hubble.Enabled = config.Hubble.Enabled
 	}
 
 	// If ETCD enabled
