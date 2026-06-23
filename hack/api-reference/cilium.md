@@ -414,17 +414,6 @@ integer
 </table>
 
 
-<h3 id="kubeproxyreplacementmode">KubeProxyReplacementMode
-</h3>
-<p><em>Underlying type: string</em></p>
-
-
-<p>
-KubeProxyReplacementMode defines which mode should kube-proxy run in.
-More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
-</p>
-
-
 <h3 id="l2announcements">L2Announcements
 </h3>
 
@@ -854,64 +843,6 @@ boolean
 <p>
 NetworkStatus contains information about created Network resources.
 </p>
-
-
-<h3 id="nodeportmode">NodePortMode
-</h3>
-<p><em>Underlying type: string</em></p>
-
-
-<p>
-(<em>Appears on:</em><a href="#nodeport">Nodeport</a>)
-</p>
-
-<p>
-NodePortMode defines how NodePort services are enabled.
-</p>
-
-
-<h3 id="nodeport">Nodeport
-</h3>
-
-
-<p>
-Nodeport enablement for cilium
-</p>
-
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-
-<tr>
-<td>
-<code>nodePortEnabled</code></br>
-<em>
-boolean
-</em>
-</td>
-<td>
-<p>Enabled is used to define whether Nodeport is required or not.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>nodePortMode</code></br>
-<em>
-<a href="#nodeportmode">NodePortMode</a>
-</em>
-</td>
-<td>
-<p>Mode is the mode of NodePort feature</p>
-</td>
-</tr>
-
-</tbody>
-</table>
 
 
 <h3 id="overlay">Overlay

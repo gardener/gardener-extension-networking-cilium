@@ -363,7 +363,7 @@ global:
     nodeEncryption: false
 
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
-  kubeProxyReplacement: "false"
+  kubeProxyReplacement: false
 
   kubeProxyReplacementHealthzBindAddr: ""
 
@@ -400,19 +400,18 @@ global:
     # device is the name of the device handling NodePort requests
     # device:
 
-    # mode is the mode of NodePort feature
-    mode: "hybrid"
-
     #  Append NodePort range to net.ipv4.ip_local_reserved_ports if it overlaps with ephemeral port range (net.ipv4.ip_local_port_range)
     autoProtectPortRange: true
 
     # Reject application bind(2) requests to service ports in the NodePort range
     bindProtection: true
 
-  # externalIPs is the configuration for ExternalIPs service handling
-  externalIPs:
-    # enabled enables ExternalIPs functionality
-    enabled: false
+    # -- Enable healthcheck nodePort server for NodePort services
+    enableHealthCheck: true
+
+    # -- Enable access of the healthcheck nodePort on the LoadBalancerIP. Needs
+    # EnableHealthCheck to be enabled
+    enableHealthCheckLoadBalancerIP: false
 
   # pprof is the GO pprof configuration
   pprof:
