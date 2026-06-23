@@ -38,7 +38,7 @@ var defaultCiliumConfig = requirementsConfig{
 var defaultGlobalConfig = globalConfig{
 	IdentityAllocationMode: ciliumv1alpha1.CRD,
 	Tunnel:                 ciliumv1alpha1.VXLan,
-	KubeProxyReplacement:   ciliumv1alpha1.KubeProxyReplacementFalse,
+	KubeProxyReplacement:   false,
 	Etcd: etcd{
 		Enabled: false,
 		Managed: false,
@@ -92,6 +92,13 @@ var defaultGlobalConfig = globalConfig{
 	},
 	NodeLocalDNS: nodeLocalDNS{
 		Enabled: false,
+	},
+	NodePort: nodePort{
+		Enabled:                         false,
+		EnableHealthCheck:               true,
+		EnableHealthCheckLoadBalancerIP: false,
+		AutoProtectPortRange:            true,
+		BindProtection:                  false,
 	},
 	MTU:                   0, // --> means auto detection (default)
 	Devices:               nil,
@@ -186,7 +193,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	// Settings for Kube-Proxy disabled and using the HostService option
 	// Also need to configure KubeProxy
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
-		globalConfig.KubeProxyReplacement = ciliumv1alpha1.KubeProxyReplacementTrue
+		globalConfig.KubeProxyReplacement = true
 		globalConfig.KubeProxyReplacementHealthzBindAddr = "0.0.0.0:10256"
 		globalConfig.Images[cilium.KubeProxyImageName] = imagevector.CiliumKubeProxyImage(cluster.Shoot.Spec.Kubernetes.Version)
 

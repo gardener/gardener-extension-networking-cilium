@@ -62,33 +62,6 @@ type L2Announcements struct {
 	LeaseRetryPeriod *metav1.Duration `json:"leaseRetryPeriod,omitempty"`
 }
 
-// KubeProxyReplacementMode defines which mode should kube-proxy run in.
-// More infromation here: https://docs.cilium.io/en/v1.7/gettingstarted/kubeproxy-free/
-type KubeProxyReplacementMode string
-
-const (
-	// Strict defines the strict kube-proxy replacement mode
-	Strict KubeProxyReplacementMode = "strict"
-	// Probe defines the probe kube-proxy replacement mode
-	Probe KubeProxyReplacementMode = "probe"
-	// Partial defines the partial kube-proxy replacement mode
-	Partial KubeProxyReplacementMode = "partial"
-	// Disabled defines the disabled kube-proxy replacement mode
-	KubeProxyReplacementDisabled KubeProxyReplacementMode = "disabled"
-	// KubeProxyReplacementTrue defines the true kube-proxy replacement mode
-	KubeProxyReplacementTrue KubeProxyReplacementMode = "true"
-	// KubeProxyReplacementFalse defines the false kube-proxy replacement mode
-	KubeProxyReplacementFalse KubeProxyReplacementMode = "false"
-)
-
-// NodePortMode defines how NodePort services are enabled.
-type NodePortMode string
-
-const (
-	// Hybrid defines the hybrid nodeport mode.
-	Hybird NodePortMode = "hybrid"
-)
-
 // Store defines the kubernetes storage backend
 type Store string
 
@@ -129,14 +102,6 @@ type CNI struct {
 // EgressGateway enablement for cilium
 type EgressGateway struct {
 	Enabled bool `json:"enabled"`
-}
-
-// Nodeport enablement for cilium
-type Nodeport struct {
-	// Enabled is used to define whether Nodeport is required or not.
-	Enabled bool `json:"nodePortEnabled"`
-	// Mode is the mode of NodePort feature
-	Mode NodePortMode `json:"nodePortMode"`
 }
 
 // KubeProxy configuration for cilium

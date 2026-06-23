@@ -1,6 +1,8 @@
 package charts
 
-import ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+import (
+	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+)
 
 type ciliumConfig struct {
 	Requirements requirementsConfig `json:"requirements"`
@@ -16,47 +18,47 @@ type requirementsConfig struct {
 }
 
 type globalConfig struct {
-	Tunnel                              ciliumv1alpha1.TunnelMode               `json:"tunnel"`
-	IdentityAllocationMode              ciliumv1alpha1.IdentityAllocationMode   `json:"identityAllocationMode"`
-	KubeProxyReplacement                ciliumv1alpha1.KubeProxyReplacementMode `json:"kubeProxyReplacement"`
-	KubeProxyReplacementHealthzBindAddr string                                  `json:"kubeProxyReplacementHealthzBindAddr"`
-	Etcd                                etcd                                    `json:"etcd"`
-	Ipv4                                ipv4                                    `json:"ipv4"`
-	Ipv6                                ipv6                                    `json:"ipv6"`
-	Debug                               debug                                   `json:"debug"`
-	Prometheus                          prometheus                              `json:"prometheus"`
-	OperatorHighAvailability            operatorHighAvailability                `json:"operatorHighAvailability"`
-	OperatorPrometheus                  operatorPrometheus                      `json:"operatorPrometheus"`
-	Images                              map[string]string                       `json:"images"`
-	K8sServiceHost                      string                                  `json:"k8sServiceHost"`
-	K8sServicePort                      int32                                   `json:"k8sServicePort"`
-	NodePort                            nodePort                                `json:"nodePort"`
-	PodCIDR                             string                                  `json:"podCIDR"`
-	NodeCIDR                            string                                  `json:"nodeCIDR"`
-	BPFSocketLBHostnsOnly               bpfSocketLBHostnsOnly                   `json:"bpfSocketLBHostnsOnly"`
-	CNI                                 cni                                     `json:"cni"`
-	LocalRedirectPolicy                 localRedirectPolicy                     `json:"localRedirectPolicy"`
-	NodeLocalDNS                        nodeLocalDNS                            `json:"nodeLocalDNS"`
-	EgressGateway                       egressGateway                           `json:"egressGateway"`
-	IPv4NativeRoutingCIDR               string                                  `json:"ipv4NativeRoutingCIDR"`
-	IPv6NativeRoutingCIDR               string                                  `json:"ipv6NativeRoutingCIDR"`
-	MTU                                 int                                     `json:"mtu"`
-	Devices                             []string                                `json:"devices"`
-	BPF                                 bpf                                     `json:"bpf"`
-	IPAM                                ipam                                    `json:"ipam"`
-	L2Announcements                     l2Announcements                         `json:"l2announcements"`
-	SnatToUpstreamDNS                   snatToUpstreamDNS                       `json:"snatToUpstreamDNS"`
-	SnatOutOfCluster                    snatOutOfCluster                        `json:"snatOutOfCluster"`
-	EnableIPv4Masquerade                bool                                    `json:"enableIpv4Masquerade"`
-	EnableIPv6Masquerade                bool                                    `json:"enableIpv6Masquerade"`
-	EnableBPFMasquerade                 bool                                    `json:"enableBPFMasquerade"`
-	AutoDirectNodeRoutes                bool                                    `json:"autoDirectNodeRoutes"`
-	BGPControlPlane                     bgpControlPlane                         `json:"bgpControlPlane"`
-	ConfigMapHash                       string                                  `json:"configMapHash"`
-	ConfigMapLabelPrefixHash            string                                  `json:"configMapLabelPrefixHash"`
-	PolicyAuditMode                     bool                                    `json:"policyAuditMode"`
-	Encryption                          encryption                              `json:"encryption"`
-	Hubble                              hubbleConfig                            `json:"hubble"`
+	Tunnel                              ciliumv1alpha1.TunnelMode             `json:"tunnel"`
+	IdentityAllocationMode              ciliumv1alpha1.IdentityAllocationMode `json:"identityAllocationMode"`
+	KubeProxyReplacement                bool                                  `json:"kubeProxyReplacement"`
+	KubeProxyReplacementHealthzBindAddr string                                `json:"kubeProxyReplacementHealthzBindAddr"`
+	Etcd                                etcd                                  `json:"etcd"`
+	Ipv4                                ipv4                                  `json:"ipv4"`
+	Ipv6                                ipv6                                  `json:"ipv6"`
+	Debug                               debug                                 `json:"debug"`
+	Prometheus                          prometheus                            `json:"prometheus"`
+	OperatorHighAvailability            operatorHighAvailability              `json:"operatorHighAvailability"`
+	OperatorPrometheus                  operatorPrometheus                    `json:"operatorPrometheus"`
+	Images                              map[string]string                     `json:"images"`
+	K8sServiceHost                      string                                `json:"k8sServiceHost"`
+	K8sServicePort                      int32                                 `json:"k8sServicePort"`
+	NodePort                            nodePort                              `json:"nodePort"`
+	PodCIDR                             string                                `json:"podCIDR"`
+	NodeCIDR                            string                                `json:"nodeCIDR"`
+	BPFSocketLBHostnsOnly               bpfSocketLBHostnsOnly                 `json:"bpfSocketLBHostnsOnly"`
+	CNI                                 cni                                   `json:"cni"`
+	LocalRedirectPolicy                 localRedirectPolicy                   `json:"localRedirectPolicy"`
+	NodeLocalDNS                        nodeLocalDNS                          `json:"nodeLocalDNS"`
+	EgressGateway                       egressGateway                         `json:"egressGateway"`
+	IPv4NativeRoutingCIDR               string                                `json:"ipv4NativeRoutingCIDR"`
+	IPv6NativeRoutingCIDR               string                                `json:"ipv6NativeRoutingCIDR"`
+	MTU                                 int                                   `json:"mtu"`
+	Devices                             []string                              `json:"devices"`
+	BPF                                 bpf                                   `json:"bpf"`
+	IPAM                                ipam                                  `json:"ipam"`
+	L2Announcements                     l2Announcements                       `json:"l2announcements"`
+	SnatToUpstreamDNS                   snatToUpstreamDNS                     `json:"snatToUpstreamDNS"`
+	SnatOutOfCluster                    snatOutOfCluster                      `json:"snatOutOfCluster"`
+	EnableIPv4Masquerade                bool                                  `json:"enableIpv4Masquerade"`
+	EnableIPv6Masquerade                bool                                  `json:"enableIpv6Masquerade"`
+	EnableBPFMasquerade                 bool                                  `json:"enableBPFMasquerade"`
+	AutoDirectNodeRoutes                bool                                  `json:"autoDirectNodeRoutes"`
+	BGPControlPlane                     bgpControlPlane                       `json:"bgpControlPlane"`
+	ConfigMapHash                       string                                `json:"configMapHash"`
+	ConfigMapLabelPrefixHash            string                                `json:"configMapLabelPrefixHash"`
+	PolicyAuditMode                     bool                                  `json:"policyAuditMode"`
+	Encryption                          encryption                            `json:"encryption"`
+	Hubble                              hubbleConfig                          `json:"hubble"`
 }
 
 // etcd related configuration for cilium
@@ -103,9 +105,19 @@ type hubble struct {
 // nodePort enablement for cilium
 type nodePort struct {
 	// Nodeport Enabled is used to define whether Nodeport is required or not.
-	Enabled             bool                        `json:"enabled"`
-	Mode                ciliumv1alpha1.NodePortMode `json:"mode"`
-	DirectRoutingDevice string                      `json:"directRoutingDevice"`
+	Enabled              bool   `json:"enabled"`
+	DirectRoutingDevice  string `json:"directRoutingDevice"`
+	AutoProtectPortRange bool   `json:"autoProtectPortRange"`
+
+	// Reject application bind(2) requests to service ports in the NodePort range
+	BindProtection bool `json:"bindProtection"`
+
+	// EnableHealthCheck enables healthcheck nodePort server for NodePort services
+	EnableHealthCheck bool `json:"EnableHealthCheck"`
+
+	// EnableHealthCheckLoadBalancerIP enables access of the healthcheck nodePort on the LoadBalancerIP.
+	// Needs [nodePort.EnableHealthCheck] to be enabled
+	EnableHealthCheckLoadBalancerIP bool `json:"enableHealthCheckLoadBalancerIP"`
 }
 
 // operator configuration for cilium
