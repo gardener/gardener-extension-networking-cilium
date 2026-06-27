@@ -95,7 +95,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	NodePort: nodePort{
 		Enabled:                         false,
-		EnableHealthCheck:               true,
+		EnableHealthCheck:               false,
 		EnableHealthCheckLoadBalancerIP: false,
 		AutoProtectPortRange:            true,
 		BindProtection:                  false,
@@ -195,6 +195,8 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	if cluster.Shoot.Spec.Kubernetes.KubeProxy != nil && cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled != nil && !*cluster.Shoot.Spec.Kubernetes.KubeProxy.Enabled {
 		globalConfig.KubeProxyReplacement = true
 		globalConfig.KubeProxyReplacementHealthzBindAddr = "0.0.0.0:10256"
+		globalConfig.NodePort.EnableHealthCheck = true
+		globalConfig.NodePort.EnableHealthCheckLoadBalancerIP = true
 		globalConfig.Images[cilium.KubeProxyImageName] = imagevector.CiliumKubeProxyImage(cluster.Shoot.Spec.Kubernetes.Version)
 
 		if config != nil && config.KubeProxy != nil && config.KubeProxy.ServiceHost != nil && config.KubeProxy.ServicePort != nil {
