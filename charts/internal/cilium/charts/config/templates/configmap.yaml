@@ -260,11 +260,7 @@ data:
   bpf-events-trace-enabled: "true"
 
   # Enable socket-based LB for E/W traffic
-{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  bpf-lb-sock: "true"
-{{- else}}
   bpf-lb-sock:  "{{ .Values.global.bpfSocketLB.enabled }}"
-{{- end }}
 
 {{- if .Values.global.bpfSocketLBHostnsOnly.enabled }}
   # bpf-lb-sock-hostns-only skip socket LB for services when inside a pod namespace, in favor of service LB at the pod interface.
@@ -470,8 +466,8 @@ data:
 {{- end }}
 
 {{- if .Values.global.egressGateway.enabled }}
-  {{- if not (or (eq .Values.global.kubeProxyReplacement "strict") (eq .Values.global.kubeProxyReplacement "true")) }}
-    {{ fail "kubeProxyReplacement must be set to 'strict' or 'true' in order to enable egressGateway" }}
+  {{- if not .Values.global.kubeProxyReplacement }}
+    {{ fail "kubeProxyReplacement must be enabled in order to enable egressGateway" }}
   {{- end}}
   {{- if eq .Values.global.tunnel "disabled" }}
       {{ fail "cilium must run with an overlay network in order to enable egressGateway" }}
@@ -480,14 +476,9 @@ data:
 {{- end}}
 {{- if .Values.global.kubeProxyReplacement }}
   kube-proxy-replacement:  {{ .Values.global.kubeProxyReplacement | quote }}
-{{- end }}
-  policy-deny-response: "none"
-{{- if ne .Values.global.kubeProxyReplacement "disabled" }}
   kube-proxy-replacement-healthz-bind-address: {{ .Values.global.kubeProxyReplacementHealthzBindAddr | quote}}
 {{- end }}
-{{- if or (or (eq .Values.global.kubeProxyReplacement "false") (eq .Values.global.kubeProxyReplacement "partial")) (eq .Values.global.kubeProxyReplacement "disabled") }}
-  enable-health-check-nodeport: "false"
-{{- end }}
+  policy-deny-response: "none"
 
 {{- if .Values.global.hostServices }}
 {{- if .Values.global.hostServices.enabled }}
@@ -497,20 +488,8 @@ data:
   host-reachable-services-protos: {{ .Values.global.hostServices.protocols }}
 {{- end }}
 {{- end }}
-{{- if .Values.global.hostPort }}
-{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  enable-host-port: {{ .Values.global.hostPort.enabled | quote }}
-{{- end }}
-{{- end }}
-{{- if .Values.global.externalIPs }}
-{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  enable-external-ips: {{ .Values.global.externalIPs.enabled | quote }}
-{{- end }}
-{{- end }}
+
 {{- if .Values.global.nodePort }}
-{{- if or (eq .Values.global.kubeProxyReplacement "partial") (eq .Values.global.kubeProxyReplacement "false") }}
-  enable-node-port: "true"
-{{- end }}
   nodeport-addresses: ""
 {{- if .Values.global.nodePort.range }}
   node-port-range: {{ .Values.global.nodePort.range | quote }}
@@ -521,13 +500,8 @@ data:
 {{- if .Values.global.nodePort.directRoutingDevice }}
   direct-routing-device: {{ .Values.global.nodePort.directRoutingDevice | quote }}
 {{- end }}
-{{- if .Values.global.nodePort.mode }}
-  node-port-mode: {{ .Values.global.nodePort.mode | quote }}
-{{- end }}
-{{- if .Values.global.nodePort.acceleration }}
-  node-port-acceleration: {{ .Values.global.nodePort.acceleration | quote }}
-{{- end }}
-  enable-health-check-loadbalancer-ip: "false"
+  enable-health-check-nodeport: {{ .Values.global.nodePort.enableHealthCheck | quote }}
+  enable-health-check-loadbalancer-ip: {{ .Values.global.nodePort.enableHealthCheckLoadBalancerIP | quote }}
   node-port-bind-protection: {{ .Values.global.nodePort.bindProtection | quote }}
   enable-auto-protect-node-port-range: {{ .Values.global.nodePort.autoProtectPortRange | quote }}
   enable-svc-source-range-check: {{ .Values.global.enableSvcSrcRangeCheck | quote }}
