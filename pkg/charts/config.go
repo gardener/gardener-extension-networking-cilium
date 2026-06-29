@@ -166,7 +166,12 @@ type egressGateway struct {
 }
 
 type bpf struct {
-	LoadBalancingMode ciliumv1alpha1.LoadBalancingMode `json:"lbMode"`
+	LoadBalancingMode               ciliumv1alpha1.LoadBalancingMode      `json:"lbMode"`
+	LoadBalancerModeAnnotation      bool                                  `json:"lbModeAnnotation,omitempty"`
+	LoadBalancerDSRDispatch         *ciliumv1alpha1.DSRDispatch           `json:"lbDsrDispatch,omitempty"`
+	LoadBalancerAcceleration        *ciliumv1alpha1.Acceleration          `json:"lbAcceleration,omitempty"`
+	LoadBalancerAlgorithm           *ciliumv1alpha1.LoadBalancerAlgorithm `json:"lbAlgorithm,omitempty"`
+	LoadBalancerAlgorithmAnnotation bool                                  `json:"lbAlgorithmAnnotation,omitempty"`
 }
 
 type ipam struct {

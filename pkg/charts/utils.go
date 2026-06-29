@@ -283,6 +283,17 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		}
 	}
 
+	if config.LoadBalancer != nil {
+		globalConfig.BPF.LoadBalancerDSRDispatch = config.LoadBalancer.DSRDispatch
+		globalConfig.BPF.LoadBalancerAcceleration = config.LoadBalancer.Acceleration
+		globalConfig.BPF.LoadBalancerAlgorithm = config.LoadBalancer.Algorithm
+		globalConfig.BPF.LoadBalancerModeAnnotation = config.LoadBalancer.ModeAnnotation
+		globalConfig.BPF.LoadBalancerAlgorithmAnnotation = config.LoadBalancer.AlgorithmAnnotation
+		if config.LoadBalancer.Mode != nil {
+			globalConfig.BPF.LoadBalancingMode = *config.LoadBalancer.Mode
+		}
+	}
+
 	if config.L2Announcements != nil {
 		globalConfig.L2Announcements.Enabled = config.L2Announcements.Enabled
 		if config.L2Announcements.LeaseDuration != nil {
