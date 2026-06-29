@@ -113,7 +113,7 @@ type nodePort struct {
 	BindProtection bool `json:"bindProtection"`
 
 	// EnableHealthCheck enables healthcheck nodePort server for NodePort services
-	EnableHealthCheck bool `json:"EnableHealthCheck"`
+	EnableHealthCheck bool `json:"enableHealthCheck"`
 
 	// EnableHealthCheckLoadBalancerIP enables access of the healthcheck nodePort on the LoadBalancerIP.
 	// Needs [nodePort.EnableHealthCheck] to be enabled
