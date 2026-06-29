@@ -728,6 +728,7 @@ data:
   nat-map-stats-entries: "32"
   nat-map-stats-interval: "30s"
   enable-lb-ipam: "true"
+  default-lb-service-ipam: "none"
   enable-non-default-deny-policies: "true"
   enable-source-ip-verification: "true"
   enable-dynamic-config: "true"
