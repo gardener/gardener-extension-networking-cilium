@@ -359,6 +359,11 @@ spec:
         - cilium-dbg
         - build-config
         securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            drop:
+            - ALL
           allowPrivilegeEscalation: false
         env:
         - name: K8S_NODE_NAME
