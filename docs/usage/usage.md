@@ -81,7 +81,7 @@ encryption:
 
 You can enable the feature [`node-to-node encryption`](https://docs.cilium.io/en/stable/security/network/encryption-wireguard/#node-to-node-encryption-beta) of cilium using the `nodeToNodeEnabled` field.
 
-Find the API documentation for encryption [here](/hack/api-reference/cilium.md#cilium.networking.extensions.gardener.cloud/v1alpha1.Encryption)
+Find the API documentation for encryption [here](/hack/api-reference/cilium.md#encryption).
 
 ## Example `Shoot` manifest
 
