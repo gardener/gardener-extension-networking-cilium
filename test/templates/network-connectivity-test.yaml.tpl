@@ -23,7 +23,7 @@ spec:
         - connectivity
         - test
         - --test
-        - "!to-entities-world,!to-fqdns,!client-egress-l7,!client-egress-l7-named-port,!client-egress-tls-sni,!check-log-errors,!pod-to-pod-encryption,!pod-to-pod-with-l7-policy-encryption,!node-to-node-encryption"
+        - "!to-entities-world,!to-fqdns,!client-egress-l7,!client-egress-l7-named-port,!client-egress-tls-sni,!check-log-errors"
         securityContext:
           capabilities:
             add:
