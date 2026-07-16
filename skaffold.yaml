@@ -21,11 +21,9 @@ build:
         dependencies:
           paths:
             - charts
-            - charts/internal
             - cmd/gardener-extension-networking-cilium
             - cmd/gardener-extension-networking-cilium/app
             - imagevector
-            - imagevector/images.yaml
             - pkg/apis/cilium
             - pkg/apis/cilium/install
             - pkg/apis/cilium/v1alpha1
