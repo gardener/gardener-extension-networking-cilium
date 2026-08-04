@@ -277,9 +277,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	// check if load balancing mode is set
+	// nolint:staticcheck // only marked as deprecated for users
 	if config.LoadBalancingMode != nil {
 		globalConfig.BPF = bpf{
-			LoadBalancingMode: *config.LoadBalancingMode,
+			LoadBalancingMode: *config.LoadBalancingMode, // nolint:staticcheck // only marked as deprecated for users
 		}
 	}
 

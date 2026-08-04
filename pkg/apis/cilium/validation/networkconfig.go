@@ -54,6 +54,7 @@ func ValidateNetworkConfig(networkConfig *apiscilium.NetworkConfig, fldPath *fie
 		allErrs = append(allErrs, ValidateLoadBalancer(networkConfig.LoadBalancer, networkConfig.TunnelMode, ptr.Deref(networkConfig.Overlay, apiscilium.Overlay{}).Enabled, fldPath.Child("loadBalancer"))...)
 	}
 
+	// nolint:staticcheck // only marked as deprecated for users
 	if err := validateLoadBalancingMode(networkConfig.LoadBalancingMode, fldPath.Child("loadBalancingMode")); err != nil {
 		allErrs = append(allErrs, err)
 	}
