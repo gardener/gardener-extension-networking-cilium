@@ -243,7 +243,18 @@ data:
   # optimization for nodeport reverse NAT handling.
   bpf-lb-external-clusterip: "{{ .Values.global.bpf.lbExternalClusterip }}"
 {{- end }}
-
+{{- if .Values.global.bpf.lbDsrDispatch }}
+  bpf-lb-dsr-dispatch: {{ .Values.global.bpf.lbDsrDispatch | quote }}
+  {{- if eq .Values.global.bpf.lbDsrDispatch "geneve" }}
+  tunnel-protocol: "geneve"
+  {{- end }}
+{{- end }}
+{{- if .Values.global.bpf.lbAcceleration }}
+  bpf-lb-acceleration: {{ .Values.global.bpf.lbAcceleration | quote }}
+{{- end }}
+{{- if .Values.global.bpf.lbAlgorithm }}
+  bpf-lb-algorithm: {{ .Values.global.bpf.lbAlgorithm | quote }}
+{{- end }}
 {{- if .Values.global.bpf.lbSourceRangeAllTypes }}
   bpf-lb-source-range-all-types: {{ .Values.global.bpf.lbSourceRangeAllTypes | quote }}
 {{- end }}

@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/ptr"
 
 	apiscilium "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 )
@@ -29,14 +30,11 @@ func ValidateNetworkConfig(networkConfig *apiscilium.NetworkConfig, fldPath *fie
 
 	allErrs = append(allErrs, ValidateNetworkConfigKubeProxy(networkConfig.KubeProxy, fldPath.Child("kubeproxy"))...)
 
-	allowedTunnelModes := sets.New[apiscilium.TunnelMode](apiscilium.VXLan, apiscilium.Geneve, apiscilium.Disabled)
-	if networkConfig.TunnelMode != nil && !allowedTunnelModes.Has(*networkConfig.TunnelMode) {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("tunnel"), *networkConfig.TunnelMode, fmt.Sprintf("unsupported value %q for tunnel, supported values are [%q, %q, %q]", *networkConfig.TunnelMode, apiscilium.VXLan, apiscilium.Geneve, apiscilium.Disabled)))
+	if err := validateSupported(fldPath.Child("tunnel"), networkConfig.TunnelMode, sets.New[apiscilium.TunnelMode](apiscilium.VXLan, apiscilium.Geneve, apiscilium.Disabled)); err != nil {
+		allErrs = append(allErrs, err)
 	}
-
-	allowedStores := sets.New[apiscilium.Store](apiscilium.Kubernetes)
-	if networkConfig.Store != nil && !allowedStores.Has(*networkConfig.Store) {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("store"), *networkConfig.Store, fmt.Sprintf("unsupported value %q for store, supported values are [%q]", *networkConfig.Store, apiscilium.Kubernetes)))
+	if err := validateSupported(fldPath.Child("store"), networkConfig.Store, sets.New[apiscilium.Store](apiscilium.Kubernetes)); err != nil {
+		allErrs = append(allErrs, err)
 	}
 
 	// It is hard to put valid bounds on MTU, but negative values are definitively invalid.
@@ -52,9 +50,13 @@ func ValidateNetworkConfig(networkConfig *apiscilium.NetworkConfig, fldPath *fie
 		allErrs = append(allErrs, ValidateDevice(*networkConfig.DirectRoutingDevice, fldPath.Child("directRoutingDevice"))...)
 	}
 
-	allowedLoadBalancingModes := sets.New[apiscilium.LoadBalancingMode](apiscilium.SNAT, apiscilium.DSR, apiscilium.Hybrid)
-	if networkConfig.LoadBalancingMode != nil && !allowedLoadBalancingModes.Has(*networkConfig.LoadBalancingMode) {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("loadBalancingMode"), *networkConfig.LoadBalancingMode, fmt.Sprintf("unsupported value %q for loadBalancingMode, supported values are [%q, %q, %q]", *networkConfig.LoadBalancingMode, apiscilium.SNAT, apiscilium.DSR, apiscilium.Hybrid)))
+	if networkConfig.LoadBalancer != nil {
+		allErrs = append(allErrs, ValidateLoadBalancer(networkConfig.LoadBalancer, networkConfig.TunnelMode, ptr.Deref(networkConfig.Overlay, apiscilium.Overlay{}).Enabled, fldPath.Child("loadBalancer"))...)
+	}
+
+	// nolint:staticcheck // only marked as deprecated for users
+	if err := validateLoadBalancingMode(networkConfig.LoadBalancingMode, fldPath.Child("loadBalancingMode")); err != nil {
+		allErrs = append(allErrs, err)
 	}
 
 	if networkConfig.Encryption != nil {
@@ -62,6 +64,43 @@ func ValidateNetworkConfig(networkConfig *apiscilium.NetworkConfig, fldPath *fie
 	}
 
 	return allErrs
+}
+
+func ValidateLoadBalancer(lb *apiscilium.LoadBalancer, tunnelMode *apiscilium.TunnelMode, overlayEnabled bool, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if err := validateLoadBalancingMode(lb.Mode, fldPath.Child("mode")); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := validateSupported(fldPath.Child("acceleration"), lb.Acceleration, sets.New(apiscilium.AccelerationBestEffort, apiscilium.AccelerationNative, apiscilium.AccelerationDisabled)); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := validateSupported(fldPath.Child("algorithm"), lb.Algorithm, sets.New(apiscilium.LoadBalancerAlgorithmMaglev, apiscilium.LoadBalancerAlgorithmRandom)); err != nil {
+		allErrs = append(allErrs, err)
+	}
+
+	if lb.DSRDispatch != nil {
+		fldPath := fldPath.Child("dsrDispatch")
+		if err := validateSupported(fldPath, lb.DSRDispatch, sets.New(apiscilium.DSRDispatchGeneve, apiscilium.DSRDispatchIPIP, apiscilium.DSRDispatchIPOption)); err != nil {
+			allErrs = append(allErrs, err)
+		}
+
+		if overlayEnabled && tunnelMode != nil && *lb.DSRDispatch == apiscilium.DSRDispatchGeneve && *tunnelMode != apiscilium.Geneve {
+			allErrs = append(allErrs, field.Invalid(fldPath, *lb.DSRDispatch, fmt.Sprintf("dsrDispatch geneve can't be used with tunnelMode %s", *tunnelMode)))
+		}
+	}
+
+	return allErrs
+}
+
+func validateLoadBalancingMode(mode *apiscilium.LoadBalancingMode, fldPath *field.Path) *field.Error {
+	return validateSupported(fldPath, mode, sets.New(apiscilium.SNAT, apiscilium.DSR, apiscilium.Hybrid))
+}
+
+func validateSupported[T ~string](fldPath *field.Path, val *T, set sets.Set[T]) *field.Error {
+	if val != nil && !set.Has(*val) {
+		return field.Invalid(fldPath, *val, fmt.Sprintf("unsupported value %v, supported values are %q", *val, set.UnsortedList()))
+	}
+	return nil
 }
 
 // ValidateNetworkConfigKubeProxy validates the kube-proxy configuration in the network config.

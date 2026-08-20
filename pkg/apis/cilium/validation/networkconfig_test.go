@@ -119,4 +119,32 @@ var _ = Describe("Network validation", func() {
 			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")}))),
 		),
 	)
+
+	DescribeTable("#ValidateLoadBalancer",
+		func(lb *apiscilium.LoadBalancer, tunnelMode *apiscilium.TunnelMode, overlayEnabled bool, matcher gomegatypes.GomegaMatcher) {
+			Expect(validation.ValidateLoadBalancer(lb, tunnelMode, overlayEnabled, field.NewPath("loadBalancer"))).To(matcher)
+		},
+
+		Entry("should error if unknown values are used", &apiscilium.LoadBalancer{
+			Mode:         new(apiscilium.LoadBalancingMode("foo")),
+			Algorithm:    new(apiscilium.LoadBalancerAlgorithm("foo")),
+			DSRDispatch:  new(apiscilium.DSRDispatch("foo")),
+			Acceleration: new(apiscilium.Acceleration("foo")),
+		}, nil, false,
+			ConsistOf(
+				PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("loadBalancer.mode")})),
+				PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("loadBalancer.acceleration")})),
+				PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("loadBalancer.algorithm")})),
+				PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("loadBalancer.dsrDispatch")})),
+			),
+		),
+
+		Entry("should error if tunnelMode vxlan with overlay is used with dsrDispatch geneve", &apiscilium.LoadBalancer{
+			DSRDispatch: new(apiscilium.DSRDispatchGeneve),
+		}, new(apiscilium.VXLan), true,
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("loadBalancer.dsrDispatch")}))),
+		),
+
+		Entry("should succeed with empty config", &apiscilium.LoadBalancer{}, nil, true, BeEmpty()),
+	)
 })

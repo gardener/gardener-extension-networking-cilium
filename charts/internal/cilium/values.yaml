@@ -302,12 +302,20 @@ global:
     # optimization for nodeport reverse NAT handling.
     lbExternalClusterip: "false"
 
+    # lbDsrDispatch: "opt"
+
+    lbAcceleration: "disabled"
+
     # -- (bool) Enable loadBalancerSourceRanges CIDR filtering for all service
     # types, not just LoadBalancer services. The corresponding NodePort and
     # ClusterIP (if enabled for cluster-external traffic) will also apply the
     # CIDR filter.
     # @default -- `false`
     lbSourceRangeAllTypes: false
+
+    # -- algorithm is the name of the load balancing algorithm for backend
+    # selection e.g. random or maglev
+    # lbAlgorithm: "random"
 
     # -- (bool) Enable the option to define the load balancing algorithm on
     # a per-service basis through service.cilium.io/lb-algorithm annotation.

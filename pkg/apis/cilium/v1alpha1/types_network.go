@@ -43,6 +43,35 @@ const (
 	Hybrid LoadBalancingMode = "hybrid"
 )
 
+// DSRDispatch whether IP option (opt), IPIP encapsulation (ipip),
+// Geneve Class Option (geneve) used to pass a service IP and port to remote backend
+type DSRDispatch string
+
+const (
+	DSRDispatchIPOption DSRDispatch = "opt"
+	DSRDispatchIPIP     DSRDispatch = "ipip"
+	DSRDispatchGeneve   DSRDispatch = "geneve"
+)
+
+type LoadBalancerAlgorithm string
+
+const (
+	LoadBalancerAlgorithmRandom LoadBalancerAlgorithm = "random"
+	LoadBalancerAlgorithmMaglev LoadBalancerAlgorithm = "maglev"
+)
+
+// Acceleration is the option to accelerate service handling via XDP
+type Acceleration string
+
+const (
+	// disabled (do not use XDP),
+	AccelerationDisabled Acceleration = "disabled"
+	// best-effort (use native mode XDP acceleration on devices that support it).
+	AccelerationBestEffort Acceleration = "best-effort"
+	// native (XDP BPF program is run directly out of the networking driver's early receive path)
+	AccelerationNative Acceleration = "native"
+)
+
 // L2Announcements enables the L2 announcements feature.
 type L2Announcements struct {
 	// Enabled defines whether L2 announcements is enabled.
@@ -203,8 +232,15 @@ type NetworkConfig struct {
 	// +optional
 	DirectRoutingDevice *string `json:"directRoutingDevice,omitempty"`
 	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
+	//
+	// Deprecated: Use [LoadBalancer.Mode]
+	//
 	// +optional
 	LoadBalancingMode *LoadBalancingMode `json:"loadBalancingMode,omitempty"`
+
+	// LoadBalancer holds configuration for cilium's LoadBalancer feature
+	// +optional
+	LoadBalancer *LoadBalancer `json:"loadBalancer,omitempty"`
 	// L2Announcements enables the L2 announcements feature
 	// +optional
 	L2Announcements *L2Announcements `json:"l2Announcements,omitempty"`
@@ -241,6 +277,15 @@ type NetworkConfig struct {
 	// Encryption handles traffic encryption configuration
 	// +optional
 	Encryption *Encryption `json:"encryption,omitempty"`
+}
+
+type LoadBalancer struct {
+	Mode                *LoadBalancingMode     `json:"mode,omitempty"`
+	ModeAnnotation      bool                   `json:"modeAnnotation,omitempty"`
+	DSRDispatch         *DSRDispatch           `json:"dsrDispatch,omitempty"`
+	Acceleration        *Acceleration          `json:"acceleration,omitempty"`
+	Algorithm           *LoadBalancerAlgorithm `json:"algorithm,omitempty"`
+	AlgorithmAnnotation bool                   `json:"algorithmAnnotation,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

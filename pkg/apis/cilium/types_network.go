@@ -43,6 +43,35 @@ const (
 	Hybrid LoadBalancingMode = "hybrid"
 )
 
+// DSRDispatch whether IP option (opt), IPIP encapsulation (ipip),
+// Geneve Class Option (geneve) used to pass a service IP and port to remote backend
+type DSRDispatch string
+
+const (
+	DSRDispatchIPOption DSRDispatch = "opt"
+	DSRDispatchIPIP     DSRDispatch = "ipip"
+	DSRDispatchGeneve   DSRDispatch = "geneve"
+)
+
+type LoadBalancerAlgorithm string
+
+const (
+	LoadBalancerAlgorithmRandom LoadBalancerAlgorithm = "random"
+	LoadBalancerAlgorithmMaglev LoadBalancerAlgorithm = "maglev"
+)
+
+// Acceleration is the option to accelerate service handling via XDP
+type Acceleration string
+
+const (
+	// disabled (do not use XDP),
+	AccelerationDisabled Acceleration = "disabled"
+	// best-effort (use native mode XDP acceleration on devices that support it).
+	AccelerationBestEffort Acceleration = "best-effort"
+	// native (XDP BPF program is run directly out of the networking driver's early receive path)
+	AccelerationNative Acceleration = "native"
+)
+
 // L2Announcements enables the L2 announcements feature.
 type L2Announcements struct {
 	// Enabled defines whether L2 announcements is enabled.
@@ -216,7 +245,11 @@ type NetworkConfig struct {
 	// DirectRoutingDevice is the device used for direct routing between Cilium nodes
 	DirectRoutingDevice *string
 	// LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'
+	//
+	// Deprecated: Use [LoadBalancer.Mode]
 	LoadBalancingMode *LoadBalancingMode
+	// LoadBalancer holds configuration for cilium's LoadBalancer feature
+	LoadBalancer *LoadBalancer
 	// L2Announcements enables the L2 announcements feature
 	L2Announcements *L2Announcements
 	// IPv4NativeRoutingCIDRMode will set the ipv4 native routing cidr from the network configs node's cidr if enabled.
@@ -241,6 +274,15 @@ type NetworkConfig struct {
 	PolicyAuditMode *bool
 	// Encryption handles traffic encryption configuration
 	Encryption *Encryption
+}
+
+type LoadBalancer struct {
+	Mode                *LoadBalancingMode
+	ModeAnnotation      bool
+	DSRDispatch         *DSRDispatch
+	Acceleration        *Acceleration
+	Algorithm           *LoadBalancerAlgorithm
+	AlgorithmAnnotation bool
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

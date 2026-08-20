@@ -10,6 +10,20 @@
 
 </p>
 
+<h3 id="acceleration">Acceleration
+</h3>
+<p><em>Underlying type: string</em></p>
+
+
+<p>
+(<em>Appears on:</em><a href="#loadbalancer">LoadBalancer</a>)
+</p>
+
+<p>
+Acceleration is the option to accelerate service handling via XDP
+</p>
+
+
 <h3 id="bgpcontrolplane">BGPControlPlane
 </h3>
 
@@ -119,6 +133,21 @@ boolean
 
 </tbody>
 </table>
+
+
+<h3 id="dsrdispatch">DSRDispatch
+</h3>
+<p><em>Underlying type: string</em></p>
+
+
+<p>
+(<em>Appears on:</em><a href="#loadbalancer">LoadBalancer</a>)
+</p>
+
+<p>
+DSRDispatch whether IP option (opt), IPIP encapsulation (ipip),
+Geneve Class Option (geneve) used to pass a service IP and port to remote backend
+</p>
 
 
 <h3 id="egressgateway">EgressGateway
@@ -487,13 +516,119 @@ boolean
 </table>
 
 
+<h3 id="loadbalancer">LoadBalancer
+</h3>
+
+
+<p>
+(<em>Appears on:</em><a href="#networkconfig">NetworkConfig</a>)
+</p>
+
+<p>
+
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>mode</code></br>
+<em>
+<a href="#loadbalancingmode">LoadBalancingMode</a>
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>modeAnnotation</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dsrDispatch</code></br>
+<em>
+<a href="#dsrdispatch">DSRDispatch</a>
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>acceleration</code></br>
+<em>
+<a href="#acceleration">Acceleration</a>
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>algorithm</code></br>
+<em>
+<a href="#loadbalanceralgorithm">LoadBalancerAlgorithm</a>
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>algorithmAnnotation</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+<h3 id="loadbalanceralgorithm">LoadBalancerAlgorithm
+</h3>
+<p><em>Underlying type: string</em></p>
+
+
+<p>
+(<em>Appears on:</em><a href="#loadbalancer">LoadBalancer</a>)
+</p>
+
+<p>
+
+</p>
+
+
 <h3 id="loadbalancingmode">LoadBalancingMode
 </h3>
 <p><em>Underlying type: string</em></p>
 
 
 <p>
-(<em>Appears on:</em><a href="#networkconfig">NetworkConfig</a>)
+(<em>Appears on:</em><a href="#loadbalancer">LoadBalancer</a>, <a href="#networkconfig">NetworkConfig</a>)
 </p>
 
 <p>
@@ -684,7 +819,19 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'</p>
+<p>LoadBalancingMode configuration, it should be 'snat', 'dsr' or 'hybrid'<br />Deprecated: Use [LoadBalancer.Mode]</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>loadBalancer</code></br>
+<em>
+<a href="#loadbalancer">LoadBalancer</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LoadBalancer holds configuration for cilium's LoadBalancer feature</p>
 </td>
 </tr>
 <tr>

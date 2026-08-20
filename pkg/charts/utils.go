@@ -286,9 +286,21 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	// check if load balancing mode is set
+	// nolint:staticcheck // only marked as deprecated for users
 	if config.LoadBalancingMode != nil {
 		globalConfig.BPF = bpf{
-			LoadBalancingMode: *config.LoadBalancingMode,
+			LoadBalancingMode: *config.LoadBalancingMode, // nolint:staticcheck // only marked as deprecated for users
+		}
+	}
+
+	if config.LoadBalancer != nil {
+		globalConfig.BPF.LoadBalancerDSRDispatch = config.LoadBalancer.DSRDispatch
+		globalConfig.BPF.LoadBalancerAcceleration = config.LoadBalancer.Acceleration
+		globalConfig.BPF.LoadBalancerAlgorithm = config.LoadBalancer.Algorithm
+		globalConfig.BPF.LoadBalancerModeAnnotation = config.LoadBalancer.ModeAnnotation
+		globalConfig.BPF.LoadBalancerAlgorithmAnnotation = config.LoadBalancer.AlgorithmAnnotation
+		if config.LoadBalancer.Mode != nil {
+			globalConfig.BPF.LoadBalancingMode = *config.LoadBalancer.Mode
 		}
 	}
 
