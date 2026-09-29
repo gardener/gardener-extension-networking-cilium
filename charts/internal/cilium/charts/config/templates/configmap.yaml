@@ -341,7 +341,7 @@ data:
   enable-ipv6-masquerade: {{ .Values.global.enableIpv6Masquerade | quote }}
   enable-tcx: "true"
   datapath-mode: "veth"
-{{- if and .Values.global.ipv4.enabled (and (not .Values.global.snatOutOfCluster.enabled) (and (not .Values.global.snatToUpstreamDNS.enabled) .Values.global.kubeProxyReplacement)) }}
+{{- if and .Values.global.ipv4.enabled (not .Values.global.snatOutOfCluster.enabled) (not .Values.global.snatToUpstreamDNS.enabled) .Values.global.kubeProxyReplacement }}
   enable-bpf-masquerade:  {{ .Values.global.enableBPFMasquerade | quote }}
 {{- end }}
   enable-masquerade-to-route-source: "false"
