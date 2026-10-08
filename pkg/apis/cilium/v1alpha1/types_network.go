@@ -139,6 +139,13 @@ type BGPControlPlane struct {
 	Enabled bool `json:"enabled"`
 }
 
+// GatewayAPI enables the Gateway API support of cilium.
+// The Gateway API CRDs have to be installed in the shoot cluster, otherwise the cilium operator does not start the gateway controller.
+// It also requires kube-proxy to be disabled in the shoot, so that cilium runs as kube-proxy replacement.
+type GatewayAPI struct {
+	Enabled bool `json:"enabled"`
+}
+
 type EncryptionMode string
 
 const (
@@ -235,6 +242,9 @@ type NetworkConfig struct {
 	// BGPControlPlane enables the BGP Control Plane
 	// +optional
 	BGPControlPlane *BGPControlPlane `json:"bgpControlPlane,omitempty"`
+	// GatewayAPI enables the Gateway API support
+	// +optional
+	GatewayAPI *GatewayAPI `json:"gatewayAPI,omitempty"`
 	// PolicyAuditMode enables non-drop mode for installed policies
 	// +optional
 	PolicyAuditMode *bool `json:"policyAuditMode,omitempty"`
