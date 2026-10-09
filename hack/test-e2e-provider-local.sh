@@ -19,6 +19,17 @@ cd "$repo_root/gardener"
 git checkout "$gardener_version"
 source "$repo_root/gardener/hack/ci-common.sh"
 
+# infra.sh has a bug on macOS: it checks `security verify-cert ca.crt` to decide whether to add
+# the CA to the login keychain, but a self-signed root CA always passes that check regardless of
+# whether it is in the trust store — so add-trusted-cert never actually runs. Work around it by
+# running infra.sh up first (to generate the TLS certs), then explicitly (re)adding the CA.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  "$repo_root/gardener/dev-setup/infra.sh" up
+  ca_crt="$repo_root/gardener/dev-setup/infra/registry/tls/ca.crt"
+  security delete-certificate -c "Gardener Local Registry CA" ~/Library/Keychains/login.keychain-db 2>/dev/null || true
+  security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain-db "$ca_crt"
+fi
+
 echo ">>>>>>>>>>>>>>>>>>>> kind-up"
 make kind-up
 trap '{

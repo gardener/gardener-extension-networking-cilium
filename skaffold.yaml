@@ -3,8 +3,6 @@ kind: Config
 metadata:
   name: networking-cilium
 build:
-  insecureRegistries:
-    - registry.local.gardener.cloud:5001
   tagPolicy:
     customTemplate:
       template: "{{.version}}-{{.sha}}"
