@@ -13,7 +13,6 @@ import (
 	unsafe "unsafe"
 
 	cilium "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -179,7 +178,7 @@ func RegisterConversions(s *runtime.Scheme) error {
 }
 
 func autoConvert_v1alpha1_BGPControlPlane_To_cilium_BGPControlPlane(in *BGPControlPlane, out *cilium.BGPControlPlane, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.BGPControlPlane)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -189,7 +188,7 @@ func Convert_v1alpha1_BGPControlPlane_To_cilium_BGPControlPlane(in *BGPControlPl
 }
 
 func autoConvert_cilium_BGPControlPlane_To_v1alpha1_BGPControlPlane(in *cilium.BGPControlPlane, out *BGPControlPlane, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*BGPControlPlane)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -199,7 +198,7 @@ func Convert_cilium_BGPControlPlane_To_v1alpha1_BGPControlPlane(in *cilium.BGPCo
 }
 
 func autoConvert_v1alpha1_BPFSocketLBHostnsOnly_To_cilium_BPFSocketLBHostnsOnly(in *BPFSocketLBHostnsOnly, out *cilium.BPFSocketLBHostnsOnly, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.BPFSocketLBHostnsOnly)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -209,7 +208,7 @@ func Convert_v1alpha1_BPFSocketLBHostnsOnly_To_cilium_BPFSocketLBHostnsOnly(in *
 }
 
 func autoConvert_cilium_BPFSocketLBHostnsOnly_To_v1alpha1_BPFSocketLBHostnsOnly(in *cilium.BPFSocketLBHostnsOnly, out *BPFSocketLBHostnsOnly, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*BPFSocketLBHostnsOnly)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -219,7 +218,7 @@ func Convert_cilium_BPFSocketLBHostnsOnly_To_v1alpha1_BPFSocketLBHostnsOnly(in *
 }
 
 func autoConvert_v1alpha1_CNI_To_cilium_CNI(in *CNI, out *cilium.CNI, s conversion.Scope) error {
-	out.Exclusive = in.Exclusive
+	*out = *(*cilium.CNI)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -229,7 +228,7 @@ func Convert_v1alpha1_CNI_To_cilium_CNI(in *CNI, out *cilium.CNI, s conversion.S
 }
 
 func autoConvert_cilium_CNI_To_v1alpha1_CNI(in *cilium.CNI, out *CNI, s conversion.Scope) error {
-	out.Exclusive = in.Exclusive
+	*out = *(*CNI)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -239,7 +238,7 @@ func Convert_cilium_CNI_To_v1alpha1_CNI(in *cilium.CNI, out *CNI, s conversion.S
 }
 
 func autoConvert_v1alpha1_EgressGateway_To_cilium_EgressGateway(in *EgressGateway, out *cilium.EgressGateway, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.EgressGateway)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -249,7 +248,7 @@ func Convert_v1alpha1_EgressGateway_To_cilium_EgressGateway(in *EgressGateway, o
 }
 
 func autoConvert_cilium_EgressGateway_To_v1alpha1_EgressGateway(in *cilium.EgressGateway, out *EgressGateway, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*EgressGateway)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -259,10 +258,7 @@ func Convert_cilium_EgressGateway_To_v1alpha1_EgressGateway(in *cilium.EgressGat
 }
 
 func autoConvert_v1alpha1_Encryption_To_cilium_Encryption(in *Encryption, out *cilium.Encryption, s conversion.Scope) error {
-	out.Mode = cilium.EncryptionMode(in.Mode)
-	out.Enabled = in.Enabled
-	out.NodeTrafficEncryption = in.NodeTrafficEncryption
-	out.StrictMode = in.StrictMode
+	*out = *(*cilium.Encryption)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -272,10 +268,7 @@ func Convert_v1alpha1_Encryption_To_cilium_Encryption(in *Encryption, out *ciliu
 }
 
 func autoConvert_cilium_Encryption_To_v1alpha1_Encryption(in *cilium.Encryption, out *Encryption, s conversion.Scope) error {
-	out.Mode = EncryptionMode(in.Mode)
-	out.Enabled = in.Enabled
-	out.NodeTrafficEncryption = in.NodeTrafficEncryption
-	out.StrictMode = in.StrictMode
+	*out = *(*Encryption)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -285,7 +278,7 @@ func Convert_cilium_Encryption_To_v1alpha1_Encryption(in *cilium.Encryption, out
 }
 
 func autoConvert_v1alpha1_Hubble_To_cilium_Hubble(in *Hubble, out *cilium.Hubble, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.Hubble)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -295,7 +288,7 @@ func Convert_v1alpha1_Hubble_To_cilium_Hubble(in *Hubble, out *cilium.Hubble, s 
 }
 
 func autoConvert_cilium_Hubble_To_v1alpha1_Hubble(in *cilium.Hubble, out *Hubble, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*Hubble)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -305,7 +298,7 @@ func Convert_cilium_Hubble_To_v1alpha1_Hubble(in *cilium.Hubble, out *Hubble, s 
 }
 
 func autoConvert_v1alpha1_IPv4_To_cilium_IPv4(in *IPv4, out *cilium.IPv4, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.IPv4)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -315,7 +308,7 @@ func Convert_v1alpha1_IPv4_To_cilium_IPv4(in *IPv4, out *cilium.IPv4, s conversi
 }
 
 func autoConvert_cilium_IPv4_To_v1alpha1_IPv4(in *cilium.IPv4, out *IPv4, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*IPv4)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -325,7 +318,7 @@ func Convert_cilium_IPv4_To_v1alpha1_IPv4(in *cilium.IPv4, out *IPv4, s conversi
 }
 
 func autoConvert_v1alpha1_IPv6_To_cilium_IPv6(in *IPv6, out *cilium.IPv6, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.IPv6)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -335,7 +328,7 @@ func Convert_v1alpha1_IPv6_To_cilium_IPv6(in *IPv6, out *cilium.IPv6, s conversi
 }
 
 func autoConvert_cilium_IPv6_To_v1alpha1_IPv6(in *cilium.IPv6, out *IPv6, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*IPv6)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -345,8 +338,7 @@ func Convert_cilium_IPv6_To_v1alpha1_IPv6(in *cilium.IPv6, out *IPv6, s conversi
 }
 
 func autoConvert_v1alpha1_KubeProxy_To_cilium_KubeProxy(in *KubeProxy, out *cilium.KubeProxy, s conversion.Scope) error {
-	out.ServiceHost = (*string)(unsafe.Pointer(in.ServiceHost))
-	out.ServicePort = (*int32)(unsafe.Pointer(in.ServicePort))
+	*out = *(*cilium.KubeProxy)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -356,8 +348,7 @@ func Convert_v1alpha1_KubeProxy_To_cilium_KubeProxy(in *KubeProxy, out *cilium.K
 }
 
 func autoConvert_cilium_KubeProxy_To_v1alpha1_KubeProxy(in *cilium.KubeProxy, out *KubeProxy, s conversion.Scope) error {
-	out.ServiceHost = (*string)(unsafe.Pointer(in.ServiceHost))
-	out.ServicePort = (*int32)(unsafe.Pointer(in.ServicePort))
+	*out = *(*KubeProxy)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -367,10 +358,7 @@ func Convert_cilium_KubeProxy_To_v1alpha1_KubeProxy(in *cilium.KubeProxy, out *K
 }
 
 func autoConvert_v1alpha1_L2Announcements_To_cilium_L2Announcements(in *L2Announcements, out *cilium.L2Announcements, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.LeaseDuration = (*v1.Duration)(unsafe.Pointer(in.LeaseDuration))
-	out.LeaseRenewDeadline = (*v1.Duration)(unsafe.Pointer(in.LeaseRenewDeadline))
-	out.LeaseRetryPeriod = (*v1.Duration)(unsafe.Pointer(in.LeaseRetryPeriod))
+	*out = *(*cilium.L2Announcements)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -380,10 +368,7 @@ func Convert_v1alpha1_L2Announcements_To_cilium_L2Announcements(in *L2Announceme
 }
 
 func autoConvert_cilium_L2Announcements_To_v1alpha1_L2Announcements(in *cilium.L2Announcements, out *L2Announcements, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.LeaseDuration = (*v1.Duration)(unsafe.Pointer(in.LeaseDuration))
-	out.LeaseRenewDeadline = (*v1.Duration)(unsafe.Pointer(in.LeaseRenewDeadline))
-	out.LeaseRetryPeriod = (*v1.Duration)(unsafe.Pointer(in.LeaseRetryPeriod))
+	*out = *(*L2Announcements)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -481,8 +466,7 @@ func Convert_cilium_NetworkStatus_To_v1alpha1_NetworkStatus(in *cilium.NetworkSt
 }
 
 func autoConvert_v1alpha1_Overlay_To_cilium_Overlay(in *Overlay, out *cilium.Overlay, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.CreatePodRoutes = (*bool)(unsafe.Pointer(in.CreatePodRoutes))
+	*out = *(*cilium.Overlay)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -492,8 +476,7 @@ func Convert_v1alpha1_Overlay_To_cilium_Overlay(in *Overlay, out *cilium.Overlay
 }
 
 func autoConvert_cilium_Overlay_To_v1alpha1_Overlay(in *cilium.Overlay, out *Overlay, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.CreatePodRoutes = (*bool)(unsafe.Pointer(in.CreatePodRoutes))
+	*out = *(*Overlay)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -503,7 +486,7 @@ func Convert_cilium_Overlay_To_v1alpha1_Overlay(in *cilium.Overlay, out *Overlay
 }
 
 func autoConvert_v1alpha1_SnatOutOfCluster_To_cilium_SnatOutOfCluster(in *SnatOutOfCluster, out *cilium.SnatOutOfCluster, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.SnatOutOfCluster)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -513,7 +496,7 @@ func Convert_v1alpha1_SnatOutOfCluster_To_cilium_SnatOutOfCluster(in *SnatOutOfC
 }
 
 func autoConvert_cilium_SnatOutOfCluster_To_v1alpha1_SnatOutOfCluster(in *cilium.SnatOutOfCluster, out *SnatOutOfCluster, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*SnatOutOfCluster)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -523,7 +506,7 @@ func Convert_cilium_SnatOutOfCluster_To_v1alpha1_SnatOutOfCluster(in *cilium.Sna
 }
 
 func autoConvert_v1alpha1_SnatToUpstreamDNS_To_cilium_SnatToUpstreamDNS(in *SnatToUpstreamDNS, out *cilium.SnatToUpstreamDNS, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*cilium.SnatToUpstreamDNS)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -533,7 +516,7 @@ func Convert_v1alpha1_SnatToUpstreamDNS_To_cilium_SnatToUpstreamDNS(in *SnatToUp
 }
 
 func autoConvert_cilium_SnatToUpstreamDNS_To_v1alpha1_SnatToUpstreamDNS(in *cilium.SnatToUpstreamDNS, out *SnatToUpstreamDNS, s conversion.Scope) error {
-	out.Enabled = in.Enabled
+	*out = *(*SnatToUpstreamDNS)(unsafe.Pointer(in))
 	return nil
 }
 
