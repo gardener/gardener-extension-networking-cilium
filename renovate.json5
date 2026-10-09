@@ -7,6 +7,8 @@
   ],
   "labels": ["kind/enhancement"],
   "postUpdateOptions": ["gomodTidy"],
+  // Add PR footer with empty release note by default.
+  prFooter: '**Release note**:\n```other dependency\nNONE\n```',
   postUpgradeTasks: {
     commands: ['make generate MODE="sequential"'],
   },
@@ -21,6 +23,12 @@
   ],
   "separateMinorPatch": true,
   "packageRules": [
+    {
+      // Override prFooter for imagevector updates with actual dependency list.
+      "matchFileNames": ["imagevector/**"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      prFooter: "**Release note**:\n```other dependency\nThe following dependencies have been updated:\n{{#each upgrades as |upgrade|}}\n- `{{upgrade.depName}}` from `{{upgrade.currentVersion}}` to `{{upgrade.newVersion}}`. {{#if (equals upgrade.datasource 'github-releases')}}[Release Notes](https://github.com/{{upgrade.depName}}/releases/tag/{{upgrade.newVersion}}){{/if}}\n{{/each}}\n```",
+    },
     {
       // Group cilium image updates in one PR.
       "groupName": "cilium images",
