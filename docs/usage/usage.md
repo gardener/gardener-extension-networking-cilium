@@ -52,6 +52,19 @@ spec:
 
 The egress gateway feature is only supported in gardener with an overlay network (shoot.spec.networking.providerConfig.overlay.enabled: true) at the moment. This is due to the reason that bpf masquerading is required for the egress gateway feature. Once the overlay network is enabled `bpf.masquerade` is set to `true` in the cilium configmap.
 
+The `gatewayAPI.enabled` field describes whether the [Gateway API support](https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/) of cilium is enabled or not (default). Like the egress gateway, it requires kube-proxy to be disabled in the Shoot. The Gateway API CRDs are not deployed by the extension and have to be installed in the shoot cluster in a version supported by the deployed cilium version. Without them, the cilium operator does not start the gateway controller. The extension also does not create a `GatewayClass`, a minimal one looks like this:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: cilium
+spec:
+  controllerName: io.cilium/gateway-controller
+```
+
+TLS secrets referenced by gateways are synced to the `cilium-secrets` namespace.
+
 The `snatToUpstreamDNS.enabled` field describes whether the traffic to the upstream dns server should be masqueraded or not (default). This is needed on some infrastructures where traffic to the dns server with the pod CIDR range is blocked.
 
 The `policyAuditMode` field describes whether the [policy audit mode](https://docs.cilium.io/en/latest/security/policy-creation/#enable-policy-audit-mode-entire-daemon) is enabled for the entire Cilium Daemon or not (default). When enabled, this will log all dropped packets due to policy enforcement. It is useful for testing your network policies before enforcing them. Policy audit mode can be enabled on the shoot by adding the following configuration:

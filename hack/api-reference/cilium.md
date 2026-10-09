@@ -242,6 +242,45 @@ boolean
 </p>
 
 
+<h3 id="gatewayapi">GatewayAPI
+</h3>
+
+
+<p>
+(<em>Appears on:</em><a href="#networkconfig">NetworkConfig</a>)
+</p>
+
+<p>
+GatewayAPI enables the Gateway API support of cilium.
+The Gateway API CRDs have to be installed in the shoot cluster, otherwise the cilium operator does not start the gateway controller.
+It also requires kube-proxy to be disabled in the shoot, so that cilium runs as kube-proxy replacement.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<p></p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 <h3 id="hubble">Hubble
 </h3>
 
@@ -805,6 +844,18 @@ boolean
 <td>
 <em>(Optional)</em>
 <p>BGPControlPlane enables the BGP Control Plane</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>gatewayAPI</code></br>
+<em>
+<a href="#gatewayapi">GatewayAPI</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>GatewayAPI enables the Gateway API support</p>
 </td>
 </tr>
 <tr>
