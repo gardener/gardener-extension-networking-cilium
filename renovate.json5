@@ -9,9 +9,12 @@
   "postUpdateOptions": ["gomodTidy"],
   // Add PR footer with empty release note by default.
   prFooter: '**Release note**:\n```other dependency\nNONE\n```',
-  postUpgradeTasks: {
-    commands: ['make generate MODE="sequential"'],
-  },
+  // Ignore the commits pushed by the `renovate-post-upgrade` GitHub Action (running
+  // `make generate` and the cilium sidecar sync) when detecting whether a branch was manually
+  // edited. Otherwise, Renovate would treat the branch as modified and stop updating the PR.
+  gitIgnoredAuthors: [
+    '41898282+github-actions[bot]@users.noreply.github.com',
+  ],
   "customManagers": [
     {
       // Generic detection of container images in images.yaml via container registry.
@@ -38,7 +41,8 @@
     },
     {
       // cilium-envoy and certgen are synced from the authoritative upstream
-      // cilium/cilium values.yaml via postUpgradeTasks on the cilium-agent bump.
+      // cilium/cilium values.yaml by the `renovate-post-upgrade` GitHub Action on the
+      // cilium-agent bump.
       // Disable independent docker tracking to prevent version drift or over-bumping.
       "matchDatasources": ["docker"],
       "matchPackageNames": [
@@ -54,12 +58,7 @@
       "matchPackageNames": ["quay.io/cilium/cilium"],
       "prBodyNotes": [
         "⚠️ `cilium-envoy` and `certgen` are automatically synced from the upstream `cilium/cilium` values.yaml — check `imagevector/images.yaml` in the diff for their new versions."
-      ],
-      "postUpgradeTasks": {
-        "commands": ["python3 ./scripts/sync-cilium-sidecar-images.py {{newVersion}}"],
-        "fileFilters": ["imagevector/images.yaml"],
-        "executionMode": "update"
-      }
+      ]
     },
     {
       // Group golang updates in one PR.
