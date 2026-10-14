@@ -49,6 +49,32 @@ var _ = Describe("#applyEncryptionConfig", func() {
 	})
 })
 
+var _ = Describe("#applyMeshAuthConfig", func() {
+	It("should not set meshAuth when MeshAuth is nil", func() {
+		cfg := newGlobalConfig()
+		config := &ciliumv1alpha1.NetworkConfig{}
+		applyMeshAuthConfig(&cfg, config)
+		Expect(cfg.MeshAuth.Enabled).To(BeFalse())
+	})
+	It("should enable meshAuth when MeshAuth.Enabled is true", func() {
+		cfg := newGlobalConfig()
+		config := &ciliumv1alpha1.NetworkConfig{
+			MeshAuth: &ciliumv1alpha1.MeshAuth{Enabled: true},
+		}
+		applyMeshAuthConfig(&cfg, config)
+		Expect(cfg.MeshAuth.Enabled).To(BeTrue())
+	})
+	It("should disable meshAuth when MeshAuth.Enabled is false", func() {
+		cfg := newGlobalConfig()
+		cfg.MeshAuth.Enabled = true // pre-set to true
+		config := &ciliumv1alpha1.NetworkConfig{
+			MeshAuth: &ciliumv1alpha1.MeshAuth{Enabled: false},
+		}
+		applyMeshAuthConfig(&cfg, config)
+		Expect(cfg.MeshAuth.Enabled).To(BeFalse())
+	})
+})
+
 var _ = Describe("#generateChartValues", func() {
 	Describe("hubble", func() {
 		var config *ciliumv1alpha1.NetworkConfig

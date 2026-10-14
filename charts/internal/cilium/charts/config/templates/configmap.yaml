@@ -693,7 +693,7 @@ data:
 
   label-prefix-file: "/tmp/cilium/label-prefix/label-prefix"
 
-  mesh-auth-enabled: "false"
+  mesh-auth-enabled: {{ .Values.global.meshAuth.enabled | quote }}
   mesh-auth-queue-size: "1024"
   mesh-auth-rotated-identities-queue-size: "1024"
   mesh-auth-gc-interval: "5m0s"
