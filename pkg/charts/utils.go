@@ -132,6 +132,9 @@ var defaultGlobalConfig = globalConfig{
 		NodeEncryption: false,
 		Enabled:        false,
 	},
+	MeshAuth: meshAuth{
+		Enabled: false,
+	},
 	Hubble: hubbleConfig{
 		Enabled: false,
 	},
@@ -362,9 +365,20 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		return requirementsConfig, globalConfig, fmt.Errorf("applying encryption config: %w", err)
 	}
 
+	applyMeshAuthConfig(&globalConfig, config)
+
 	globalConfig.IPAM.Mode = ipamMode
 
 	return requirementsConfig, globalConfig, nil
+}
+
+func applyMeshAuthConfig(globalCfg *globalConfig, config *ciliumv1alpha1.NetworkConfig) {
+	if config.MeshAuth == nil {
+		return
+	}
+	globalCfg.MeshAuth = meshAuth{
+		Enabled: config.MeshAuth.Enabled,
+	}
 }
 
 func applyEncryptionConfig(globalCfg *globalConfig, config *ciliumv1alpha1.NetworkConfig) error {

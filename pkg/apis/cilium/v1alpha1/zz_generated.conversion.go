@@ -404,6 +404,7 @@ func autoConvert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(in *NetworkConfi
 	out.BGPControlPlane = (*cilium.BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
 	out.PolicyAuditMode = (*bool)(unsafe.Pointer(in.PolicyAuditMode))
 	out.Encryption = (*cilium.Encryption)(unsafe.Pointer(in.Encryption))
+	out.MeshAuth = (*cilium.MeshAuth)(unsafe.Pointer(in.MeshAuth))
 	return nil
 }
 
@@ -439,6 +440,7 @@ func autoConvert_cilium_NetworkConfig_To_v1alpha1_NetworkConfig(in *cilium.Netwo
 	out.BGPControlPlane = (*BGPControlPlane)(unsafe.Pointer(in.BGPControlPlane))
 	out.PolicyAuditMode = (*bool)(unsafe.Pointer(in.PolicyAuditMode))
 	out.Encryption = (*Encryption)(unsafe.Pointer(in.Encryption))
+	out.MeshAuth = (*MeshAuth)(unsafe.Pointer(in.MeshAuth))
 	return nil
 }
 

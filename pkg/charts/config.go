@@ -58,6 +58,7 @@ type globalConfig struct {
 	ConfigMapLabelPrefixHash            string                                `json:"configMapLabelPrefixHash"`
 	PolicyAuditMode                     bool                                  `json:"policyAuditMode"`
 	Encryption                          encryption                            `json:"encryption"`
+	MeshAuth                            meshAuth                              `json:"meshAuth"`
 	Hubble                              hubbleConfig                          `json:"hubble"`
 }
 
@@ -224,5 +225,9 @@ type encryptionWireguardStrictMode struct {
 }
 
 type hubbleConfig struct {
+	Enabled bool `json:"enabled"`
+}
+
+type meshAuth struct {
 	Enabled bool `json:"enabled"`
 }

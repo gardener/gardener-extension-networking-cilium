@@ -56,3 +56,5 @@ spec:
 #        - "icmp"
 #        - "http"
 #    store: kubernetes
+#    meshAuth:
+#      enabled: true  # activates Cilium mutual authentication (mTLS for all pod-to-pod traffic, incl. same-node)
