@@ -43,6 +43,7 @@ const (
 	ShootWebhooksResourceName = "extension-cilium-shoot-webhooks"
 )
 
+
 func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartApplier gardenerkubernetes.ChartApplier, network *extensionsv1alpha1.Network, deleteChart bool) error {
 	ciliumControlPlaneMonitoringChart := &chart.Chart{
 		Name:       cilium.MonitoringName,
@@ -225,7 +226,10 @@ func getConfigMap(ctx context.Context, cl client.Client, cluster *extensionscont
 func getIPAMMode(configMap *corev1.ConfigMap) string {
 	if configMap != nil {
 		if ipamMode, ok := configMap.Data["ipam"]; ok {
-			return ipamMode
+			switch ipamMode {
+			case "kubernetes", "cluster-pool":
+				return ipamMode
+			}
 		}
 	}
 	return "kubernetes"

@@ -619,7 +619,7 @@ data:
   # A space separated list of iptables chains to disable when installing feeder rules.
   disable-iptables-feeder-rules: {{ .Values.disableIptablesFeederRules | join " " | quote }}
 {{- end }}
-  ipam: {{ .Values.global.ipam.mode }}
+  ipam: {{ .Values.global.ipam.mode | quote }}
 {{- if .Values.global.ipam.multiPoolPreAllocation }}
   ipam-multi-pool-pre-allocation: {{ .Values.global.ipam.multiPoolPreAllocation | quote }}
 {{- end }}
