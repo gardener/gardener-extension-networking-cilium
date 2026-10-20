@@ -6,6 +6,7 @@ package charts
 
 import (
 	"fmt"
+	"maps"
 	"net/netip"
 	"net/url"
 
@@ -138,7 +139,9 @@ var defaultGlobalConfig = globalConfig{
 }
 
 func newGlobalConfig() globalConfig {
-	return defaultGlobalConfig
+	cfg := defaultGlobalConfig
+	cfg.Images = maps.Clone(defaultGlobalConfig.Images)
+	return cfg
 }
 
 func newRequirementsConfig() requirementsConfig {
