@@ -169,6 +169,7 @@ type EncryptionMode string
 
 const (
 	EncryptionModeWireguard EncryptionMode = "wireguard"
+	EncryptionModeIPSec     EncryptionMode = "ipsec"
 )
 
 type Encryption struct {

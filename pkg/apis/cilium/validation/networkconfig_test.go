@@ -115,8 +115,16 @@ var _ = Describe("Network validation", func() {
 		},
 
 		Entry("should succeed if encryption is not enabled", &apiscilium.Encryption{Enabled: false}, BeEmpty()),
-		Entry("should error if encryption mode is not wireguard but strict mode is used", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionMode("foo"), StrictMode: true},
-			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")}))),
-		),
+		Entry("should error if mode is empty when encryption is enabled", &apiscilium.Encryption{Enabled: true, Mode: ""},
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")})))),
+		Entry("should error if mode has wrong capitalisation", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionMode("Wireguard")},
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")})))),
+		Entry("should error if mode is unknown", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionMode("foo")},
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")})))),
+		Entry("should succeed with wireguard mode", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionModeWireguard}, BeEmpty()),
+		Entry("should succeed with ipsec mode", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionModeIPSec}, BeEmpty()),
+		Entry("should error if encryption mode is not wireguard but strict mode is used", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionModeIPSec, StrictMode: true},
+			ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{"Field": Equal("encryption.mode")})))),
+		Entry("should succeed with wireguard mode and strict mode", &apiscilium.Encryption{Enabled: true, Mode: apiscilium.EncryptionModeWireguard, StrictMode: true}, BeEmpty()),
 	)
 })

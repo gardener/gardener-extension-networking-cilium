@@ -433,6 +433,8 @@ data:
 
   encryption-strict-mode-allow-remote-node-identities: {{ .Values.global.encryption.wireguard.strictMode.allowRemoteNodeIdentities | quote }}
   {{- end }}
+{{- else }}
+  {{ fail (printf "unsupported encryption mode %q, must be \"wireguard\" or \"ipsec\"" .Values.global.encryption.mode) }}
 {{- end }}
   {{- if .Values.global.encryption.nodeEncryption }}
   encrypt-node: {{ .Values.global.encryption.nodeEncryption | quote }}

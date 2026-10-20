@@ -110,9 +110,13 @@ func ValidateEncryption(enc *apiscilium.Encryption, fldPath *field.Path) field.E
 	if !enc.Enabled {
 		return allErrs
 	}
+	allowedModes := sets.New[apiscilium.EncryptionMode](apiscilium.EncryptionModeWireguard, apiscilium.EncryptionModeIPSec)
+	if !allowedModes.Has(enc.Mode) {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("mode"), enc.Mode, fmt.Sprintf("unsupported encryption mode %q, supported values are [%q, %q]", enc.Mode, apiscilium.EncryptionModeWireguard, apiscilium.EncryptionModeIPSec)))
+	}
 	if enc.StrictMode {
 		if enc.Mode != apiscilium.EncryptionModeWireguard {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("mode"), enc.Mode, "strict mode can only be used with wireguard as encyption mode"))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("mode"), enc.Mode, "strict mode can only be used with wireguard as encryption mode"))
 		}
 	}
 	return allErrs
