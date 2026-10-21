@@ -433,6 +433,8 @@ data:
 
   encryption-strict-mode-allow-remote-node-identities: {{ .Values.global.encryption.wireguard.strictMode.allowRemoteNodeIdentities | quote }}
   {{- end }}
+{{- else }}
+  {{ fail (printf "unsupported encryption mode %q, must be \"wireguard\" or \"ipsec\"" .Values.global.encryption.mode) }}
 {{- end }}
   {{- if .Values.global.encryption.nodeEncryption }}
   encrypt-node: {{ .Values.global.encryption.nodeEncryption | quote }}
@@ -619,7 +621,7 @@ data:
   # A space separated list of iptables chains to disable when installing feeder rules.
   disable-iptables-feeder-rules: {{ .Values.disableIptablesFeederRules | join " " | quote }}
 {{- end }}
-  ipam: {{ .Values.global.ipam.mode }}
+  ipam: {{ .Values.global.ipam.mode | quote }}
 {{- if .Values.global.ipam.multiPoolPreAllocation }}
   ipam-multi-pool-pre-allocation: {{ .Values.global.ipam.multiPoolPreAllocation | quote }}
 {{- end }}

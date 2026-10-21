@@ -26,6 +26,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -212,20 +213,29 @@ func getConfigMap(ctx context.Context, cl client.Client, cluster *extensionscont
 	}
 	_, shootClient, err := util.NewClientForShoot(ctx, cl, cluster.ObjectMeta.Name, client.Options{}, extensionsconfig.RESTOptions{})
 	if err != nil {
-		// No need to report the error as this is anyway only best effort. Some scenarios, e.g. autonomous shoot clusters,
-		// might not have the gardener secret and hence cannot construct the shoot client here.
-		// RenderCiliumChart(...) has the real fallback logic in case the config map was not found/changed.
+		// Some scenarios, e.g. autonomous shoot clusters, permanently lack the gardener secret and can never
+		// construct a shoot client. Returning an error here would wedge every reconcile for those clusters.
+		// A missing client is therefore treated as a missing ConfigMap (empty).
 		return &corev1.ConfigMap{}, nil
 	}
 	configmap := &corev1.ConfigMap{}
-	_ = shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: name}, configmap)
+	if err := shootClient.Get(ctx, client.ObjectKey{Namespace: "kube-system", Name: name}, configmap); err != nil {
+		if apierrors.IsNotFound(err) {
+			// ConfigMap does not exist yet — treat as empty.
+			return &corev1.ConfigMap{}, nil
+		}
+		return nil, err
+	}
 	return configmap, nil
 }
 
 func getIPAMMode(configMap *corev1.ConfigMap) string {
 	if configMap != nil {
 		if ipamMode, ok := configMap.Data["ipam"]; ok {
-			return ipamMode
+			switch ipamMode {
+			case "kubernetes", "cluster-pool":
+				return ipamMode
+			}
 		}
 	}
 	return "kubernetes"
