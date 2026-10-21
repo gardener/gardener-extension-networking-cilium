@@ -35,6 +35,12 @@ def extract_image_tag(lines: list[str], top_key: str) -> str:
     raise ValueError(f'tag not found for {top_key!r}')
 
 
+def _validate(name: str, value: str, pattern: str) -> None:
+    if not re.fullmatch(pattern, value):
+        print(f'Unexpected {name} format: {value!r}', file=sys.stderr)
+        sys.exit(1)
+
+
 def extract_bzl_version(bzl: str, project_name: str) -> str:
     """Extract version = "..." for a project identified by project_name in repository_locations.bzl.
 
@@ -69,14 +75,14 @@ def update_images_yaml(
     # 1. Replace cilium-envoy tag (unique format: v<maj>.<min>.<pat>-<10-digit-ts>-<sha>)
     content = re.sub(
         r'(tag: )v\d+\.\d+\.\d+-\d{10}-[0-9a-f]+',
-        r'\g<1>' + envoy_tag,
+        lambda m: m.group(1) + envoy_tag,
         content,
     )
 
     # 2. Replace certgen tag (simple semver, scoped to the certgen block)
     def replace_certgen_tag(m: re.Match) -> str:
         block = m.group(0)
-        return re.sub(r'(    tag: )v\d+\.\d+\.\d+(\s)', r'\g<1>' + certgen_tag + r'\2', block)
+        return re.sub(r'(    tag: )v\d+\.\d+\.\d+(\s)', lambda m: m.group(1) + certgen_tag + m.group(2), block)
 
     content = re.sub(
         r'- name: certgen\b.*?(?=\n  - name:|\Z)',
@@ -88,7 +94,7 @@ def update_images_yaml(
     # 3. Update Envoy doc URL comments (both cilium-agent and cilium-envoy blocks)
     content = re.sub(
         r'(envoy/v)\d+\.\d+\.\d+(/intro)',
-        r'\g<1>' + envoy_ver + r'\g<2>',
+        lambda m: m.group(1) + envoy_ver + m.group(2),
         content,
     )
 
@@ -98,21 +104,21 @@ def update_images_yaml(
     envoy_minor  = re.match(r'(\d+\.\d+)',  envoy_ver).group(1)    # e.g. "1.36"
     content = re.sub(
         r'(# https://github\.com/cilium/proxy: v)\d+\.\d+(\.x -> v)\d+\.\d+(\.x)',
-        rf'\g<1>{cilium_minor}\g<2>{envoy_minor}\g<3>',
+        lambda m: m.group(1) + cilium_minor + m.group(2) + envoy_minor + m.group(3),
         content,
     )
 
     # 5. Update c-ares scanning-hint version (cilium-envoy block)
     content = re.sub(
         r"(- name: 'c-ares'\s*\n\s*version: ')[^']+(')",
-        r'\g<1>' + cares_ver + r'\g<2>',
+        lambda m: m.group(1) + cares_ver + m.group(2),
         content,
     )
 
     # 6. Update v8 scanning-hint version (cilium-agent block)
     content = re.sub(
         r"(- name: 'v8'\s*\n\s*version: ')[^']+(')",
-        r'\g<1>' + v8_ver + r'\g<2>',
+        lambda m: m.group(1) + v8_ver + m.group(2),
         content,
     )
 
@@ -122,7 +128,7 @@ def update_images_yaml(
         f' cilium-envoy={envoy_tag}, certgen={certgen_tag}\n'
     )
     if '  # Synced from cilium/cilium' in content:
-        content = re.sub(r'  # Synced from cilium/cilium[^\n]*\n', sync_comment, content)
+        content = re.sub(r'  # Synced from cilium/cilium[^\n]*\n', lambda m: sync_comment, content)
     else:
         content = content.replace(
             '  - name: cilium-envoy\n',
@@ -143,6 +149,7 @@ def main() -> None:
         sys.exit(1)
 
     cilium_ver = sys.argv[1]
+    _validate('cilium_ver', cilium_ver, r'v\d+\.\d+\.\d+')
     values_url = (
         f'https://raw.githubusercontent.com/cilium/cilium/{cilium_ver}'
         f'/install/kubernetes/cilium/values.yaml'
@@ -154,6 +161,8 @@ def main() -> None:
 
     envoy_tag   = extract_image_tag(lines, 'envoy')
     certgen_tag = extract_image_tag(lines, 'certgen')
+    _validate('envoy_tag',   envoy_tag,   r'v\d+\.\d+\.\d+-\d{10}-[0-9a-f]+')
+    _validate('certgen_tag', certgen_tag, r'v\d+\.\d+\.\d+')
 
     m = re.match(r'v(\d+\.\d+\.\d+)', envoy_tag)
     if not m:
@@ -170,6 +179,8 @@ def main() -> None:
 
     cares_ver = extract_bzl_version(bzl, 'c-ares')
     v8_ver    = extract_bzl_version(bzl, 'V8')
+    _validate('cares_ver', cares_ver, r'\d+\.\d+\.\d+')
+    _validate('v8_ver',    v8_ver,    r'\d+\.\d+\.\d+(?:\.\d+)?')
 
     print(f'cilium-envoy: {envoy_tag}')
     print(f'certgen:      {certgen_tag}')
