@@ -42,19 +42,24 @@ def _validate(name: str, value: str, pattern: str) -> None:
 
 
 def extract_bzl_version(bzl: str, project_name: str) -> str:
-    """Extract version = "..." for a project identified by project_name in repository_locations.bzl.
+    """Extract version = "..." for a project in repository_locations.bzl.
 
-    Uses project_name (e.g. "c-ares", "V8") rather than the dict key, which can
-    be renamed across Envoy versions (e.g. com_github_c_ares_c_ares → com_github_cares_cares).
+    Tries two layouts used across Envoy versions:
+    1. Dict contains project_name = "<name>" (older Envoy).
+    2. Dict key matches <name> directly, e.g. c_ares = dict(...) (newer Envoy).
     """
-    # Find a dict block containing project_name = "<name>" and extract its version field.
-    # Strategy: find the project_name anchor, then search backwards to the opening `= dict(`
-    # and forwards to the closing `),` to extract the version within that block.
     m = re.search(
         r'=\s*dict\([^)]*?project_name\s*=\s*"' + re.escape(project_name) + r'".*?version\s*=\s*"([^"]+)"',
         bzl,
         re.DOTALL,
     )
+    if not m:
+        dict_key = project_name.lower().replace('-', '_')
+        m = re.search(
+            r'\b' + re.escape(dict_key) + r'\s*=\s*dict\(.*?version\s*=\s*"([^"]+)"',
+            bzl,
+            re.DOTALL,
+        )
     if not m:
         raise ValueError(f'version not found for project_name {project_name!r}')
     return m.group(1)
