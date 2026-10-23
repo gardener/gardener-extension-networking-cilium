@@ -501,6 +501,46 @@ LoadBalancingMode defines what load balancing mode to use for Cilium.
 </p>
 
 
+<h3 id="meshauth">MeshAuth
+</h3>
+
+
+<p>
+(<em>Appears on:</em><a href="#networkconfig">NetworkConfig</a>)
+</p>
+
+<p>
+MeshAuth configures Cilium's mutual authentication (mTLS between pod identities).
+When enabled, the eBPF datapath enforces authenticated connections for all
+pod-to-pod traffic, including same-node traffic not covered by WireGuard.
+See https://docs.cilium.io/en/stable/network/servicemesh/mutual-authentication/mutual-authentication/
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<p>Enabled activates Cilium mutual authentication (mesh-auth-enabled).</p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 <h3 id="networkconfig">NetworkConfig
 </h3>
 
@@ -829,6 +869,18 @@ boolean
 <td>
 <em>(Optional)</em>
 <p>Encryption handles traffic encryption configuration</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>meshAuth</code></br>
+<em>
+<a href="#meshauth">MeshAuth</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MeshAuth configures Cilium mutual authentication (mTLS between pod identities).<br />Covers both inter-node and same-node traffic; complements WireGuard encryption.</p>
 </td>
 </tr>
 

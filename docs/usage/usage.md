@@ -83,6 +83,23 @@ You can enable the feature [`node-to-node encryption`](https://docs.cilium.io/en
 
 Find the API documentation for encryption [here](/hack/api-reference/cilium.md#encryption).
 
+### Mutual Authentication (MeshAuth)
+
+Cilium mutual authentication enforces SPIFFE/SVID-based mTLS at the eBPF layer for all pod-to-pod traffic, including traffic between pods on the **same node**.
+
+This complements [Transparent Encryption](#transparent-encryption): WireGuard covers inter-node traffic only; `meshAuth` additionally authenticates same-node pod-to-pod traffic, which never leaves the kernel via a network interface.
+
+```yaml
+apiVersion: cilium.networking.extensions.gardener.cloud/v1alpha1
+kind: NetworkConfig
+meshAuth:
+  enabled: true
+```
+
+When `meshAuth.enabled` is `true`, Cilium sets `mesh-auth-enabled: "true"` in the `cilium-config` ConfigMap and triggers a DaemonSet rollout to apply the change.
+
+Find the API documentation for meshAuth [here](/hack/api-reference/cilium.md#meshauth).
+
 ## Example `Shoot` manifest
 
 Please find below an example `Shoot` manifest with cilium networking configuration:
