@@ -157,6 +157,15 @@ type Encryption struct {
 	StrictMode bool `json:"strictMode"`
 }
 
+// MeshAuth configures Cilium's mutual authentication (mTLS between pod identities).
+// When enabled, the eBPF datapath enforces authenticated connections for all
+// pod-to-pod traffic, including same-node traffic not covered by WireGuard.
+// See https://docs.cilium.io/en/stable/network/servicemesh/mutual-authentication/mutual-authentication/
+type MeshAuth struct {
+	// Enabled activates Cilium mutual authentication (mesh-auth-enabled).
+	Enabled bool `json:"enabled"`
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -242,6 +251,10 @@ type NetworkConfig struct {
 	// Encryption handles traffic encryption configuration
 	// +optional
 	Encryption *Encryption `json:"encryption,omitempty"`
+	// MeshAuth configures Cilium mutual authentication (mTLS between pod identities).
+	// Covers both inter-node and same-node traffic; complements WireGuard encryption.
+	// +optional
+	MeshAuth *MeshAuth `json:"meshAuth,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

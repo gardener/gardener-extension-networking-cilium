@@ -362,6 +362,13 @@ global:
     # nodeEncryption enables encryption for pure node to node traffic
     nodeEncryption: false
 
+  # meshAuth configures Cilium mutual authentication (eBPF-layer mTLS between pod identities).
+  # Covers both inter-node and same-node traffic; complements WireGuard encryption.
+  # See https://docs.cilium.io/en/stable/network/servicemesh/mutual-authentication/mutual-authentication/
+  meshAuth:
+    # enabled activates Cilium mutual authentication (mesh-auth-enabled).
+    enabled: false
+
   # kubeProxyReplacement enables kube-proxy replacement in Cilium BPF datapath
   kubeProxyReplacement: false
 
