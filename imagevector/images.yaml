@@ -2,7 +2,7 @@ images:
   - name: cilium-agent
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium
-    tag: v1.19.8
+    tag: v1.20.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -14,11 +14,11 @@ images:
         availability_requirement: 'high'
     - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
       value:
-      # https://github.com/cilium/proxy: v1.19.x -> v1.37.x
+      # https://github.com/cilium/proxy: v1.20.x -> v1.37.x
       # https://www.envoyproxy.io/docs/envoy/v1.37.6/intro/arch_overview/security/external_deps
       - name: 'v8'
         version: '13.8.258.26'
-  # Synced from cilium/cilium v1.19.8: cilium-envoy=v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82, certgen=v0.4.11
+  # Synced from cilium/cilium v1.20.2: cilium-envoy=v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82, certgen=v0.4.11
   - name: cilium-envoy
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/cilium-envoy
@@ -34,14 +34,14 @@ images:
         availability_requirement: 'low'
     - name: 'cloud.gardener.cnudie/dso/scanning-hints/package-versions'
       value:
-      # https://github.com/cilium/proxy: v1.19.x -> v1.37.x
+      # https://github.com/cilium/proxy: v1.20.x -> v1.37.x
       # https://www.envoyproxy.io/docs/envoy/v1.37.6/intro/arch_overview/security/external_deps
       - name: 'c-ares'
         version: '1.34.6'
   - name: cilium-operator
     sourceRepository: github.com/cilium/cilium
     repository: quay.io/cilium/operator
-    tag: v1.19.8
+    tag: v1.20.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
@@ -80,7 +80,7 @@ images:
   - name: hubble-relay
     sourceRepository: github.com/cilium/hubble-ui
     repository: quay.io/cilium/hubble-relay
-    tag: v1.19.8
+    tag: v1.20.2
     labels:
     - name: 'gardener.cloud/cve-categorisation'
       value:
