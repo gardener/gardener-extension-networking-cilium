@@ -64,6 +64,9 @@ jobs:
       oci-registry: ${{ needs.prepare.outputs.oci-registry }}
       oci-repository: ${{ matrix.args.oci-repository }}
       oci-platforms: linux/amd64,linux/arm64
+      oci-platforms-to-runners-map: |
+        linux/amd64: ubuntu-latest
+        linux/arm64: ubuntu-latest
       ocm-labels: ${{ toJSON(matrix.args.ocm-labels) }}
       extra-tags: latest
 
