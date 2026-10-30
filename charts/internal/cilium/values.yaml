@@ -259,6 +259,12 @@ global:
   bgpControlPlane:
     enabled: false
 
+  # Enables the Gateway API support, the Gateway API CRDs have to be installed in the cluster
+  gatewayAPI:
+    enabled: false
+    # namespace the TLS secrets referenced by gateways are synced to
+    secretsNamespace: cilium-secrets
+
   # bpf is the BPF datapath specific configuration
   bpf:
     # preallocateMaps enables pre allocation of BPF map values. This increases
