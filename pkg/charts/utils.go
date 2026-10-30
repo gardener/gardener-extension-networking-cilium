@@ -341,10 +341,6 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 		globalConfig.EnableIPv6Masquerade = *config.EnableIPv6Masquerade
 	}
 
-	if config.EnableBPFMasquerade != nil {
-		globalConfig.EnableBPFMasquerade = *config.EnableBPFMasquerade
-	}
-
 	if config.PolicyAuditMode != nil {
 		globalConfig.PolicyAuditMode = *config.PolicyAuditMode
 	}
@@ -363,6 +359,14 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 	}
 
 	globalConfig.IPAM.Mode = ipamMode
+
+	// defaults: false for native routing (cilium/cilium#46829) and incompatible configurations
+	if globalConfig.Tunnel == ciliumv1alpha1.Disabled || !globalConfig.Ipv4.Enabled || globalConfig.SnatOutOfCluster.Enabled || globalConfig.SnatToUpstreamDNS.Enabled || !globalConfig.KubeProxyReplacement {
+		globalConfig.EnableBPFMasquerade = false
+	}
+	if config.EnableBPFMasquerade != nil {
+		globalConfig.EnableBPFMasquerade = *config.EnableBPFMasquerade
+	}
 
 	return requirementsConfig, globalConfig, nil
 }
