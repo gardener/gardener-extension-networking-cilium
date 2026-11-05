@@ -649,6 +649,21 @@ data:
   enable-bgp-control-plane: "false"
 {{- end }}
 
+{{- if .Values.global.gatewayAPI.enabled }}
+  enable-envoy-config: "true"
+  envoy-config-retry-interval: "15s"
+  enable-gateway-api: "true"
+  enable-gateway-api-secrets-sync: "true"
+  enable-gateway-api-proxy-protocol: "false"
+  enable-gateway-api-app-protocol: "false"
+  enable-gateway-api-alpn: "false"
+  gateway-api-xff-num-trusted-hops: "0"
+  gateway-api-service-externaltrafficpolicy: "Cluster"
+  gateway-api-secrets-namespace: {{ .Values.global.gatewayAPI.secretsNamespace | quote }}
+  gateway-api-hostnetwork-enabled: "false"
+  gateway-api-hostnetwork-nodelabelselector: ""
+{{- end }}
+
 {{- if .Values.global.l2announcements.enabled }}
   # Enable L2 announcements
   enable-l2-announcements: "true"
