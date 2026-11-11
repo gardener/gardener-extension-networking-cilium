@@ -8,9 +8,20 @@ on:
           - bump-minor
           - bump-patch
 
+# Serialize release runs so a re-dispatch cannot run concurrently with an in-flight
+# release and race the tag/publish/bump window. Never cancel an
+# in-progress release: a half-published release must finish, not be interrupted.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 
 jobs:
   build:
+    # Only dispatches from the default branch may mint a release. Repo-global tags
+    # mean a dispatch from any ref would otherwise publish the real version tag,
+    # bypassing branch protection.
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     uses: ./.github/workflows/build.yaml
     secrets: inherit
     permissions:
@@ -21,6 +32,7 @@ jobs:
       mode: release
 
   release-to-github-and-bump:
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     uses: gardener/cc-utils/.github/workflows/release.yaml@v1
     needs:
       - build

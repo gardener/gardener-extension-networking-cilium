@@ -1,6 +1,12 @@
 name: Build
 on:
+  # Only pushes to the default branch and release branches publish credentialed
+  # snapshot artifacts; other branches are validated through pull_request without
+  # publish credentials.
   push:
+    branches:
+      - master
+      - release-*
   pull_request:
 
 jobs:
