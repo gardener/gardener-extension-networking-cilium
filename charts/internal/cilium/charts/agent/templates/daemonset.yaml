@@ -161,7 +161,7 @@ spec:
           hostPort: 9879
           protocol: TCP
 {{- end }}
-{{- if .Values.global.hubble.metrics.enabled }}
+{{- if and .Values.global.hubble.enabled .Values.global.hubble.metrics.enabled }}
         - containerPort: {{ .Values.global.hubble.metrics.port }}
           hostPort: {{ .Values.global.hubble.metrics.port }}
           name: hubble-metrics
