@@ -25,6 +25,9 @@
     }
   ],
   "separateMinorPatch": true,
+  // Pin and maintain image/action digests so build inputs cannot be swapped under a
+  // mutable tag.
+  "pinDigests": true,
   "packageRules": [
     {
       // Override prFooter for imagevector updates with actual dependency list.
@@ -65,6 +68,9 @@
       "groupName": "golang",
       "matchDatasources": ["docker", "go-version"],
       "matchPackagePatterns": ["golang"],
+      // Only patch/digest bumps of the golang base image and toolchain automerge;
+      // minor/major fall through to review.
+      "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
     {
@@ -74,10 +80,15 @@
       matchPackageNames: [
         '/^github\\.com/gardener/',
       ],
+      // Only patch/digest gardener module bumps automerge; minor/major require review.
+      "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
     {
+      // Only patch/digest Go module bumps automerge; minor/major of (direct) deps
+      // require human review before they execute in CI.
       "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
     {
@@ -86,6 +97,7 @@
         "^actions/checkout$",
         "^actions/setup-go$",
       ],
+      "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
     {
