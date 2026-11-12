@@ -3,9 +3,9 @@ module github.com/gardener/gardener-extension-networking-cilium
 go 1.26.8
 
 require (
-	github.com/gardener/gardener v1.153.4
-	github.com/gardener/gardener/hack/tools v1.153.4
-	github.com/gardener/gardener/pkg/apis v1.153.4
+	github.com/gardener/gardener v1.153.5
+	github.com/gardener/gardener/hack/tools v1.153.5
+	github.com/gardener/gardener/pkg/apis v1.153.5
 	github.com/go-logr/logr v1.4.4
 	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.44.0
@@ -75,7 +75,7 @@ require (
 	github.com/gardener/cert-management v0.23.0 // indirect
 	github.com/gardener/etcd-druid/api v0.38.2 // indirect
 	github.com/gardener/machine-controller-manager v0.63.0 // indirect
-	github.com/gardener/pvc-autoscaler v0.3.1 // indirect
+	github.com/gardener/pvc-autoscaler v0.3.3 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.5 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
