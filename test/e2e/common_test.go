@@ -88,8 +88,8 @@ func defaultShoot(generateName string, ciliumConfig *ciliumv1alpha1.NetworkConfi
 			},
 		},
 		Spec: gardencorev1beta1.ShootSpec{
-			Region:            "local",
-			SecretBindingName: ptr.To("local"),
+			Region:                 "local",
+			CredentialsBindingName: ptr.To("local"),
 			CloudProfile: &gardencorev1beta1.CloudProfileReference{
 				Name: "local",
 				Kind: "CloudProfile",
