@@ -64,23 +64,33 @@
       ]
     },
     {
-      // Group golang updates in one PR.
+      // Group all golang updates in one PR regardless of update type.
       "groupName": "golang",
       "matchDatasources": ["docker", "go-version"],
       "matchPackagePatterns": ["golang"],
+    },
+    {
       // Only patch/digest bumps of the golang base image and toolchain automerge;
       // minor/major fall through to review.
+      "matchDatasources": ["docker", "go-version"],
+      "matchPackagePatterns": ["golang"],
       "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
     {
-      // Group gardener updates in one PR.
-      groupName: "gardener",
-      matchManagers: ["gomod"],
-      matchPackageNames: [
+      // Group all gardener updates in one PR regardless of update type.
+      "groupName": "gardener",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": [
         '/^github\\.com/gardener/',
       ],
+    },
+    {
       // Only patch/digest gardener module bumps automerge; minor/major require review.
+      "matchManagers": ["gomod"],
+      "matchPackageNames": [
+        '/^github\\.com/gardener/',
+      ],
       "matchUpdateTypes": ["patch", "digest"],
       "automerge": true
     },
