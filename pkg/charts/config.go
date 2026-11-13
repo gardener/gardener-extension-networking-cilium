@@ -54,6 +54,7 @@ type globalConfig struct {
 	EnableBPFMasquerade                 bool                                  `json:"enableBPFMasquerade"`
 	AutoDirectNodeRoutes                bool                                  `json:"autoDirectNodeRoutes"`
 	BGPControlPlane                     bgpControlPlane                       `json:"bgpControlPlane"`
+	GatewayAPI                          gatewayAPI                            `json:"gatewayAPI"`
 	ConfigMapHash                       string                                `json:"configMapHash"`
 	ConfigMapLabelPrefixHash            string                                `json:"configMapLabelPrefixHash"`
 	PolicyAuditMode                     bool                                  `json:"policyAuditMode"`
@@ -204,6 +205,11 @@ type snatOutOfCluster struct {
 
 // bgpControlPlane enables the BGP Control Plane
 type bgpControlPlane struct {
+	Enabled bool `json:"enabled"`
+}
+
+// gatewayAPI enables the Gateway API support
+type gatewayAPI struct {
 	Enabled bool `json:"enabled"`
 }
 

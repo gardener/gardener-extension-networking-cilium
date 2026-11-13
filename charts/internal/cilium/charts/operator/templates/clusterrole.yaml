@@ -49,6 +49,12 @@ rules:
   - get
   - list
   - watch
+{{- if .Values.global.gatewayAPI.enabled }}
+  - create
+  - update
+  - delete
+  - patch
+{{- end }}
 - apiGroups:
   - ""
   resources:
@@ -62,6 +68,10 @@ rules:
   resources:
   # to check apiserver connectivity
   - namespaces
+{{- if .Values.global.gatewayAPI.enabled }}
+  # to sync the TLS secrets referenced by gateways
+  - secrets
+{{- end }}
   verbs:
   - get
   - list
@@ -76,6 +86,13 @@ rules:
   - get
   - list
   - watch
+{{- if .Values.global.gatewayAPI.enabled }}
+  # to create the load balancer services of gateways
+  - create
+  - update
+  - delete
+  - patch
+{{- end }}
 - apiGroups:
   - cilium.io
   resources:
@@ -220,6 +237,62 @@ rules:
   - ciliumloadbalancerippools/status
   verbs:
   - patch
+{{- if .Values.global.gatewayAPI.enabled }}
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gatewayclasses
+  - gateways
+  - tlsroutes
+  - httproutes
+  - grpcroutes
+  - referencegrants
+  - referencepolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gatewayclasses
+  verbs:
+  - patch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gatewayclasses/status
+  - gateways/status
+  - httproutes/status
+  - grpcroutes/status
+  - tlsroutes/status
+  verbs:
+  - update
+  - patch
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumgatewayclassconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumgatewayclassconfigs/status
+  verbs:
+  - update
+  - patch
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - serviceimports
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}
 # For cilium-operator running in HA mode.
 #
 # Cilium operator running in HA mode requires the use of ResourceLock for Leader Election
