@@ -20,7 +20,7 @@ spec:
   selector:
     k8s-app: cilium
 {{- end }}
-{{- if and .Values.global.hubble.metrics.enabled }}
+{{- if and .Values.global.hubble.enabled .Values.global.hubble.metrics.enabled }}
 ---
 kind: Service
 apiVersion: v1
