@@ -126,6 +126,9 @@ var defaultGlobalConfig = globalConfig{
 	BGPControlPlane: bgpControlPlane{
 		Enabled: false,
 	},
+	GatewayAPI: gatewayAPI{
+		Enabled: false,
+	},
 	ConfigMapHash:            "",
 	ConfigMapLabelPrefixHash: "",
 	PolicyAuditMode:          false,
@@ -354,6 +357,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	if config.BGPControlPlane != nil && config.BGPControlPlane.Enabled {
 		globalConfig.BGPControlPlane.Enabled = config.BGPControlPlane.Enabled
+	}
+
+	if config.GatewayAPI != nil && config.GatewayAPI.Enabled {
+		globalConfig.GatewayAPI.Enabled = config.GatewayAPI.Enabled
 	}
 
 	err := applyEncryptionConfig(&globalConfig, config)

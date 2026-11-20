@@ -70,4 +70,38 @@ var _ = Describe("#generateChartValues", func() {
 			})
 		})
 	})
+
+	Describe("gatewayAPI", func() {
+		var config *ciliumv1alpha1.NetworkConfig
+		cluster := &extensions.Cluster{
+			Shoot: &gardencorev1beta1.Shoot{},
+		}
+		BeforeEach(func() {
+			config = &ciliumv1alpha1.NetworkConfig{}
+		})
+
+		It("should be disabled by default", func() {
+			_, globalCfg, err := generateChartValues(config, &extensionsv1alpha1.Network{}, cluster, "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(globalCfg.GatewayAPI.Enabled).To(BeFalse())
+		})
+
+		It("should be enabled if it is enabled in the NetworkConfig", func() {
+			config.GatewayAPI = &ciliumv1alpha1.GatewayAPI{
+				Enabled: true,
+			}
+			_, globalCfg, err := generateChartValues(config, &extensionsv1alpha1.Network{}, cluster, "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(globalCfg.GatewayAPI.Enabled).To(BeTrue())
+		})
+
+		It("should be disabled if it is disabled in the NetworkConfig", func() {
+			config.GatewayAPI = &ciliumv1alpha1.GatewayAPI{
+				Enabled: false,
+			}
+			_, globalCfg, err := generateChartValues(config, &extensionsv1alpha1.Network{}, cluster, "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(globalCfg.GatewayAPI.Enabled).To(BeFalse())
+		})
+	})
 })
