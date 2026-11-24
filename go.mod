@@ -76,7 +76,7 @@ require (
 	github.com/gardener/etcd-druid/api v0.38.2 // indirect
 	github.com/gardener/machine-controller-manager v0.63.0 // indirect
 	github.com/gardener/pvc-autoscaler v0.3.3 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/errors v0.22.8 // indirect
