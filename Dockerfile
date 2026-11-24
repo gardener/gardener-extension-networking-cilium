@@ -15,14 +15,14 @@ ARG EFFECTIVE_VERSION
 RUN make install EFFECTIVE_VERSION=$EFFECTIVE_VERSION
 
 ############# gardener-extension-networking-cilium
-FROM gcr.io/distroless/static-debian13:nonroot@sha256:aafe993665bf6200db38a02c11a9351e782a84b6a45e7f33b6695638c88e3931 AS gardener-extension-networking-cilium
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:8ce6dd87e9823c5b48dcfb2c8604714ccb351ce59607327bcc4957448da279b5 AS gardener-extension-networking-cilium
 WORKDIR /
 
 COPY --from=builder /go/bin/gardener-extension-networking-cilium /gardener-extension-networking-cilium
 ENTRYPOINT ["/gardener-extension-networking-cilium"]
 
 ############# gardener-extension-admission-cilium
-FROM gcr.io/distroless/static-debian13:nonroot@sha256:aafe993665bf6200db38a02c11a9351e782a84b6a45e7f33b6695638c88e3931 AS gardener-extension-admission-cilium
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:8ce6dd87e9823c5b48dcfb2c8604714ccb351ce59607327bcc4957448da279b5 AS gardener-extension-admission-cilium
 WORKDIR /
 
 COPY --from=builder /go/bin/gardener-extension-admission-cilium /gardener-extension-admission-cilium
